@@ -310,9 +310,7 @@ function animateNumber(element, start, end, duration) {
 // ===== Функция отправки данных на сервер =====
 async function sendRequest(name, phone, type, estimatedPrice = null) {
   try {
-    const API_URL = window.location.origin.includes("ngrok.io")
-  ? window.location.origin + "/api/request"
-  : "http://localhost:8000/api/request";
+    const API_URL = "/api/request";
 
 const res = await fetch(API_URL, {
       method: "POST",
