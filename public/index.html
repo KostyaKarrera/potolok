@@ -266,19 +266,31 @@ footer { background:var(--background-light); color:#333; text-align:center; padd
 .review-card:hover {
   transform: scale(1.05);
 }
-/* Кнопка VK в подвале */
+/* Современная кнопка VK в подвале */
 footer .vk-btn {
-  background: #0077ff;
-  color: #fff; /* чтобы текст был белым */
-  text-decoration: none; /* убираем подчеркивание */
-  padding: 10px 20px;
-  border-radius: 5px;
-  display: inline-block;
+  display: inline-flex;               /* иконка + текст в ряд */
+  align-items: center;                /* выравнивание по вертикали */
+  gap: 8px;                           /* расстояние между иконкой и текстом */
+  background-color: #0077ff;          /* фирменный цвет VK */
+  color: #fff;                        /* белый текст */
+  text-decoration: none;              /* убираем подчеркивание */
+  padding: 10px 20px;                 /* внутренние отступы */
+  border-radius: 10px;                /* скругление углов */
+  font-weight: 500;                   /* чуть жирнее текст */
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1); /* лёгкая тень */
+  transition: background 0.3s, transform 0.2s, box-shadow 0.2s; /* плавные эффекты */
 }
 
 footer .vk-btn:hover {
-  background: #005ec4;
+  background-color: #005ec4;          /* темнее при наведении */
+  transform: translateY(-2px);        /* лёгкий подъём */
+  box-shadow: 0 6px 12px rgba(0,0,0,0.15); /* тень сильнее */
 }
+
+footer .vk-btn i {
+  font-size: 1.2em;                   /* размер иконки */
+}
+
 
 </style>
 
@@ -349,15 +361,17 @@ footer .vk-btn:hover {
 <!-- 🔹 Подвал -->
 <footer>
   <h3>О компании</h3>
-  <p>Мы более 5 лет на рынке. Работаем для вас по всей Чувашии и Марий-Эл. </p>
+  <p>Мы более 5 лет на рынке. Работаем для вас по всей Чувашии и Марий-Эл.</p>
   <p>
     <a href="tel:+79003303517">+7 (900) 330-35-17</a> | 
     <a href="https://wa.me/79871224873" target="_blank">WhatsApp</a> / 
     <a href="https://t.me/deomidovich" target="_blank">Telegram</a>
   </p>
-  <a href="https://vk.com/chebkonkurent21" target="_blank" class="btn vk-btn">
+  
+  <a href="https://vk.com/chebkonkurent21" target="_blank" class="vk-btn">
     <i class="fa-brands fa-vk"></i> Мы во ВКонтакте
   </a>
+  
   <p>© Потолки КонкурентЪ 2023. Все права защищены.</p>
 </footer>
 
