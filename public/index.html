@@ -23,14 +23,83 @@
 body { margin:0; font-family:"Montserrat",sans-serif; color:var(--text-color); background:#f8f8f8; line-height:1.6; }
 
 /* 🔹 Шапка */
-.topbar { position:fixed; top:0; left:0; width:100%; background:#fff; display:flex; justify-content:space-between; align-items:center; padding:15px 5%; box-shadow:0 2px 8px rgba(0,0,0,0.08); z-index:1000; flex-wrap:wrap; gap:10px; }
-.logo { font-size:20px; font-weight:bold; color:var(--primary-color); }
-.contacts { display:flex; align-items:center; gap:15px; flex-wrap:wrap; }
-.contacts a { text-decoration:none; color:var(--text-color); display:flex; align-items:center; gap:6px; font-size:16px; transition:color 0.3s; }
-.contacts a:hover { color:var(--primary-color); }
-.contacts a i { font-size:24px; }
-.btn { background:var(--primary-color); color:white; padding:14px 26px; border:none; border-radius:10px; font-size:16px; font-weight:600; cursor:pointer; transition:0.3s; box-shadow:0 4px 10px rgba(47,128,237,0.3); }
-.btn:hover { background:var(--primary-hover); transform:translateY(-2px); }
+.topbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background: #fff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 5%;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  z-index: 1000;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.logo {
+  font-size: 20px;
+  font-weight: bold;
+  color: var(--primary-color);
+}
+
+.contacts {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.contacts a {
+  text-decoration: none;
+  color: var(--text-color);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 16px;
+  transition: color 0.3s;
+}
+
+.contacts a i {
+  font-size: 24px;
+}
+
+/* Цветные соцсети */
+.contacts a .fa-telegram { color: #0088cc; }   /* Telegram голубой */
+.contacts a .fa-whatsapp { color: #25D366; }   /* WhatsApp зелёный */
+.contacts a .fa-vk { color: #0077ff; }         /* VK синий */
+
+/* Эффект наведения для иконок */
+.contacts a:hover i {
+  filter: brightness(0.9);
+}
+
+.btn {
+  background: var(--primary-color);
+  color: white;
+  padding: 14px 26px;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s;
+  box-shadow: 0 4px 10px rgba(47,128,237,0.3);
+}
+
+.btn:hover {
+  background: var(--primary-hover);
+  transform: translateY(-2px);
+}
+
+/* Иконка внутри кнопки (например, в подвале) */
+footer .btn i {
+  margin-right: 8px;
+  font-size: 20px;
+}
+
 
 /* 🔹 Hero */
 header { background:linear-gradient(rgba(0,0,0,0.6),rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1470&q=80') center/cover no-repeat; color:white; text-align:center; padding:160px 20px 120px; margin-top:80px; }
@@ -98,9 +167,11 @@ footer { background:var(--background-light); color:#333; text-align:center; padd
     <a href="tel:+79003303517"><i class="fa fa-phone"></i> +7 (900) 330-35-17</a>
     <a href="https://t.me/deomidovich" target="_blank"><i class="fa-brands fa-telegram"></i></a>
     <a href="https://wa.me/79871224873" target="_blank"><i class="fa-brands fa-whatsapp"></i></a>
+    <a href="https://vk.com/chebkonkurent21" target="_blank"><i class="fa-brands fa-vk"></i></a>
     <button class="btn" id="callBtn">Заказать звонок</button>
   </div>
 </div>
+
 
 <!-- 🔹 Hero -->
 <header>
