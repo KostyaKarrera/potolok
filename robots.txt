@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /ajax/
+
+Sitemap: https://potolok-konkurent.ru/sitemap.xml
