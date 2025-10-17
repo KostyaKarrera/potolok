@@ -5,6 +5,7 @@ import TelegramBot from "node-telegram-bot-api";
 import path from "path";
 import { fileURLToPath } from "url";
 import dotenv from "dotenv";
+import fs from "fs";
 
 dotenv.config(); // Загружаем переменные из .env
 
@@ -70,7 +71,22 @@ app.post("/api/request", async (req, res) => {
 
 // ===== Любой GET, который не начинается с /api — отдаём index.html =====
 app.get(/^\/(?!api).*/, (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
+  // Формируем путь к файлу в public
+  const requestedPath = path.join(__dirname, "public", req.path);
+
+  // Если запрашивается папка (например /cheboksary/), добавляем index.html
+  let filePath = requestedPath;
+  if (fs.existsSync(requestedPath) && fs.lstatSync(requestedPath).isDirectory()) {
+    filePath = path.join(requestedPath, "index.html");
+  }
+
+  // Если файл существует — отдать его
+  if (fs.existsSync(filePath)) {
+    res.sendFile(filePath);
+  } else {
+    // иначе отдать главный index.html
+    res.sendFile(path.join(__dirname, "public", "index.html"));
+  }
 });
 
 // ===== Тестовое сообщение при запуске =====
