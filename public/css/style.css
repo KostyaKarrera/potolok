@@ -1,0 +1,294 @@
+:root {
+  --primary-color: #2F80ED;
+  --primary-hover: #2566c7;
+  --text-color: #1C1C1C;
+  --background-light: #f5f5f5;
+}
+* { box-sizing: border-box; }
+body { margin:0; font-family:"Montserrat",sans-serif; color:var(--text-color); background:#f8f8f8; line-height:1.6; }
+
+/* 🔹 Шапка */
+.topbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background: #fff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 5%;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  z-index: 1000;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.logo {
+  font-size: 20px;
+  font-weight: bold;
+  color: var(--primary-color);
+}
+
+.contacts {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.contacts a {
+  text-decoration: none;
+  color: var(--text-color);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 16px;
+  transition: color 0.3s;
+}
+
+.contacts a i {
+  font-size: 24px;
+}
+
+/* Цветные соцсети */
+.contacts a .fa-telegram { color: #0088cc; }   /* Telegram голубой */
+.contacts a .fa-whatsapp { color: #25D366; }   /* WhatsApp зелёный */
+.contacts a .fa-vk { color: #0077ff; }         /* VK синий */
+
+/* Эффект наведения для иконок */
+.contacts a:hover i {
+  filter: brightness(0.9);
+}
+
+.btn {
+  background: var(--primary-color);
+  color: white;
+  padding: 14px 26px;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s;
+  box-shadow: 0 4px 10px rgba(47,128,237,0.3);
+}
+
+.btn:hover {
+  background: var(--primary-hover);
+  transform: translateY(-2px);
+}
+
+/* Иконка внутри кнопки (например, в подвале) */
+footer .btn i {
+  margin-right: 8px;
+  font-size: 20px;
+}
+
+
+/* 🔹 Hero */
+header { background:linear-gradient(rgba(0,0,0,0.3),rgba(0,0,0,0.3)), url('header/IMG_2570.PNG') center/cover no-repeat; color:white; text-align:center; padding:160px 20px 120px; margin-top:80px; }
+header h1 { font-size:42px; margin-bottom:15px; }
+header p { font-size:20px; margin-bottom:25px; opacity:0.9; }
+
+/* 🔹 Блоки */
+.section { padding:80px 5%; max-width:1200px; margin:auto; }
+.section h2 { text-align:center; margin-bottom:40px; font-size:32px; }
+
+/* 🔹 Преимущества */
+.features { display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:25px; }
+.feature { background:#fff; padding:30px 20px; border-radius:16px; text-align:center; box-shadow:0 4px 15px rgba(0,0,0,0.08); transition:transform 0.3s; }
+.feature:hover { transform:translateY(-5px); }
+.feature i { font-size:50px; color:var(--primary-color); margin-bottom:15px; }
+.feature p { font-weight:500; }
+
+/* 🔹 Галерея */
+.gallery { display:flex; overflow-x:auto; gap:15px; padding-bottom:10px; }
+.gallery::-webkit-scrollbar { height:8px; }
+.gallery::-webkit-scrollbar-thumb { background-color:rgba(0,0,0,0.2); border-radius:4px; }
+.gallery img { flex:0 0 auto; width:300px; height:200px; object-fit:cover; border-radius:16px; cursor:pointer; transition:transform 0.3s; }
+.gallery img:hover { transform:scale(1.05); }
+
+/* 🔹 Форма калькулятора */
+form { display:flex; gap:15px; flex-wrap:wrap; justify-content:center; max-width:800px; margin:0 auto; }
+input { padding:14px; font-size:16px; border:1px solid #ccc; border-radius:10px; min-width:200px; flex:1; font-family:"Montserrat",sans-serif; }
+input:focus { outline:none; border-color:var(--primary-color); box-shadow:0 0 0 2px rgba(47,128,237,0.2); }
+
+footer { background:var(--background-light); color:#333; text-align:center; padding:50px 20px; }
+
+/* 🔹 Модалки */
+.modal { display:none; position:fixed; z-index:2000; left:0; top:0; width:100%; height:100%; overflow:auto; background-color:rgba(0,0,0,0.6); }
+.modal-content { background:#fff; margin:10% auto; padding:30px; border-radius:12px; max-width:450px; position:relative; text-align:center; }
+.close { position:absolute; top:10px; right:15px; font-size:28px; font-weight:bold; cursor:pointer; }
+
+/* 🔹 Лайтбокс */
+.lightbox { display:none; position:fixed; z-index:3000; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); justify-content:center; align-items:center; }
+.lightbox-img { max-width:90%; max-height:80%; border-radius:12px; }
+.lightbox-close, .lightbox-prev, .lightbox-next { position:absolute; color:white; font-size:36px; cursor:pointer; user-select:none; }
+.lightbox-close { top:15px; right:25px; }
+.lightbox-prev { left:20px; top:50%; transform:translateY(-50%); }
+.lightbox-next { right:20px; top:50%; transform:translateY(-50%); }
+
+/* 🔹 Отступы между полями и кнопкой в модалках */
+.modal-content form input,
+.modal-content form button {
+  display: block;
+  width: 100%;
+  margin-bottom: 15px;
+  box-sizing: border-box;
+}
+
+/* Адаптив */
+@media(max-width:768px){ header{padding:120px 20px 80px;margin-top:70px;} header h1{font-size:32px;} header p{font-size:18px;} .topbar{padding:12px 4%;} .contacts{justify-content:center;} .section{padding:60px 4%;} .section h2{font-size:28px;} form{flex-direction:column;} input{width:100%;} .btn{padding:12px 22px;font-size:15px;} .feature i{font-size:40px;} .contacts a{font-size:15px;} .contacts a i{font-size:22px;} }
+@media(max-width:480px){ header h1{font-size:28px;} header p{font-size:16px;} .feature i{font-size:36px;} .contacts a{font-size:14px;} .contacts a i{font-size:20px;} }
+@media(max-width:768px){
+  .topbar {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  .logo {
+    width: 100%;
+    text-align: center;
+  }
+  .contacts {
+    justify-content: center;
+  }
+}
+
+/* 🔹 Чередование фона секций и декоративная полоска */
+.section {
+  position: relative;
+  padding: 80px 5%;
+  max-width: 1200px;
+  margin: auto;
+  border-radius: 20px;
+  transition: background 0.3s;
+}
+
+/* Светло-серый фон для чётных секций */
+.section:nth-of-type(even) {
+  background: #f7f9fc;
+}
+
+/* Белый фон для нечётных */
+.section:nth-of-type(odd) {
+  background: #ffffff;
+}
+
+/* Декоративная полоска под заголовком */
+.section h2::after {
+  content: "";
+  display: block;
+  width: 80px;
+  height: 4px;
+  margin: 15px auto 35px;
+  background: var(--primary-color);
+  border-radius: 2px;
+  opacity: 0.9;
+}
+
+/* Небольшая тень для "воздуха" */
+.section:nth-of-type(even),
+.section:nth-of-type(odd) {
+  box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+}
+
+/* Мягкий переход при скролле */
+.section {
+  scroll-margin-top: 80px;
+}
+
+
+
+.reviews-gallery {
+  display: flex;
+  overflow-x: auto;
+  gap: 15px;
+  padding-bottom: 10px;
+}
+.reviews-gallery::-webkit-scrollbar {
+  height: 8px;
+}
+.reviews-gallery::-webkit-scrollbar-thumb {
+  background-color: rgba(0,0,0,0.2);
+  border-radius: 4px;
+}
+.reviews-gallery a {
+  flex: 0 0 auto;
+  display: block;
+  text-decoration: none;
+}
+.review-card {
+  width: 250px;
+  height: 400px;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  transition: transform 0.3s;
+}
+.review-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.review-card:hover {
+  transform: scale(1.05);
+}
+/* Современная кнопка VK в подвале */
+footer .vk-btn {
+  display: inline-flex;               /* иконка + текст в ряд */
+  align-items: center;                /* выравнивание по вертикали */
+  gap: 8px;                           /* расстояние между иконкой и текстом */
+  background-color: #0077ff;          /* фирменный цвет VK */
+  color: #fff;                        /* белый текст */
+  text-decoration: none;              /* убираем подчеркивание */
+  padding: 10px 20px;                 /* внутренние отступы */
+  border-radius: 10px;                /* скругление углов */
+  font-weight: 500;                   /* чуть жирнее текст */
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1); /* лёгкая тень */
+  transition: background 0.3s, transform 0.2s, box-shadow 0.2s; /* плавные эффекты */
+}
+
+footer .vk-btn:hover {
+  background-color: #005ec4;          /* темнее при наведении */
+  transform: translateY(-2px);        /* лёгкий подъём */
+  box-shadow: 0 6px 12px rgba(0,0,0,0.15); /* тень сильнее */
+}
+
+footer .vk-btn i {
+  font-size: 1.2em;                   /* размер иконки */
+}
+
+.city-links {
+  background-color: #f8f9fa;
+  padding: 40px 20px;
+  border-top: 2px solid var(--primary-color);
+  border-radius: 12px;
+  margin-top: 40px;
+}
+
+.city-links__list {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.city-link {
+  display: inline-block;
+  background-color: var(--primary-color);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 50px;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  font-weight: 500;
+}
+
+.city-link:hover {
+  background-color: #444;
+  transform: translateY(-2px);
+}
