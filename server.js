@@ -89,8 +89,15 @@ app.get(/^\/(?!api).*/, (req, res) => {
   }
 });
 
-// ===== Тестовое сообщение при запуске =====
-bot.sendMessage(CHAT_ID, "✅ Сервер запущен, Telegram готов к приему сообщений").catch(console.error);
+// В server.js добавить статику для sitemap
+app.get('/sitemap.xml', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'sitemap.xml'));
+});
+
+app.get('/robots.txt', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'robots.txt'));
+});
+
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
