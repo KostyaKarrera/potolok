@@ -6,8 +6,9 @@ import path from "path";
 import { fileURLToPath } from "url";
 import dotenv from "dotenv";
 import fs from "fs";
+import QRCode from "qrcode";
 
-dotenv.config(); // Загружаем переменные из .env
+dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -24,17 +25,13 @@ if (!TELEGRAM_TOKEN || !CHAT_ID) {
   process.exit(1);
 }
 
-const bot = new TelegramBot(TELEGRAM_TOKEN); // без polling
-
-// ===== Middleware =====
+const bot = new TelegramBot(TELEGRAM_TOKEN);
 app.use(cors());
 app.use(bodyParser.json());
-
-// ===== Раздача статики =====
 app.use(express.static(path.join(__dirname, "public")));
 
-// ===== Эндпоинт для форм =====
-async function sendTelegram(name, phone, type, estimatedPrice) {
+// ===== Функция отправки в Telegram =====
+async function sendTelegram(name, phone, type, estimatedPrice, ref) {
   const escapeHTML = (str) =>
     str.replace(/&/g, "&amp;")
        .replace(/</g, "&lt;")
@@ -45,6 +42,7 @@ async function sendTelegram(name, phone, type, estimatedPrice) {
   message += `<b>Телефон:</b> ${escapeHTML(phone)}\n`;
   message += `<b>Тип заявки:</b> ${escapeHTML(type)}`;
   if (estimatedPrice) message += `\n<b>Ориентировочная стоимость:</b> ${escapeHTML(estimatedPrice.toString())} ₽`;
+  if (ref) message += `\n\n💎 <b>Реферальный код:</b> ${escapeHTML(ref)}`;
 
   try {
     await bot.sendMessage(CHAT_ID, message, { parse_mode: "HTML" });
@@ -53,15 +51,16 @@ async function sendTelegram(name, phone, type, estimatedPrice) {
   }
 }
 
+// ===== Обработка заявок =====
 app.post("/api/request", async (req, res) => {
-  const { name, phone, type, estimatedPrice } = req.body;
+  const { name, phone, type, estimatedPrice, ref } = req.body;
 
   if (!name || !phone || !type) {
     return res.status(400).json({ status: "error", message: "Не все обязательные поля заполнены" });
   }
 
   try {
-    await sendTelegram(name, phone, type, estimatedPrice);
+    await sendTelegram(name, phone, type, estimatedPrice, ref);
     res.json({ status: "success", message: "Заявка отправлена в Telegram!" });
   } catch (err) {
     console.error(err);
@@ -69,36 +68,38 @@ app.post("/api/request", async (req, res) => {
   }
 });
 
-// ===== Любой GET, который не начинается с /api — отдаём index.html =====
-app.get(/^\/(?!api).*/, (req, res) => {
-  // Формируем путь к файлу в public
-  const requestedPath = path.join(__dirname, "public", req.path);
+// ===== QR-коды для партнёров =====
+app.get("/api/ref/:partnerId/qrcode", async (req, res) => {
+  const { partnerId } = req.params;
+  const url = `https://potolok-konkurent.ru/?ref=${encodeURIComponent(partnerId)}`;
 
-  // Если запрашивается папка (например /cheboksary/), добавляем index.html
+  try {
+    const qr = await QRCode.toBuffer(url, { type: "png", width: 300 });
+    res.setHeader("Content-Type", "image/png");
+    res.send(qr);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Ошибка генерации QR");
+  }
+});
+
+// ===== Sitemap и Robots =====
+app.get("/sitemap.xml", (req, res) => res.sendFile(path.join(__dirname, "public", "sitemap.xml")));
+app.get("/robots.txt", (req, res) => res.sendFile(path.join(__dirname, "public", "robots.txt")));
+
+// ===== Обработка маршрутов (для городов и главной) =====
+app.get(/^\/(?!api).*/, (req, res) => {
+  const requestedPath = path.join(__dirname, "public", req.path);
   let filePath = requestedPath;
   if (fs.existsSync(requestedPath) && fs.lstatSync(requestedPath).isDirectory()) {
     filePath = path.join(requestedPath, "index.html");
   }
 
-  // Если файл существует — отдать его
   if (fs.existsSync(filePath)) {
     res.sendFile(filePath);
   } else {
-    // иначе отдать главный index.html
     res.sendFile(path.join(__dirname, "public", "index.html"));
   }
 });
 
-// В server.js добавить статику для sitemap
-app.get('/sitemap.xml', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'sitemap.xml'));
-});
-
-app.get('/robots.txt', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'robots.txt'));
-});
-
-
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-});
+app.listen(PORT, () => console.log(`✅ Сервер запущен: http://localhost:${PORT}`));

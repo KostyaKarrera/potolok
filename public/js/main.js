@@ -1,20 +1,36 @@
-// ===== Настройка маски для телефонов =====
+// ==================== MAIN.JS ====================
+// Поддержка: маска телефона, модальные окна, калькулятор, Telegram-заявки, lightbox
+// + Реферальная система (запоминает ?ref=..., передаёт на сервер)
+// =================================================
+
+// ====== 1. Маска телефона ======
 window.addEventListener("load", () => {
   if (typeof Inputmask !== "undefined") {
-    const phoneInputs = document.querySelectorAll('input[type="tel"]');
-    phoneInputs.forEach(input => {
-      Inputmask({
-        mask: "+7 (999) 999-99-99",
-        showMaskOnHover: false,
-        clearIncomplete: true
-      }).mask(input);
-    });
+    Inputmask({
+      mask: "+7 (999) 999-99-99",
+      showMaskOnHover: false,
+      clearIncomplete: true
+    }).mask(document.querySelectorAll('input[type="tel"]'));
   } else {
     console.error("❌ Inputmask не загрузился!");
   }
 });
 
-// ===== Функция анимации числа =====
+// ====== 2. Реферальная система ======
+function saveReferralCode() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const ref = urlParams.get("ref");
+  if (ref) {
+    localStorage.setItem("refCode", ref);
+    console.log(`💎 Реферальный код сохранён: ${ref}`);
+  }
+}
+function getReferralCode() {
+  return localStorage.getItem("refCode") || null;
+}
+saveReferralCode();
+
+// ====== 3. Анимация числа ======
 function animateNumber(element, start, end, duration) {
   let startTime = null;
   function animation(currentTime) {
@@ -27,16 +43,18 @@ function animateNumber(element, start, end, duration) {
   requestAnimationFrame(animation);
 }
 
-// ===== Функция отправки данных на сервер =====
+// ====== 4. Отправка заявки на сервер ======
 async function sendRequest(name, phone, type, estimatedPrice = null) {
   try {
     const API_URL = "/api/request";
+    const ref = getReferralCode();
 
-const res = await fetch(API_URL, {
+    const res = await fetch(API_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, phone, type, estimatedPrice }),
+      body: JSON.stringify({ name, phone, type, estimatedPrice, ref })
     });
+
     return await res.json();
   } catch (err) {
     console.error("Ошибка отправки запроса:", err);
@@ -44,115 +62,131 @@ const res = await fetch(API_URL, {
   }
 }
 
-// ===== Калькулятор =====
-const calculatorForm = document.getElementById('calculator-form');
-const estimateModal = document.getElementById('estimateModal');
-const estimateText = document.getElementById('estimateText');
-const closeEstimate = estimateModal.querySelector('.close');
-const estimateForm = document.getElementById('estimateForm');
-const successMessage = document.getElementById('successMessage');
+// ====== 5. Утилита: универсальная обработка форм ======
+function handleModalForm({ buttonId, modalId, formId, successId, type }) {
+  const btn = document.getElementById(buttonId);
+  const modal = document.getElementById(modalId);
+  const form = document.getElementById(formId);
+  const success = document.getElementById(successId);
+  const close = modal.querySelector(".close");
 
-calculatorForm.addEventListener('submit', function(e){
-  e.preventDefault();
-  const area = Number(this.querySelector('input[placeholder*="Площадь"]').value);
-  const lamps = Number(this.querySelector('input[placeholder*="Светильники"]').value);
-  const chandeliers = Number(this.querySelector('input[placeholder*="Люстры"]').value);
-  if(area < 1){ alert('Введите корректную площадь'); return; }
+  if (!btn || !modal || !form) return;
 
-  const price = area*1200 + lamps*300 + chandeliers*500;
+  btn.addEventListener("click", () => {
+    modal.style.display = "block";
+    form.style.display = "block";
+    if (success) success.style.display = "none";
+  });
 
-  estimateModal.style.display='block';
-  successMessage.style.display='none';
-  estimateForm.style.display='block';
+  close.addEventListener("click", () => (modal.style.display = "none"));
+  window.addEventListener("click", e => { if (e.target === modal) modal.style.display = "none"; });
 
-  animateNumber(estimateText, 0, price, 1200);
+  form.addEventListener("submit", async e => {
+    e.preventDefault();
+    const name = form.querySelector('input[placeholder="Ваше имя"]').value.trim();
+    const phone = form.querySelector('input[placeholder="Ваш телефон"]').value.trim();
+    if (!name || !phone) return alert("Заполните все поля");
+
+    const result = await sendRequest(name, phone, type);
+    if (result.status === "success") {
+      form.style.display = "none";
+      if (success) success.style.display = "block";
+    } else {
+      alert("Ошибка: " + result.message);
+    }
+  });
+}
+
+// ====== 6. Калькулятор стоимости ======
+const calculatorForm = document.getElementById("calculator-form");
+const estimateModal = document.getElementById("estimateModal");
+const estimateText = document.getElementById("estimateText");
+const closeEstimate = estimateModal?.querySelector(".close");
+const estimateForm = document.getElementById("estimateForm");
+const successMessage = document.getElementById("successMessage");
+
+if (calculatorForm) {
+  calculatorForm.addEventListener("submit", e => {
+    e.preventDefault();
+
+    const area = Number(calculatorForm.querySelector('input[placeholder*="Площадь"]').value);
+    const lamps = Number(calculatorForm.querySelector('input[placeholder*="Светильники"]').value);
+    const chandeliers = Number(calculatorForm.querySelector('input[placeholder*="Люстры"]').value);
+
+    if (area < 1) return alert("Введите корректную площадь");
+
+    const price = area * 1200 + lamps * 300 + chandeliers * 500;
+
+    estimateModal.style.display = "block";
+    successMessage.style.display = "none";
+    estimateForm.style.display = "block";
+
+    animateNumber(estimateText, 0, price, 1200);
+  });
+
+  closeEstimate.addEventListener("click", () => (estimateModal.style.display = "none"));
+  window.addEventListener("click", e => { if (e.target === estimateModal) estimateModal.style.display = "none"; });
+
+  estimateForm.addEventListener("submit", async e => {
+    e.preventDefault();
+    const name = estimateForm.querySelector('input[placeholder="Ваше имя"]').value.trim();
+    const phone = estimateForm.querySelector('input[placeholder="Ваш телефон"]').value.trim();
+    const estimatedPrice = estimateText.textContent.match(/\d+/g)?.join("") || null;
+    if (!name || !phone) return alert("Заполните все поля");
+
+    const result = await sendRequest(name, phone, "Калькулятор", estimatedPrice);
+    if (result.status === "success") {
+      estimateForm.style.display = "none";
+      successMessage.style.display = "block";
+    } else {
+      alert("Ошибка: " + result.message);
+    }
+  });
+}
+
+// ====== 7. Модалки ======
+handleModalForm({
+  buttonId: "callBtn",
+  modalId: "callModal",
+  formId: "callForm",
+  successId: "callSuccess",
+  type: "Заказ звонка"
 });
 
-// Закрытие модалки калькулятора
-closeEstimate.addEventListener('click', ()=>{ estimateModal.style.display='none'; });
-window.addEventListener('click', e=>{ if(e.target===estimateModal) estimateModal.style.display='none'; });
-
-// Отправка формы калькулятора на сервер
-estimateForm.addEventListener('submit', async e => {
-  e.preventDefault();
-  const name = estimateForm.querySelector('input[placeholder="Ваше имя"]').value.trim();
-  const phone = estimateForm.querySelector('input[placeholder="Ваш телефон"]').value.trim();
-  const estimatedPrice = estimateText.textContent.match(/\d+/g)?.join("") || null;
-
-  if(!name || !phone) return alert("Заполните все поля");
-
-  const result = await sendRequest(name, phone, "Калькулятор", estimatedPrice);
-  if(result.status==="success"){
-    estimateForm.style.display="none";
-    successMessage.style.display="block";
-  } else {
-    alert("Ошибка: " + result.message);
-  }
+handleModalForm({
+  buttonId: "measureBtn",
+  modalId: "measureModal",
+  formId: "measureForm",
+  successId: "measureSuccess",
+  type: "Вызов специалиста"
 });
 
-// ===== Заказать звонок =====
-const callBtn = document.getElementById("callBtn");
-const callModal = document.getElementById("callModal");
-const callClose = callModal.querySelector(".close");
-const callForm = document.getElementById("callForm");
-const callSuccess = document.getElementById("callSuccess");
-
-callBtn.addEventListener('click', ()=>{ callModal.style.display='block'; callForm.style.display='block'; callSuccess.style.display='none'; });
-callClose.addEventListener('click', ()=>{ callModal.style.display='none'; });
-window.addEventListener('click', e=>{ if(e.target===callModal) callModal.style.display='none'; });
-
-callForm.addEventListener('submit', async e => {
-  e.preventDefault();
-  const name = callForm.querySelector('input[placeholder="Ваше имя"]').value.trim();
-  const phone = callForm.querySelector('input[placeholder="Ваш телефон"]').value.trim();
-  if(!name || !phone) return alert("Заполните все поля");
-
-  const result = await sendRequest(name, phone, "Заказ звонка");
-  if(result.status==="success"){
-    callForm.style.display='none';
-    callSuccess.style.display='block';
-  } else {
-    alert("Ошибка: " + result.message);
-  }
-});
-
-// ===== Вызвать специалиста =====
-const measureBtn = document.getElementById("measureBtn");
-const measureModal = document.getElementById("measureModal");
-const measureClose = measureModal.querySelector(".close");
-const measureForm = document.getElementById("measureForm");
-const measureSuccess = document.getElementById("measureSuccess");
-
-measureBtn.addEventListener('click', ()=>{ measureModal.style.display='block'; measureForm.style.display='block'; measureSuccess.style.display='none'; });
-measureClose.addEventListener('click', ()=>{ measureModal.style.display='none'; });
-window.addEventListener('click', e=>{ if(e.target===measureModal) measureModal.style.display='none'; });
-
-measureForm.addEventListener('submit', async e => {
-  e.preventDefault();
-  const name = measureForm.querySelector('input[placeholder="Ваше имя"]').value.trim();
-  const phone = measureForm.querySelector('input[placeholder="Ваш телефон"]').value.trim();
-  if(!name || !phone) return alert("Заполните все поля");
-
-  const result = await sendRequest(name, phone, "Вызов специалиста");
-  if(result.status==="success"){
-    measureForm.style.display='none';
-    measureSuccess.style.display='block';
-  } else {
-    alert("Ошибка: " + result.message);
-  }
-});
-
-// ===== Лайтбокс для галереи =====
+// ====== 8. Лайтбокс ======
 const lightbox = document.getElementById("lightbox");
-const lightboxImg = document.querySelector(".lightbox-img");
-const lightboxClose = document.querySelector(".lightbox-close");
-const lightboxPrev = document.querySelector(".lightbox-prev");
-const lightboxNext = document.querySelector(".lightbox-next");
-const galleryImages = document.querySelectorAll(".gallery img");
-let currentIndex = 0;
+if (lightbox) {
+  const lightboxImg = document.querySelector(".lightbox-img");
+  const lightboxClose = document.querySelector(".lightbox-close");
+  const lightboxPrev = document.querySelector(".lightbox-prev");
+  const lightboxNext = document.querySelector(".lightbox-next");
+  const galleryImages = document.querySelectorAll(".gallery img");
+  let currentIndex = 0;
 
-galleryImages.forEach((img,i)=>{ img.addEventListener('click',()=>{ lightbox.style.display='flex'; lightboxImg.src=img.src; currentIndex=i; }); });
-lightboxClose.addEventListener('click',()=>{ lightbox.style.display='none'; });
-lightbox.addEventListener('click', e=>{ if(e.target===lightbox) lightbox.style.display='none'; });
-lightboxPrev.addEventListener('click',()=>{ currentIndex=(currentIndex-1+galleryImages.length)%galleryImages.length; lightboxImg.src=galleryImages[currentIndex].src; });
-lightboxNext.addEventListener('click',()=>{ currentIndex=(currentIndex+1)%galleryImages.length; lightboxImg.src=galleryImages[currentIndex].src; });
+  galleryImages.forEach((img, i) => {
+    img.addEventListener("click", () => {
+      lightbox.style.display = "flex";
+      lightboxImg.src = img.src;
+      currentIndex = i;
+    });
+  });
+
+  lightboxClose.addEventListener("click", () => (lightbox.style.display = "none"));
+  lightbox.addEventListener("click", e => { if (e.target === lightbox) lightbox.style.display = "none"; });
+  lightboxPrev.addEventListener("click", () => {
+    currentIndex = (currentIndex - 1 + galleryImages.length) % galleryImages.length;
+    lightboxImg.src = galleryImages[currentIndex].src;
+  });
+  lightboxNext.addEventListener("click", () => {
+    currentIndex = (currentIndex + 1) % galleryImages.length;
+    lightboxImg.src = galleryImages[currentIndex].src;
+  });
+}
