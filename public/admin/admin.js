@@ -99,7 +99,14 @@ function renderRequests(requests) {
       <td>${req.name}</td>
       <td>${req.phone}</td>
       <td>${req.type || "-"}</td>
-      <td>${req.estimatedPrice ? req.estimatedPrice.toLocaleString("ru-RU") + " ₽" : "-"}</td>
+      <td>
+        <input type="number" 
+               id="estimated-${req.id}" 
+               value="${req.estimatedPrice || ""}" 
+               placeholder="0"
+               min="0"
+               style="width:120px;padding:6px;border:1px solid #ddd;border-radius:6px;">
+      </td>
       <td class="partner-info">
         ${req.partnerName ? `<strong>${req.partnerName}</strong><br><small>${req.partnerPromo}</small>` : "-"}
       </td>
@@ -133,10 +140,12 @@ function renderRequests(requests) {
 
 // Сохранение заявки
 async function saveRequest(id) {
+  const estimatedInput = document.getElementById(`estimated-${id}`);
   const amountInput = document.getElementById(`amount-${id}`);
   const statusSelect = document.getElementById(`status-${id}`);
   const saveBtn = statusSelect.nextElementSibling;
 
+  const estimatedPrice = estimatedInput.value ? parseInt(estimatedInput.value) : null;
   const contractAmount = amountInput.value ? parseInt(amountInput.value) : null;
   const status = statusSelect.value;
 
@@ -150,7 +159,7 @@ async function saveRequest(id) {
         "Content-Type": "application/json",
         Authorization: `Bearer ${adminToken}`
       },
-      body: JSON.stringify({ contractAmount, status })
+      body: JSON.stringify({ contractAmount, status, estimatedPrice })
     });
 
     const data = await res.json();

@@ -244,12 +244,12 @@ app.patch("/api/admin/requests/:id", async (req, res) => {
       return res.status(403).json({ status: "error", message: "Нет доступа" });
     }
 
-    const { contractAmount, status } = req.body;
+    const { contractAmount, status, estimatedPrice } = req.body;
     const id = req.params.id;
 
     await db.run(
-      "UPDATE requests SET contractAmount = ?, status = ? WHERE id = ?",
-      [contractAmount || null, status || "новая", id]
+      "UPDATE requests SET contractAmount = ?, status = ?, estimatedPrice = ? WHERE id = ?",
+      [contractAmount || null, status || "новая", estimatedPrice || null, id]
     );
 
     res.json({ status: "success", message: "Заявка обновлена" });
