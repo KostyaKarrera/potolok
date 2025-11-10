@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Личный кабинет партнёра</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="dashboard-page">
+  <div class="dashboard-container">
+    <header class="dashboard-header">
+      <div>
+        <p class="dashboard-caption">Здравствуйте, <span id="partner-name">партнёр</span> 👋</p>
+        <h1>Личный кабинет</h1>
+        <p class="dashboard-subtitle">Следите за заявками от ваших рекомендаций и делитесь промоматериалами.</p>
+      </div>
+      <button id="logout" class="ghost-btn">Выйти</button>
+    </header>
+
+    <section class="summary-grid">
+      <article class="summary-card">
+        <div class="summary-card__header">
+          <h2>Промокод</h2>
+          <button id="copy-promo" class="secondary-btn">Скопировать</button>
+        </div>
+        <p id="promo-code" class="promo-code">—</p>
+        <p class="summary-note">Передавайте его клиентам или вставляйте в переписку.</p>
+      </article>
+
+      <article class="summary-card">
+        <h2>QR для рекомендаций</h2>
+        <img id="qr-code" src="" alt="QR код партнёра">
+        <a id="download-qr" class="secondary-btn" href="#" download="partner-qr.png">Скачать QR</a>
+      </article>
+
+      <article class="summary-card stats-card">
+        <h2>Ваша статистика</h2>
+        <ul>
+          <li><span>Процент вознаграждения:</span><strong>5%</strong></li>
+          <li><span>Всего заявок:</span><strong id="total-requests">0</strong></li>
+          <li><span>Закрытые сделки:</span><strong id="closed-requests">0</strong></li>
+          <li><span>Заработано:</span><strong id="total-earnings">0 ₽</strong></li>
+        </ul>
+      </article>
+    </section>
+
+    <section class="table-wrapper">
+      <div class="table-header">
+        <h2>История заявок</h2>
+        <p>Данные обновляются автоматически после обработки заявки менеджером.</p>
+      </div>
+      <div class="table-scroll">
+        <table id="requests-table">
+          <thead>
+            <tr>
+              <th>Клиент</th>
+              <th>Телефон</th>
+              <th>Тип заявки</th>
+              <th>Предварительная сумма</th>
+              <th>Сумма договора</th>
+              <th>Дата</th>
+              <th>Статус</th>
+              <th>Ваш процент</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <script src="partner.js"></script>
+</body>
+</html>

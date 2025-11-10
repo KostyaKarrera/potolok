@@ -44,7 +44,7 @@ function animateNumber(element, start, end, duration) {
 }
 
 // ====== 4. Отправка заявки на сервер ======
-async function sendRequest(name, phone, type, estimatedPrice = null) {
+async function sendRequest(name, phone, type, estimatedPrice = null, promo = null) {
   try {
     const API_URL = "/api/request";
     const ref = getReferralCode();
@@ -52,7 +52,7 @@ async function sendRequest(name, phone, type, estimatedPrice = null) {
     const res = await fetch(API_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, phone, type, estimatedPrice, ref })
+      body: JSON.stringify({ name, phone, type, estimatedPrice, ref, promo })
     });
 
     return await res.json();
@@ -85,9 +85,11 @@ function handleModalForm({ buttonId, modalId, formId, successId, type }) {
     e.preventDefault();
     const name = form.querySelector('input[placeholder="Ваше имя"]').value.trim();
     const phone = form.querySelector('input[placeholder="Ваш телефон"]').value.trim();
+    const promoEl = form.querySelector('input[placeholder="Промокод (если есть)"]');
+    const promo = promoEl ? promoEl.value.trim() || null : null;
     if (!name || !phone) return alert("Заполните все поля");
 
-    const result = await sendRequest(name, phone, type);
+    const result = await sendRequest(name, phone, type, null, promo);
     if (result.status === "success") {
       form.style.display = "none";
       if (success) success.style.display = "block";
@@ -131,10 +133,12 @@ if (calculatorForm) {
     e.preventDefault();
     const name = estimateForm.querySelector('input[placeholder="Ваше имя"]').value.trim();
     const phone = estimateForm.querySelector('input[placeholder="Ваш телефон"]').value.trim();
+    const promoEl = estimateForm.querySelector('input[placeholder="Промокод (если есть)"]');
+    const promo = promoEl ? promoEl.value.trim() || null : null;
     const estimatedPrice = estimateText.textContent.match(/\d+/g)?.join("") || null;
     if (!name || !phone) return alert("Заполните все поля");
 
-    const result = await sendRequest(name, phone, "Калькулятор", estimatedPrice);
+    const result = await sendRequest(name, phone, "Калькулятор", estimatedPrice, promo);
     if (result.status === "success") {
       estimateForm.style.display = "none";
       successMessage.style.display = "block";
