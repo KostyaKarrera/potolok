@@ -19,6 +19,7 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 8000;
 const JWT_SECRET = process.env.JWT_SECRET || "supersecret";
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "admin123";
 
 // === Telegram ===
 const TELEGRAM_TOKEN = process.env.TELEGRAM_TOKEN;
@@ -105,14 +106,14 @@ app.post("/api/partners/register", async (req, res) => {
     const hash = await bcrypt.hash(password, 10);
     const promo = "PROMO" + Math.random().toString(36).substring(2, 8).toUpperCase();
 
-    const result = await db.run(
+    await db.run(
       "INSERT INTO partners (name, password, promo, createdAt) VALUES (?, ?, ?, datetime('now'))",
       [name, hash, promo]
     );
 
     const partner = await db.get(
-      "SELECT id, name, promo, createdAt FROM partners WHERE id = ?",
-      [result.lastID]
+      "SELECT id, name, promo, createdAt FROM partners WHERE promo = ?",
+      [promo]
     );
 
     const token = jwt.sign({ id: partner.id }, JWT_SECRET, { expiresIn: "7d" });
@@ -162,7 +163,7 @@ app.get("/api/partners/:id/requests", async (req, res) => {
     if (payload.id != req.params.id)
       return res.status(403).json({ status: "error", message: "Нет доступа" });
 
-    const requests = await db.all("SELECT * FROM requests WHERE ref = ?", [payload.id]);
+    const requests = await db.all("SELECT * FROM requests WHERE ref = ? ORDER BY createdAt DESC", [payload.id]);
     res.json({ status: "success", requests });
   } catch {
     res.status(401).json({ status: "error", message: "Неверный токен" });
@@ -193,6 +194,65 @@ app.post("/api/request", async (req, res) => {
     await sendTelegram(name, phone, type, estimatedPrice, ref || promo);
 
     res.json({ status: "success", message: "Заявка отправлена!" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ status: "error", message: "Ошибка сервера" });
+  }
+});
+
+// === Админка: авторизация ===
+app.post("/api/admin/login", async (req, res) => {
+  const { password } = req.body;
+  if (password !== ADMIN_PASSWORD) {
+    return res.status(401).json({ status: "error", message: "Неверный пароль" });
+  }
+  const token = jwt.sign({ role: "admin" }, JWT_SECRET, { expiresIn: "24h" });
+  res.json({ status: "success", token });
+});
+
+// === Админка: получить все заявки ===
+app.get("/api/admin/requests", async (req, res) => {
+  const auth = req.headers.authorization?.split(" ")[1];
+  if (!auth) return res.status(401).json({ status: "error", message: "Нет токена" });
+
+  try {
+    const payload = jwt.verify(auth, JWT_SECRET);
+    if (payload.role !== "admin") {
+      return res.status(403).json({ status: "error", message: "Нет доступа" });
+    }
+
+    const requests = await db.all(`
+      SELECT r.*, p.name as partnerName, p.promo as partnerPromo 
+      FROM requests r 
+      LEFT JOIN partners p ON r.ref = p.id 
+      ORDER BY r.createdAt DESC
+    `);
+    res.json({ status: "success", requests });
+  } catch {
+    res.status(401).json({ status: "error", message: "Неверный токен" });
+  }
+});
+
+// === Админка: обновить заявку (сумма и статус) ===
+app.patch("/api/admin/requests/:id", async (req, res) => {
+  const auth = req.headers.authorization?.split(" ")[1];
+  if (!auth) return res.status(401).json({ status: "error", message: "Нет токена" });
+
+  try {
+    const payload = jwt.verify(auth, JWT_SECRET);
+    if (payload.role !== "admin") {
+      return res.status(403).json({ status: "error", message: "Нет доступа" });
+    }
+
+    const { contractAmount, status } = req.body;
+    const id = req.params.id;
+
+    await db.run(
+      "UPDATE requests SET contractAmount = ?, status = ? WHERE id = ?",
+      [contractAmount || null, status || "новая", id]
+    );
+
+    res.json({ status: "success", message: "Заявка обновлена" });
   } catch (err) {
     console.error(err);
     res.status(500).json({ status: "error", message: "Ошибка сервера" });
