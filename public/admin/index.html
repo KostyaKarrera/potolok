@@ -22,6 +22,11 @@
       <button id="logout-btn">Выйти</button>
     </div>
 
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="leads-tab">Лиды</button>
+      <button class="tab-btn" data-tab="contracts-tab">Заявки (договоры)</button>
+    </div>
+
     <div class="stats">
       <div class="stat-card">
         <h3>Всего заявок</h3>
@@ -55,6 +60,75 @@
         </thead>
         <tbody></tbody>
       </table>
+    </div>
+
+    <div id="contracts-tab" class="tab-content" style="display:none;">
+      <h2 style="margin-top:20px;">Добавить заключенный договор</h2>
+      <form id="contract-form" class="contract-form">
+        <div class="form-grid">
+          <div class="form-field">
+            <label>Имя</label>
+            <input type="text" name="name" required>
+          </div>
+          <div class="form-field">
+            <label>Телефон</label>
+            <input type="text" name="phone" required>
+          </div>
+          <div class="form-field form-field-wide">
+            <label>Адрес</label>
+            <input type="text" name="address" required>
+          </div>
+          <div class="form-field">
+            <label>Сумма договора (₽)</label>
+            <input type="number" name="contractAmount" min="0" step="1">
+          </div>
+          <div class="form-field">
+            <label>Дата договора</label>
+            <input type="date" name="contractDate">
+          </div>
+          <div class="form-field">
+            <label>Дата монтажа</label>
+            <input type="date" name="installDate">
+          </div>
+          <div class="form-field">
+            <label>Предоплата (₽)</label>
+            <input type="number" name="prepayment" min="0" step="1">
+          </div>
+          <div class="form-field">
+            <label>Рефер (партнёр)</label>
+            <select name="ref" id="partner-select">
+              <option value="">— Без рефера —</option>
+            </select>
+          </div>
+          <div class="form-field form-field-wide">
+            <label>Фото замерочных листов</label>
+            <input type="file" name="photos" id="contract-photos" multiple accept="image/*">
+            <div id="photos-preview" class="photos-preview"></div>
+          </div>
+        </div>
+        <button type="submit" class="save-btn" id="contract-submit-btn">Сохранить договор</button>
+        <p id="contract-form-msg" class="form-msg"></p>
+      </form>
+
+      <div class="table-container" style="margin-top:30px;">
+        <table id="contracts-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Имя</th>
+              <th>Телефон</th>
+              <th>Адрес</th>
+              <th>Сумма</th>
+              <th>Договор</th>
+              <th>Монтаж</th>
+              <th>Предоплата</th>
+              <th>Партнер</th>
+              <th>Фото</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
     </div>
   </div>
 

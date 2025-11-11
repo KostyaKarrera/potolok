@@ -34,6 +34,21 @@ export async function initDB() {
       contractAmount INTEGER,
       createdAt TEXT
     );
+
+    -- Таблица заключенных договоров (вводятся вручную в админке)
+    CREATE TABLE IF NOT EXISTS contracts (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT,
+      phone TEXT,
+      address TEXT,
+      contractAmount INTEGER,
+      contractDate TEXT,
+      installDate TEXT,
+      prepayment INTEGER,
+      photos TEXT, -- JSON массив путей до фото
+      ref INTEGER, -- ссылка на partners.id, если есть
+      createdAt TEXT
+    );
   `);
 
   return db;

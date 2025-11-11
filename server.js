@@ -10,6 +10,7 @@ import QRCode from "qrcode";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { initDB } from "./database.js";
+import multer from "multer";
 
 dotenv.config();
 
@@ -38,6 +39,9 @@ app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, "public")));
 
 const db = await initDB();
+
+// === Uploads (multer) ===
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } }); // до 10 МБ на файл
 
 // === Отправка заявки в Telegram ===
 async function sendTelegram(name, phone, type, estimatedPrice, ref) {
@@ -253,6 +257,144 @@ app.patch("/api/admin/requests/:id", async (req, res) => {
     );
 
     res.json({ status: "success", message: "Заявка обновлена" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ status: "error", message: "Ошибка сервера" });
+  }
+});
+
+// === Админка: контракты (заключенные договоры) ===
+// Служебная функция сохранения массива буферов фото на диск и возврат путей
+async function saveContractPhotos(contractId, files) {
+  const dirRelative = path.join("uploads", "contracts", String(contractId));
+  const dirAbsolute = path.join(__dirname, "public", dirRelative);
+  if (!fs.existsSync(dirAbsolute)) {
+    fs.mkdirSync(dirAbsolute, { recursive: true });
+  }
+  const savedPaths = [];
+  for (const file of files || []) {
+    const time = Date.now();
+    const safeOriginal = file.originalname?.replace(/[^a-zA-Z0-9._-]+/g, "_") || `photo_${time}.jpg`;
+    const filename = `${time}_${safeOriginal}`;
+    const abs = path.join(dirAbsolute, filename);
+    await fs.promises.writeFile(abs, file.buffer);
+    savedPaths.push("/" + path.posix.join(dirRelative.replace(/\\\\/g, "/"), filename).replace(/\\\\/g, "/"));
+  }
+  return savedPaths;
+}
+
+// Авторизация админа middleware
+function requireAdmin(req, res, next) {
+  const auth = req.headers.authorization?.split(" ")[1];
+  if (!auth) return res.status(401).json({ status: "error", message: "Нет токена" });
+  try {
+    const payload = jwt.verify(auth, JWT_SECRET);
+    if (payload.role !== "admin") {
+      return res.status(403).json({ status: "error", message: "Нет доступа" });
+    }
+    next();
+  } catch {
+    return res.status(401).json({ status: "error", message: "Неверный токен" });
+  }
+}
+
+// Получить список контрактов
+app.get("/api/admin/contracts", requireAdmin, async (req, res) => {
+  try {
+    const rows = await db.all(`
+      SELECT c.*, p.name as partnerName, p.promo as partnerPromo
+      FROM contracts c
+      LEFT JOIN partners p ON c.ref = p.id
+      ORDER BY COALESCE(c.contractDate, c.createdAt) DESC
+    `);
+    const contracts = rows.map(r => ({
+      ...r,
+      photos: r.photos ? JSON.parse(r.photos) : []
+    }));
+    res.json({ status: "success", contracts });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ status: "error", message: "Ошибка сервера" });
+  }
+});
+
+// Получить список партнёров (для выбора рефера)
+app.get("/api/admin/partners", requireAdmin, async (req, res) => {
+  try {
+    const partners = await db.all(
+      "SELECT id, name, promo, createdAt FROM partners ORDER BY name COLLATE NOCASE"
+    );
+    res.json({ status: "success", partners });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ status: "error", message: "Ошибка сервера" });
+  }
+});
+
+// Создать контракт (multipart form-data)
+app.post("/api/admin/contracts", requireAdmin, upload.array("photos", 10), async (req, res) => {
+  try {
+    const {
+      name,
+      phone,
+      address,
+      contractAmount,
+      contractDate,
+      installDate,
+      prepayment,
+      ref
+    } = req.body;
+
+    if (!name || !phone || !address) {
+      return res.status(400).json({ status: "error", message: "Имя, телефон и адрес обязательны" });
+    }
+
+    // Определим partnerId по promo (если передан нечисловой ref)
+    let partnerId = null;
+    if (ref) {
+      // ref может быть promo-кодом или числовым id
+      if (/^\\d+$/.test(String(ref))) {
+        partnerId = Number(ref);
+      } else {
+        const partner = await db.get("SELECT id FROM partners WHERE promo = ?", [ref]);
+        if (partner) partnerId = partner.id;
+      }
+    }
+
+    const result = await db.run(
+      `INSERT INTO contracts
+        (name, phone, address, contractAmount, contractDate, installDate, prepayment, photos, ref, createdAt)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))`,
+      [
+        name,
+        phone,
+        address,
+        contractAmount ? Number(contractAmount) : null,
+        contractDate || null,
+        installDate || null,
+        prepayment ? Number(prepayment) : null,
+        JSON.stringify([]),
+        partnerId
+      ]
+    );
+
+    const contractId = result.lastID;
+    const saved = await saveContractPhotos(contractId, req.files);
+
+    if (saved.length > 0) {
+      await db.run("UPDATE contracts SET photos = ? WHERE id = ?", [JSON.stringify(saved), contractId]);
+    }
+
+    const created = await db.get(
+      `SELECT c.*, p.name as partnerName, p.promo as partnerPromo
+       FROM contracts c
+       LEFT JOIN partners p ON c.ref = p.id
+       WHERE c.id = ?`,
+      [contractId]
+    );
+
+    created.photos = created.photos ? JSON.parse(created.photos) : [];
+    res.json({ status: "success", contract: created });
   } catch (err) {
     console.error(err);
     res.status(500).json({ status: "error", message: "Ошибка сервера" });

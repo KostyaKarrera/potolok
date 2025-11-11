@@ -8,7 +8,9 @@ function checkAuth() {
     adminToken = token;
     document.getElementById("login-container").style.display = "none";
     document.getElementById("admin-container").style.display = "block";
+    initTabs();
     loadRequests();
+    loadContracts();
   }
 }
 
@@ -31,7 +33,9 @@ document.getElementById("login-form").addEventListener("submit", async (e) => {
       localStorage.setItem("adminToken", adminToken);
       document.getElementById("login-container").style.display = "none";
       document.getElementById("admin-container").style.display = "block";
+      initTabs();
       loadRequests();
+      loadContracts();
     } else {
       errorEl.textContent = data.message || "Ошибка входа";
     }
@@ -181,6 +185,156 @@ async function saveRequest(id) {
     alert("Ошибка сохранения");
     saveBtn.disabled = false;
     saveBtn.textContent = "Сохранить";
+  }
+}
+
+// ====== Вкладки ======
+function initTabs() {
+  const btns = document.querySelectorAll(".tab-btn");
+  const leadsTable = document.querySelector(".table-container"); // блок лидов
+  const contractsTab = document.getElementById("contracts-tab");
+  const stats = document.querySelector(".stats");
+
+  btns.forEach(btn => {
+    btn.addEventListener("click", () => {
+      btns.forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      const tab = btn.dataset.tab;
+      if (tab === "leads-tab") {
+        leadsTable.style.display = "";
+        stats.style.display = "";
+        contractsTab.style.display = "none";
+      } else {
+        leadsTable.style.display = "none";
+        stats.style.display = "none";
+        contractsTab.style.display = "";
+      }
+    });
+  });
+
+  // Превью фото
+  const photosInput = document.getElementById("contract-photos");
+  const preview = document.getElementById("photos-preview");
+  if (photosInput) {
+    photosInput.addEventListener("change", () => {
+      preview.innerHTML = "";
+      Array.from(photosInput.files || []).forEach(file => {
+        const url = URL.createObjectURL(file);
+        const img = document.createElement("img");
+        img.src = url;
+        preview.appendChild(img);
+      });
+    });
+  }
+
+  // Загрузка партнёров в селект рефера
+  loadPartners();
+
+  // Сабмит формы контракта
+  const contractForm = document.getElementById("contract-form");
+  const formMsg = document.getElementById("contract-form-msg");
+  const submitBtn = document.getElementById("contract-submit-btn");
+  if (contractForm) {
+    contractForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      formMsg.textContent = "";
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Сохранение...";
+
+      const fd = new FormData(contractForm);
+      try {
+        const res = await fetch(`${API}/contracts`, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${adminToken}` },
+          body: fd
+        });
+        const data = await res.json();
+        if (data.status === "success") {
+          formMsg.style.color = "#27ae60";
+          formMsg.textContent = "Договор сохранен";
+          contractForm.reset();
+          preview.innerHTML = "";
+          loadContracts();
+        } else {
+          formMsg.style.color = "#e74c3c";
+          formMsg.textContent = data.message || "Ошибка сохранения";
+        }
+      } catch (err) {
+        formMsg.style.color = "#e74c3c";
+        formMsg.textContent = "Ошибка подключения";
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Сохранить договор";
+      }
+    });
+  }
+}
+
+// ====== Контракты ======
+async function loadContracts() {
+  try {
+    const res = await fetch(`${API}/contracts`, {
+      headers: { Authorization: `Bearer ${adminToken}` }
+    });
+    const data = await res.json();
+    if (data.status === "success") {
+      renderContracts(data.contracts);
+    }
+  } catch (err) {
+    console.error("Ошибка загрузки контрактов:", err);
+  }
+}
+
+function renderContracts(contracts) {
+  const tbody = document.querySelector("#contracts-table tbody");
+  if (!tbody) return;
+  tbody.innerHTML = "";
+  if (!contracts || contracts.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;padding:40px;">Договоров пока нет</td></tr>`;
+    return;
+  }
+
+  contracts.forEach(c => {
+    const tr = document.createElement("tr");
+    const photosHtml = (c.photos || [])
+      .map(src => `<a href="${src}" target="_blank"><img src="${src}" alt="" style="width:48px;height:48px;object-fit:cover;border-radius:4px;border:1px solid #eee;margin-right:4px;"></a>`)
+      .join("");
+    tr.innerHTML = `
+      <td>${c.id}</td>
+      <td>${c.name}</td>
+      <td>${c.phone}</td>
+      <td>${c.address || "-"}</td>
+      <td>${c.contractAmount || "-"}</td>
+      <td>${c.contractDate ? new Date(c.contractDate).toLocaleDateString("ru-RU") : "-"}</td>
+      <td>${c.installDate ? new Date(c.installDate).toLocaleDateString("ru-RU") : "-"}</td>
+      <td>${c.prepayment || "-"}</td>
+      <td class="partner-info">${c.partnerName ? `<strong>${c.partnerName}</strong><br><small>${c.partnerPromo}</small>` : "-"}</td>
+      <td>${photosHtml || "-"}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+// Загрузить партнёров в выпадающий список рефера
+async function loadPartners() {
+  const select = document.getElementById("partner-select");
+  if (!select) return;
+  select.innerHTML = `<option value="">— Без рефера —</option>`;
+  try {
+    const res = await fetch(`${API}/partners`, {
+      headers: { Authorization: `Bearer ${adminToken}` }
+    });
+    const data = await res.json();
+    if (data.status === "success") {
+      (data.partners || []).forEach(p => {
+        const opt = document.createElement("option");
+        opt.value = p.id;
+        opt.textContent = `${p.name} (${p.promo})`;
+        select.appendChild(opt);
+      });
+    }
+  } catch (e) {
+    console.error("Ошибка загрузки партнёров:", e);
   }
 }
 
