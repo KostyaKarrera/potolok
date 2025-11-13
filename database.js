@@ -16,14 +16,13 @@ export async function initDB() {
     CREATE TABLE IF NOT EXISTS partners (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT,
-      phone TEXT,
+      phone TEXT UNIQUE,
       password TEXT,
       promo TEXT UNIQUE,
       createdAt TEXT
     );
 
-    CREATE UNIQUE INDEX IF NOT EXISTS idx_partners_name ON partners(name);
-
+    
     CREATE TABLE IF NOT EXISTS requests (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT,

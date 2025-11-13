@@ -1,22 +1,19 @@
 const API = "/api/partners";
 
 // ======== PHONE MASK ========
-function initPhoneMask() {
-  const phoneInput = document.getElementById('reg-phone');
+function initPhoneMask(inputId) {
+  const phoneInput = document.getElementById(inputId);
   if (!phoneInput) return;
 
   phoneInput.addEventListener('input', function (e) {
     let value = e.target.value.replace(/\D/g, '');
     
-    // Если начинается с 7 или 8, оставляем 7
     if (value.startsWith('7') || value.startsWith('8')) {
       value = '7' + value.substring(1);
     }
-    // Если начинается с 9, добавляем 7
     else if (value.startsWith('9') && value.length <= 10) {
       value = '7' + value;
     }
-    // Если пусто или слишком короткий
     else if (value.length === 0) {
       e.target.value = '';
       return;
@@ -40,7 +37,6 @@ function initPhoneMask() {
     e.target.value = formattedValue;
   });
 
-  // Обработка Backspace
   phoneInput.addEventListener('keydown', function (e) {
     if (e.key === 'Backspace' && phoneInput.value.length <= 4) {
       e.preventDefault();
@@ -60,8 +56,9 @@ if (document.querySelector("#register-form")) {
   const registerBtn = regForm.querySelector("button[type='submit']");
   const loginBtn = loginForm.querySelector("button[type='submit']");
 
-  // Инициализируем маску телефона
-  initPhoneMask();
+  // Инициализируем маски для обоих полей телефона
+  initPhoneMask('reg-phone');
+  initPhoneMask('login-phone');
 
   function setMessage(type, text) {
     msg.textContent = text || "";
@@ -137,8 +134,15 @@ if (document.querySelector("#register-form")) {
 
   loginForm.onsubmit = async (e) => {
     e.preventDefault();
-    const name = document.getElementById("login-name").value.trim();
+    const phone = document.getElementById("login-phone").value.trim();
     const password = document.getElementById("login-password").value;
+
+    // Валидация телефона на фронтенде
+    const cleanPhone = cleanPhoneNumber(phone);
+    if (cleanPhone.length !== 11 || !cleanPhone.startsWith('7')) {
+      setMessage("error", "Введите корректный номер телефона");
+      return;
+    }
 
     setMessage(null, "Проверяем данные...");
     loginBtn.disabled = true;
@@ -147,7 +151,7 @@ if (document.querySelector("#register-form")) {
       const res = await fetch(`${API}/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, password }),
+        body: JSON.stringify({ phone: cleanPhone, password }),
       });
 
       const data = await res.json();

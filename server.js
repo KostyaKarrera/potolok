@@ -102,14 +102,15 @@ app.post("/api/partners/register", async (req, res) => {
     if (password.length < 6) {
       return res.status(400).json({ status: "error", message: "Пароль должен быть не короче 6 символов" });
     }
-    // Упрощенная валидация телефона (уже очищен на фронтенде)
+    // Упрощенная валидация телефона
     if (!phone.match(/^7\d{10}$/)) {
       return res.status(400).json({ status: "error", message: "Введите корректный номер телефона" });
     }
     
-    const exists = await db.get("SELECT id FROM partners WHERE name = ?", [name]);
+    // ПРОВЕРЯЕМ УНИКАЛЬНОСТЬ ТЕЛЕФОНА (а не имени)
+    const exists = await db.get("SELECT id FROM partners WHERE phone = ?", [phone]);
     if (exists) {
-      return res.status(409).json({ status: "error", message: "Партнёр с таким именем уже существует" });
+      return res.status(409).json({ status: "error", message: "Партнёр с таким номером телефона уже зарегистрирован" });
     }
 
     const hash = await bcrypt.hash(password, 10);
@@ -141,15 +142,15 @@ app.post("/api/partners/register", async (req, res) => {
   }
 });
 
-// === Авторизация партнёра ===
+// === Авторизация партнёра (ПО ТЕЛЕФОНУ) ===
 app.post("/api/partners/login", async (req, res) => {
-  const { name, password } = req.body;
-  const partner = await db.get("SELECT * FROM partners WHERE name = ?", [name]);
+  const { phone } = req.body; // ТЕПЕРЬ ПРИНИМАЕМ phone ВМЕСТО name
+  const partner = await db.get("SELECT * FROM partners WHERE phone = ?", [phone]);
 
   if (!partner)
-    return res.status(400).json({ status: "error", message: "Партнёр не найден" });
+    return res.status(400).json({ status: "error", message: "Партнёр с таким номером телефона не найден" });
 
-  const valid = await bcrypt.compare(password, partner.password);
+  const valid = await bcrypt.compare(req.body.password, partner.password);
   if (!valid)
     return res.status(401).json({ status: "error", message: "Неверный пароль" });
 
@@ -160,7 +161,7 @@ app.post("/api/partners/login", async (req, res) => {
     partner: { 
       id: partner.id, 
       name: partner.name, 
-      phone: partner.phone, // ДОБАВЛЕНО
+      phone: partner.phone,
       promo: partner.promo, 
       createdAt: partner.createdAt 
     }
