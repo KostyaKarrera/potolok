@@ -2,5 +2,6 @@ User-agent: *
 Allow: /
 Disallow: /admin/
 Disallow: /ajax/
+Disallow: /partners/
 
 Sitemap: https://potolok-konkurent.ru/sitemap.xml
