@@ -168,16 +168,29 @@ app.post("/api/partners/login", async (req, res) => {
   });
 });
 
-// === ЛК партнёра: просмотр договоров ===
-app.get("/api/partners/:id/contracts", async (req, res) => {
+// === ЛК партнёра: просмотр заявок (без id в URL) ===
+app.get("/api/partners/requests", async (req, res) => {
   const auth = req.headers.authorization?.split(" ")[1];
   if (!auth) return res.status(401).json({ status: "error", message: "Нет токена" });
 
   try {
     const payload = jwt.verify(auth, JWT_SECRET);
-    if (payload.id != req.params.id)
-      return res.status(403).json({ status: "error", message: "Нет доступа" });
+    
+    const requests = await db.all("SELECT * FROM requests WHERE ref = ? ORDER BY createdAt DESC", [payload.id]);
+    res.json({ status: "success", requests });
+  } catch {
+    res.status(401).json({ status: "error", message: "Неверный токен" });
+  }
+});
 
+// === ЛК партнёра: просмотр договоров (без id в URL) ===
+app.get("/api/partners/contracts", async (req, res) => {
+  const auth = req.headers.authorization?.split(" ")[1];
+  if (!auth) return res.status(401).json({ status: "error", message: "Нет токена" });
+
+  try {
+    const payload = jwt.verify(auth, JWT_SECRET);
+    
     const contracts = await db.all("SELECT * FROM contracts WHERE ref = ? ORDER BY createdAt DESC", [payload.id]);
     res.json({ status: "success", contracts });
   } catch {
