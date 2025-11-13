@@ -364,7 +364,7 @@ app.post("/api/admin/contracts", requireAdmin, upload.array("photos", 10), async
     let partnerId = null;
     if (ref) {
       // ref может быть promo-кодом или числовым id
-      if (/^\\d+$/.test(String(ref))) {
+      if (/^\d+$/.test(String(ref))) {
         partnerId = Number(ref);
       } else {
         const partner = await db.get("SELECT id FROM partners WHERE promo = ?", [ref]);
