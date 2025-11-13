@@ -16,6 +16,7 @@ export async function initDB() {
     CREATE TABLE IF NOT EXISTS partners (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT,
+      phone TEXT,
       password TEXT,
       promo TEXT UNIQUE,
       createdAt TEXT

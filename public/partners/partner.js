@@ -1,5 +1,54 @@
 const API = "/api/partners";
 
+// ======== PHONE MASK ========
+function initPhoneMask() {
+  const phoneInput = document.getElementById('reg-phone');
+  if (!phoneInput) return;
+
+  phoneInput.addEventListener('input', function (e) {
+    let value = e.target.value.replace(/\D/g, '');
+    
+    // Если начинается с 7 или 8, оставляем 7
+    if (value.startsWith('7') || value.startsWith('8')) {
+      value = '7' + value.substring(1);
+    }
+    // Если начинается с 9, добавляем 7
+    else if (value.startsWith('9') && value.length <= 10) {
+      value = '7' + value;
+    }
+    // Если пусто или слишком короткий
+    else if (value.length === 0) {
+      e.target.value = '';
+      return;
+    }
+
+    let formattedValue = '+7';
+    
+    if (value.length > 1) {
+      formattedValue += ' (' + value.substring(1, 4);
+    }
+    if (value.length >= 5) {
+      formattedValue += ') ' + value.substring(4, 7);
+    }
+    if (value.length >= 8) {
+      formattedValue += '-' + value.substring(7, 9);
+    }
+    if (value.length >= 10) {
+      formattedValue += '-' + value.substring(9, 11);
+    }
+
+    e.target.value = formattedValue;
+  });
+
+  // Обработка Backspace
+  phoneInput.addEventListener('keydown', function (e) {
+    if (e.key === 'Backspace' && phoneInput.value.length <= 4) {
+      e.preventDefault();
+      phoneInput.value = '';
+    }
+  });
+}
+
 // ======== REGISTRATION / LOGIN ========
 if (document.querySelector("#register-form")) {
   const regForm = document.getElementById("register-form");
@@ -10,6 +59,9 @@ if (document.querySelector("#register-form")) {
   const tabLogin = document.getElementById("tab-login");
   const registerBtn = regForm.querySelector("button[type='submit']");
   const loginBtn = loginForm.querySelector("button[type='submit']");
+
+  // Инициализируем маску телефона
+  initPhoneMask();
 
   function setMessage(type, text) {
     msg.textContent = text || "";
@@ -34,10 +86,23 @@ if (document.querySelector("#register-form")) {
     setMessage(null, "");
   };
 
+  // Функция для очистки номера телефона от форматирования
+  function cleanPhoneNumber(phone) {
+    return phone.replace(/\D/g, '').replace(/^8/, '7').replace(/^7/, '7');
+  }
+
   regForm.onsubmit = async (e) => {
     e.preventDefault();
     const name = document.getElementById("reg-name").value.trim();
+    const phone = document.getElementById("reg-phone").value.trim();
     const password = document.getElementById("reg-password").value;
+
+    // Валидация телефона на фронтенде
+    const cleanPhone = cleanPhoneNumber(phone);
+    if (cleanPhone.length !== 11 || !cleanPhone.startsWith('7')) {
+      setMessage("error", "Введите корректный номер телефона");
+      return;
+    }
 
     setMessage(null, "Создаём кабинет...");
     registerBtn.disabled = true;
@@ -46,7 +111,7 @@ if (document.querySelector("#register-form")) {
       const res = await fetch(`${API}/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, password }),
+        body: JSON.stringify({ name, phone: cleanPhone, password }),
       });
 
       const data = await res.json();
@@ -56,6 +121,7 @@ if (document.querySelector("#register-form")) {
         localStorage.setItem("partnerId", data.partner.id);
         localStorage.setItem("partnerPromo", data.partner.promo);
         localStorage.setItem("partnerName", data.partner.name);
+        localStorage.setItem("partnerPhone", data.partner.phone);
         setTimeout(() => {
           window.location.href = "dashboard.html";
         }, 600);
@@ -91,6 +157,7 @@ if (document.querySelector("#register-form")) {
         localStorage.setItem("partnerId", data.partner.id);
         localStorage.setItem("partnerPromo", data.partner.promo);
         localStorage.setItem("partnerName", data.partner.name);
+        localStorage.setItem("partnerPhone", data.partner.phone);
         window.location.href = "dashboard.html";
       } else {
         setMessage("error", data.message || "Не удалось войти");
@@ -109,7 +176,8 @@ if (document.querySelector("#requests-table")) {
   const partnerId = localStorage.getItem("partnerId");
   const promo = localStorage.getItem("partnerPromo");
   const partnerName = localStorage.getItem("partnerName");
-  const REFERRAL_PERCENT = 0.05; // 5%
+  const partnerPhone = localStorage.getItem("partnerPhone");
+  const REFERRAL_PERCENT = 0.05;
 
   if (!token) window.location.href = "index.html";
 
@@ -119,10 +187,16 @@ if (document.querySelector("#requests-table")) {
   const totalRequestsEl = document.getElementById("total-requests");
   const closedRequestsEl = document.getElementById("closed-requests");
   const nameEl = document.getElementById("partner-name");
+  const phoneEl = document.getElementById("partner-phone");
 
   if (promoEl) promoEl.textContent = promo;
   if (qrEl) qrEl.src = `/api/ref/${promo}/qrcode`;
   if (nameEl && partnerName) nameEl.textContent = partnerName;
+  if (phoneEl && partnerPhone) {
+    // Форматируем телефон для отображения
+    const formattedPhone = partnerPhone.replace(/^7(\d{3})(\d{3})(\d{2})(\d{2})$/, '+7 ($1) $2-$3-$4');
+    phoneEl.textContent = formattedPhone;
+  }
 
   async function loadRequests() {
     const res = await fetch(`${API}/${partnerId}/requests`, {

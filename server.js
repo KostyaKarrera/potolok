@@ -90,9 +90,9 @@ app.use("/api/partners", rateLimit({ windowMs: 60_000, max: 50 }));
 
 // === Регистрация партнёра ===
 app.post("/api/partners/register", async (req, res) => {
-  const { name, password } = req.body;
-  if (!name || !password)
-    return res.status(400).json({ status: "error", message: "Введите имя и пароль" });
+  const { name, phone, password } = req.body;
+  if (!name || !password || !phone)
+    return res.status(400).json({ status: "error", message: "Введите имя, телефон и пароль" });
 
   try {
     // Валидации
@@ -102,6 +102,11 @@ app.post("/api/partners/register", async (req, res) => {
     if (password.length < 6) {
       return res.status(400).json({ status: "error", message: "Пароль должен быть не короче 6 символов" });
     }
+    // Упрощенная валидация телефона (уже очищен на фронтенде)
+    if (!phone.match(/^7\d{10}$/)) {
+      return res.status(400).json({ status: "error", message: "Введите корректный номер телефона" });
+    }
+    
     const exists = await db.get("SELECT id FROM partners WHERE name = ?", [name]);
     if (exists) {
       return res.status(409).json({ status: "error", message: "Партнёр с таким именем уже существует" });
@@ -111,12 +116,12 @@ app.post("/api/partners/register", async (req, res) => {
     const promo = "PROMO" + Math.random().toString(36).substring(2, 8).toUpperCase();
 
     await db.run(
-      "INSERT INTO partners (name, password, promo, createdAt) VALUES (?, ?, ?, datetime('now'))",
-      [name, hash, promo]
+      "INSERT INTO partners (name, phone, password, promo, createdAt) VALUES (?, ?, ?, ?, datetime('now'))",
+      [name, phone, hash, promo]
     );
 
     const partner = await db.get(
-      "SELECT id, name, promo, createdAt FROM partners WHERE promo = ?",
+      "SELECT id, name, phone, promo, createdAt FROM partners WHERE promo = ?",
       [promo]
     );
 
@@ -149,11 +154,16 @@ app.post("/api/partners/login", async (req, res) => {
     return res.status(401).json({ status: "error", message: "Неверный пароль" });
 
   const token = jwt.sign({ id: partner.id }, JWT_SECRET, { expiresIn: "7d" });
-  // не отдаём хеш пароля наружу
   res.json({
     status: "success",
     token,
-    partner: { id: partner.id, name: partner.name, promo: partner.promo, createdAt: partner.createdAt }
+    partner: { 
+      id: partner.id, 
+      name: partner.name, 
+      phone: partner.phone, // ДОБАВЛЕНО
+      promo: partner.promo, 
+      createdAt: partner.createdAt 
+    }
   });
 });
 
