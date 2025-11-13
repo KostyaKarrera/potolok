@@ -422,7 +422,7 @@ async function loadPartners() {
     if (data.status === "success") {
       (data.partners || []).forEach(p => {
         const opt = document.createElement("option");
-        opt.value = p.id;
+        opt.value = p.id; // ← ИЗМЕНИТЬ С p.promo НА p.id
         opt.textContent = `${p.name} (${p.promo})`;
         select.appendChild(opt);
       });
