@@ -346,7 +346,7 @@ app.get("/api/admin/contracts", requireAdmin, async (req, res) => {
 app.get("/api/admin/partners", requireAdmin, async (req, res) => {
   try {
     const partners = await db.all(
-      "SELECT id, name, promo, createdAt FROM partners ORDER BY name COLLATE NOCASE"
+      "SELECT id, name, phone, promo, createdAt FROM partners ORDER BY name COLLATE NOCASE"
     );
     res.json({ status: "success", partners });
   } catch (err) {

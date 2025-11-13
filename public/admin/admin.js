@@ -11,6 +11,7 @@ function checkAuth() {
     initTabs();
     loadRequests();
     loadContracts();
+    loadPartnersList(); // ДОБАВЛЕНО
   }
 }
 
@@ -36,6 +37,7 @@ document.getElementById("login-form").addEventListener("submit", async (e) => {
       initTabs();
       loadRequests();
       loadContracts();
+      loadPartnersList(); // ДОБАВЛЕНО
     } else {
       errorEl.textContent = data.message || "Ошибка входа";
     }
@@ -422,7 +424,7 @@ async function loadPartners() {
     if (data.status === "success") {
       (data.partners || []).forEach(p => {
         const opt = document.createElement("option");
-        opt.value = p.id; // ← ИЗМЕНИТЬ С p.promo НА p.id
+        opt.value = p.id;
         opt.textContent = `${p.name} (${p.promo})`;
         select.appendChild(opt);
       });
@@ -430,6 +432,47 @@ async function loadPartners() {
   } catch (e) {
     console.error("Ошибка загрузки партнёров:", e);
   }
+}
+
+// ====== СПИСОК ПАРТНЁРОВ ====== // ДОБАВЛЕНО
+async function loadPartnersList() {
+  try {
+    const res = await fetch(`${API}/partners`, {
+      headers: { Authorization: `Bearer ${adminToken}` }
+    });
+    const data = await res.json();
+    if (data.status === "success") {
+      renderPartnersList(data.partners);
+    }
+  } catch (err) {
+    console.error("Ошибка загрузки списка партнёров:", err);
+  }
+}
+
+function renderPartnersList(partners) {
+  const tbody = document.querySelector("#partners-table tbody");
+  if (!tbody) return;
+  
+  tbody.innerHTML = "";
+  if (!partners || partners.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:40px;">Партнёров пока нет</td></tr>`;
+    return;
+  }
+
+  partners.forEach(p => {
+    const tr = document.createElement("tr");
+    // Форматируем телефон для отображения
+    const formattedPhone = p.phone ? p.phone.replace(/^7(\d{3})(\d{3})(\d{2})(\d{2})$/, '+7 ($1) $2-$3-$4') : '-';
+    
+    tr.innerHTML = `
+      <td>${p.id}</td>
+      <td>${p.name}</td>
+      <td>${formattedPhone}</td>
+      <td><code>${p.promo}</code></td>
+      <td>${new Date(p.createdAt).toLocaleDateString("ru-RU")}</td>
+    `;
+    tbody.appendChild(tr);
+  });
 }
 
 // Инициализация
