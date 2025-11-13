@@ -86,13 +86,13 @@ function updateStats(requests) {
   document.getElementById("closed-requests").textContent = closedCount;
 }
 
-// Рендер таблицы
+// Рендер таблицы с кнопками удаления
 function renderRequests(requests) {
   const tbody = document.querySelector("#requests-table tbody");
   tbody.innerHTML = "";
 
   if (requests.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;padding:40px;">Заявок пока нет</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="11" style="text-align:center;padding:40px;">Заявок пока нет</td></tr>`;
     return;
   }
 
@@ -137,6 +137,9 @@ function renderRequests(requests) {
           <button class="save-btn" onclick="saveRequest(${req.id})">Сохранить</button>
         </div>
       </td>
+      <td>
+        <button class="delete-btn" onclick="deleteRequest(${req.id})" title="Удалить заявку">🗑️</button>
+      </td>
     `;
     tbody.appendChild(tr);
   });
@@ -175,7 +178,7 @@ async function saveRequest(id) {
         saveBtn.style.background = "";
         saveBtn.disabled = false;
       }, 2000);
-      loadRequests(); // Обновить таблицу
+      loadRequests();
     } else {
       alert("Ошибка: " + data.message);
       saveBtn.disabled = false;
@@ -188,10 +191,72 @@ async function saveRequest(id) {
   }
 }
 
+// Удаление заявки
+async function deleteRequest(id) {
+  if (!confirm("Вы уверены, что хотите удалить эту заявку? Это действие нельзя отменить.")) {
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API}/requests/${id}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${adminToken}`
+      }
+    });
+
+    const data = await res.json();
+    if (data.status === "success") {
+      showNotification("Заявка успешно удалена", "success");
+      loadRequests();
+    } else {
+      showNotification("Ошибка при удалении: " + data.message, "error");
+    }
+  } catch (err) {
+    showNotification("Ошибка подключения к серверу", "error");
+  }
+}
+
+// Всплывающее уведомление
+function showNotification(message, type = "info") {
+  let notification = document.getElementById("admin-notification");
+  if (!notification) {
+    notification = document.createElement("div");
+    notification.id = "admin-notification";
+    notification.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 15px 20px;
+      border-radius: 8px;
+      color: white;
+      font-weight: 500;
+      z-index: 10000;
+      transition: opacity 0.3s;
+      max-width: 300px;
+    `;
+    document.body.appendChild(notification);
+  }
+
+  const colors = {
+    success: "#27ae60",
+    error: "#e74c3c",
+    info: "#3498db"
+  };
+
+  notification.style.background = colors[type] || colors.info;
+  notification.textContent = message;
+  notification.style.opacity = "1";
+
+  setTimeout(() => {
+    notification.style.opacity = "0";
+  }, 3000);
+}
+
 // ====== Вкладки ======
 function initTabs() {
   const btns = document.querySelectorAll(".tab-btn");
-  const leadsTable = document.querySelector(".table-container"); // блок лидов
+  const leadsTable = document.querySelector(".table-container");
   const contractsTab = document.getElementById("contracts-tab");
   const stats = document.querySelector(".stats");
 
@@ -270,7 +335,7 @@ function initTabs() {
   }
 }
 
-// ====== Контракты ======
+// ====== КОНТРАКТЫ ======
 async function loadContracts() {
   try {
     const res = await fetch(`${API}/contracts`, {
@@ -290,7 +355,7 @@ function renderContracts(contracts) {
   if (!tbody) return;
   tbody.innerHTML = "";
   if (!contracts || contracts.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;padding:40px;">Договоров пока нет</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="11" style="text-align:center;padding:40px;">Договоров пока нет</td></tr>`;
     return;
   }
 
@@ -310,9 +375,38 @@ function renderContracts(contracts) {
       <td>${c.prepayment || "-"}</td>
       <td class="partner-info">${c.partnerName ? `<strong>${c.partnerName}</strong><br><small>${c.partnerPromo}</small>` : "-"}</td>
       <td>${photosHtml || "-"}</td>
+      <td>
+        <button class="delete-btn" onclick="deleteContract(${c.id})" title="Удалить договор">🗑️</button>
+      </td>
     `;
     tbody.appendChild(tr);
   });
+}
+
+// Удаление договора
+async function deleteContract(id) {
+  if (!confirm("Вы уверены, что хотите удалить этот договор? Это действие нельзя отменить.")) {
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API}/contracts/${id}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${adminToken}`
+      }
+    });
+
+    const data = await res.json();
+    if (data.status === "success") {
+      showNotification("Договор успешно удален", "success");
+      loadContracts();
+    } else {
+      showNotification("Ошибка при удалении: " + data.message, "error");
+    }
+  } catch (err) {
+    showNotification("Ошибка подключения к серверу", "error");
+  }
 }
 
 // Загрузить партнёров в выпадающий список рефера
@@ -340,4 +434,3 @@ async function loadPartners() {
 
 // Инициализация
 checkAuth();
-

@@ -401,6 +401,87 @@ app.post("/api/admin/contracts", requireAdmin, upload.array("photos", 10), async
   }
 });
 
+// === Админка: удаление заявки ===
+app.delete("/api/admin/requests/:id", requireAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // Удаляем заявку из базы данных
+    const result = await db.run('DELETE FROM requests WHERE id = ?', [id]);
+
+    if (result.changes === 0) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Заявка не найдена'
+      });
+    }
+
+    res.json({
+      status: 'success',
+      message: 'Заявка удалена'
+    });
+
+  } catch (error) {
+    console.error('Ошибка при удалении заявки:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Ошибка сервера при удалении заявки'
+    });
+  }
+});
+
+// === Админка: удаление договора ===
+app.delete("/api/admin/contracts/:id", requireAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // Сначала получаем информацию о договоре чтобы удалить файлы
+    const contract = await db.get('SELECT photos FROM contracts WHERE id = ?', [id]);
+    
+    if (contract && contract.photos) {
+      try {
+        const photos = JSON.parse(contract.photos);
+        // Удаляем файлы фотографий
+        for (const photoPath of photos) {
+          const fullPath = path.join(__dirname, 'public', photoPath);
+          if (fs.existsSync(fullPath)) {
+            fs.unlinkSync(fullPath);
+          }
+        }
+        // Удаляем папку контракта если она пустая
+        const contractDir = path.join(__dirname, 'public', 'uploads', 'contracts', id);
+        if (fs.existsSync(contractDir)) {
+          fs.rmdirSync(contractDir, { recursive: true });
+        }
+      } catch (fileError) {
+        console.error('Ошибка при удалении файлов:', fileError);
+      }
+    }
+    
+    // Удаляем договор из базы данных
+    const result = await db.run('DELETE FROM contracts WHERE id = ?', [id]);
+
+    if (result.changes === 0) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Договор не найден'
+      });
+    }
+
+    res.json({
+      status: 'success',
+      message: 'Договор удален'
+    });
+
+  } catch (error) {
+    console.error('Ошибка при удалении договора:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Ошибка сервера при удалении договора'
+    });
+  }
+});
+
 // === QR-коды партнёров ===
 app.get("/api/ref/:promo/qrcode", async (req, res) => {
   const { promo } = req.params;
