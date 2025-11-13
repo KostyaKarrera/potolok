@@ -168,8 +168,8 @@ app.post("/api/partners/login", async (req, res) => {
   });
 });
 
-// === ЛК партнёра: просмотр заявок ===
-app.get("/api/partners/:id/requests", async (req, res) => {
+// === ЛК партнёра: просмотр договоров ===
+app.get("/api/partners/:id/contracts", async (req, res) => {
   const auth = req.headers.authorization?.split(" ")[1];
   if (!auth) return res.status(401).json({ status: "error", message: "Нет токена" });
 
@@ -178,8 +178,8 @@ app.get("/api/partners/:id/requests", async (req, res) => {
     if (payload.id != req.params.id)
       return res.status(403).json({ status: "error", message: "Нет доступа" });
 
-    const requests = await db.all("SELECT * FROM requests WHERE ref = ? ORDER BY createdAt DESC", [payload.id]);
-    res.json({ status: "success", requests });
+    const contracts = await db.all("SELECT * FROM contracts WHERE ref = ? ORDER BY createdAt DESC", [payload.id]);
+    res.json({ status: "success", contracts });
   } catch {
     res.status(401).json({ status: "error", message: "Неверный токен" });
   }

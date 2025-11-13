@@ -203,46 +203,79 @@ if (document.querySelector("#requests-table")) {
   }
 
   async function loadRequests() {
-    const res = await fetch(`${API}/${partnerId}/requests`, {
+  // Загружаем заявки из requests
+  const requestsRes = await fetch(`${API}/${partnerId}/requests`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  
+  const requestsData = await requestsRes.json();
+  const requests = requestsData.requests || [];
+
+  // ЗАГРУЖАЕМ ДОГОВОРЫ ИЗ contracts
+  let contracts = [];
+  try {
+    const contractsRes = await fetch(`${API}/${partnerId}/contracts`, {
       headers: { Authorization: `Bearer ${token}` },
     });
-
-    const data = await res.json();
-    const tbody = document.querySelector("#requests-table tbody");
-    tbody.innerHTML = "";
-    let total = 0;
-    let closedCount = 0;
-
-    if (data.requests && data.requests.length > 0) {
-      if (totalRequestsEl) totalRequestsEl.textContent = data.requests.length;
-      data.requests.forEach((r) => {
-        const tr = document.createElement("tr");
-        const earning = (r.status === "закрыта" && r.contractAmount)
-          ? Math.floor(Number(r.contractAmount) * REFERRAL_PERCENT)
-          : 0;
-        if (earning) total += earning;
-        if (r.status === "закрыта") closedCount += 1;
-        tr.innerHTML = `
-          <td>${r.name}</td>
-          <td>${r.phone}</td>
-          <td>${r.type}</td>
-          <td>${r.estimatedPrice || "-"}</td>
-          <td>${r.contractAmount != null ? Number(r.contractAmount).toLocaleString('ru-RU') + " ₽" : "-"}</td>
-          <td>${new Date(r.createdAt).toLocaleDateString()}</td>
-          <td>${r.status || "новая"}</td>
-          <td data-role="earning">${earning ? earning.toLocaleString('ru-RU') + " ₽" : "-"}</td>
-        `;
-        tbody.appendChild(tr);
-      });
-      if (totalEl) totalEl.textContent = `${total.toLocaleString('ru-RU')} ₽`;
-      if (closedRequestsEl) closedRequestsEl.textContent = closedCount;
-    } else {
-      tbody.innerHTML = `<tr><td colspan="8">Заявок пока нет</td></tr>`;
-      if (totalRequestsEl) totalRequestsEl.textContent = "0";
-      if (closedRequestsEl) closedRequestsEl.textContent = "0";
-      if (totalEl) totalEl.textContent = `0 ₽`;
+    const contractsData = await contractsRes.json();
+    if (contractsData.status === "success") {
+      contracts = contractsData.contracts || [];
     }
+  } catch (e) {
+    console.error("Ошибка загрузки договоров:", e);
   }
+
+  const tbody = document.querySelector("#requests-table tbody");
+  tbody.innerHTML = "";
+  let total = 0;
+  let closedCount = 0;
+
+  // Объединяем заявки и договоры
+  const allItems = [
+    ...requests.map(r => ({ ...r, type: 'lead' })),
+    ...contracts.map(c => ({ ...c, type: 'contract' }))
+  ].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+  if (allItems.length > 0) {
+    if (totalRequestsEl) totalRequestsEl.textContent = allItems.length;
+    
+    allItems.forEach((item) => {
+      const tr = document.createElement("tr");
+      
+      let earning = 0;
+      let status = item.status || (item.type === 'contract' ? 'договор' : 'новая');
+      
+      // Для договоров и закрытых заявок считаем earnings
+      if ((item.status === "закрыта" && item.contractAmount) || item.type === 'contract') {
+        const amount = item.contractAmount || item.amount || 0;
+        earning = Math.floor(Number(amount) * REFERRAL_PERCENT);
+      }
+      
+      if (item.status === "закрыта" || item.type === 'contract') closedCount += 1;
+      if (earning) total += earning;
+      
+      tr.innerHTML = `
+        <td>${item.name}</td>
+        <td>${item.phone}</td>
+        <td>${item.type === 'contract' ? 'Договор' : (item.type || '-')}</td>
+        <td>${item.estimatedPrice || "-"}</td>
+        <td>${(item.contractAmount || item.amount) != null ? Number(item.contractAmount || item.amount).toLocaleString('ru-RU') + " ₽" : "-"}</td>
+        <td>${new Date(item.createdAt).toLocaleDateString()}</td>
+        <td>${status}</td>
+        <td data-role="earning">${earning ? earning.toLocaleString('ru-RU') + " ₽" : "-"}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+    
+    if (totalEl) totalEl.textContent = `${total.toLocaleString('ru-RU')} ₽`;
+    if (closedRequestsEl) closedRequestsEl.textContent = closedCount;
+  } else {
+    tbody.innerHTML = `<tr><td colspan="8">Заявок пока нет</td></tr>`;
+    if (totalRequestsEl) totalRequestsEl.textContent = "0";
+    if (closedRequestsEl) closedRequestsEl.textContent = "0";
+    if (totalEl) totalEl.textContent = `0 ₽`;
+  }
+}
 
   loadRequests();
 
