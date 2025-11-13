@@ -26,6 +26,7 @@
     <div class="tabs">
       <button class="tab-btn active" data-tab="leads-tab">Лиды</button>
       <button class="tab-btn" data-tab="contracts-tab">Заявки (договоры)</button>
+      <button class="tab-btn" data-tab="partners-tab">Партнёры</button>
     </div>
 
     <div class="stats">
@@ -132,23 +133,24 @@
           <tbody></tbody>
         </table>
       </div>
-      <!-- Добавь эту секцию в admin.html -->
-      <div style="margin-top: 40px;">
-        <h2>Список партнёров (реферов)</h2>
-        <div class="table-container">
-          <table id="partners-table">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Имя</th>
-                <th>Телефон</th>
-                <th>Промокод</th>
-                <th>Дата регистрации</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-        </div>
+    </div>
+
+<!-- Таблица зарегистрированных реферов -->
+    <div id="partners-tab" class="tab-content" style="display:none;">
+      <h2 style="margin-top:20px;">Список партнёров</h2>
+      <div class="table-container">
+        <table id="partners-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Имя</th>
+              <th>Телефон</th>
+              <th>Промокод</th>
+              <th>Дата регистрации</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
       </div>
     </div>
   </div>

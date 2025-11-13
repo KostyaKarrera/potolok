@@ -11,7 +11,6 @@ function checkAuth() {
     initTabs();
     loadRequests();
     loadContracts();
-    loadPartnersList(); // ДОБАВЛЕНО
   }
 }
 
@@ -37,7 +36,6 @@ document.getElementById("login-form").addEventListener("submit", async (e) => {
       initTabs();
       loadRequests();
       loadContracts();
-      loadPartnersList(); // ДОБАВЛЕНО
     } else {
       errorEl.textContent = data.message || "Ошибка входа";
     }
@@ -260,6 +258,7 @@ function initTabs() {
   const btns = document.querySelectorAll(".tab-btn");
   const leadsTable = document.querySelector(".table-container");
   const contractsTab = document.getElementById("contracts-tab");
+  const partnersTab = document.getElementById("partners-tab"); // ДОБАВЛЕНО
   const stats = document.querySelector(".stats");
 
   btns.forEach(btn => {
@@ -267,14 +266,23 @@ function initTabs() {
       btns.forEach(b => b.classList.remove("active"));
       btn.classList.add("active");
       const tab = btn.dataset.tab;
+      
       if (tab === "leads-tab") {
         leadsTable.style.display = "";
         stats.style.display = "";
         contractsTab.style.display = "none";
-      } else {
+        partnersTab.style.display = "none"; // ДОБАВЛЕНО
+      } else if (tab === "contracts-tab") {
         leadsTable.style.display = "none";
         stats.style.display = "none";
         contractsTab.style.display = "";
+        partnersTab.style.display = "none"; // ДОБАВЛЕНО
+      } else if (tab === "partners-tab") { // ДОБАВЛЕНО
+        leadsTable.style.display = "none";
+        stats.style.display = "none";
+        contractsTab.style.display = "none";
+        partnersTab.style.display = "";
+        loadPartnersList(); // Загружаем список при переключении на вкладку
       }
     });
   });
