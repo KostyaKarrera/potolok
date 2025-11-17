@@ -49,6 +49,14 @@ export async function initDB() {
       ref INTEGER, -- ссылка на partners.id, если есть
       createdAt TEXT
     );
+
+  
+    CREATE TABLE IF NOT EXISTS phone_clicks (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      phone TEXT,
+      clickedAt TEXT
+);
+
   `);
   // В initDB()
 await db.exec(`

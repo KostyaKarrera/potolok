@@ -219,6 +219,42 @@ async function deleteRequest(id) {
   }
 }
 
+async function loadPhoneClicks() {
+  const body = document.getElementById("clicks-table-body");
+
+  body.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:20px;">Загрузка...</td></tr>`;
+
+  const res = await fetch("/api/admin/phone-clicks", {
+    headers: { Authorization: `Bearer ${adminToken}` }
+  });
+
+  const data = await res.json();
+  if (data.status !== "success") {
+    body.innerHTML = `<tr><td colspan="4" style="text-align:center;color:red;padding:20px;">Ошибка загрузки</td></tr>`;
+    return;
+  }
+
+  const rows = data.stats;
+
+  if (!rows.length) {
+    body.innerHTML = `<tr><td colspan="4" style="text-align:center;padding:20px;">Нет данных</td></tr>`;
+    return;
+  }
+
+  body.innerHTML = "";
+  rows.forEach(r => {
+    body.innerHTML += `
+      <tr>
+        <td>${r.phone}</td>
+        <td>${r.total}</td>
+        <td>${new Date(r.firstClick).toLocaleString()}</td>
+        <td>${new Date(r.lastClick).toLocaleString()}</td>
+      </tr>
+    `;
+  });
+}
+
+
 // Всплывающее уведомление
 function showNotification(message, type = "info") {
   let notification = document.getElementById("admin-notification");
@@ -296,7 +332,20 @@ function initTabs() {
         partnersTab.style.display = "none";
         ratingTab.style.display = "";
         loadCurrentRating(); // Загружаем текущие данные
+      
+      } else if (tab === "clicks-tab") {
+        leadsTable.style.display = "none";
+        stats.style.display = "none";
+        contractsTab.style.display = "none";
+        partnersTab.style.display = "none";
+        ratingTab.style.display = "none";
+
+        document.getElementById("clicks-tab").style.display = "";
+        loadPhoneClicks();
+      
+
       }
+      
     });
   });
 
@@ -587,6 +636,7 @@ function initRatingForm() {
 // Глобальные функции для кнопок
 window.loadCurrentRating = loadCurrentRating;
 window.updateGoogleRating = updateGoogleRating;
+window.loadPhoneClicks = loadPhoneClicks;
 
 // Инициализация
 checkAuth();

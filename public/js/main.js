@@ -246,3 +246,26 @@ function getReviewsWord(count) {
 }
 // Загружаем рейтинг Google при старте страницы
 loadGoogleRating();
+
+
+//Отслеживаем клики для статистики
+document.addEventListener("DOMContentLoaded", () => {
+  const phoneLinks = document.querySelectorAll('a[href^="tel:"]');
+
+  phoneLinks.forEach(link => {
+    link.addEventListener("click", async () => {
+      const phone = link.getAttribute("href").replace("tel:", "");
+
+      try {
+        await fetch("/api/phone-click", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ phone })
+        });
+        console.log("Клик по телефону отправлен:", phone);
+      } catch (err) {
+        console.error("Ошибка отправки клика:", err);
+      }
+    });
+  });
+});

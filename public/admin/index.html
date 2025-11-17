@@ -27,7 +27,8 @@
       <button class="tab-btn active" data-tab="leads-tab">Лиды</button>
       <button class="tab-btn" data-tab="contracts-tab">Заявки (договоры)</button>
       <button class="tab-btn" data-tab="partners-tab">Партнёры</button>
-      <button class="tab-btn" data-tab="rating-tab">Рейтинг Google</button> <!-- НОВАЯ ВКЛАДКА -->
+      <button class="tab-btn" data-tab="rating-tab">Рейтинг Google</button>
+      <button class="tab-btn" data-tab="clicks-tab">Клики по телефону</button>
     </div>
 
     <div class="stats">
@@ -210,6 +211,30 @@
         </p>
       </div>
     </div>
+    <div id="clicks-tab" class="tab-content" style="display:none;">
+      <h2 style="margin-top:20px;">Статистика кликов по телефону</h2>
+
+      <button onclick="loadPhoneClicks()" class="save-btn" style="margin: 10px 0 20px 0;">
+        🔄 Обновить
+      </button>
+
+      <div class="table-container">
+        <table id="clicks-table">
+          <thead>
+            <tr>
+              <th>Телефон</th>
+              <th>Количество кликов</th>
+              <th>Первый клик</th>
+              <th>Последний клик</th>
+            </tr>
+          </thead>
+          <tbody id="clicks-table-body">
+            <tr><td colspan="4" style="text-align:center;padding:20px;">Пусто</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
 
   </div>
 

@@ -582,5 +582,45 @@ await db.run(
   }
 });
 
+// === Сохранение клика по номеру телефона ===
+app.post("/api/phone-click", async (req, res) => {
+  try {
+    const { phone } = req.body;
+    if (!phone) return res.status(400).json({ status: "error", message: "Нет номера" });
+
+    await db.run(
+      "INSERT INTO phone_clicks (phone, clickedAt) VALUES (?, datetime('now'))",
+      [phone]
+    );
+
+    return res.json({ status: "success" });
+  } catch (err) {
+    console.error("Ошибка записи клика:", err);
+    res.status(500).json({ status: "error", message: "Ошибка сервера" });
+  }
+});
+
+// === Админка: статистика кликов по телефону ===
+app.get("/api/admin/phone-clicks", requireAdmin, async (req, res) => {
+  try {
+    const stats = await db.all(`
+      SELECT 
+        phone,
+        COUNT(*) AS total,
+        MIN(clickedAt) AS firstClick,
+        MAX(clickedAt) AS lastClick
+      FROM phone_clicks
+      GROUP BY phone
+      ORDER BY total DESC
+    `);
+
+    res.json({ status: "success", stats });
+  } catch (err) {
+    console.error("Ошибка получения статистики телефонных кликов:", err);
+    res.status(500).json({ status: "error", message: "Ошибка сервера" });
+  }
+});
+
+
 // === Запуск ===
 app.listen(PORT, () => console.log(`✅ Сервер запущен: http://localhost:${PORT}`));
