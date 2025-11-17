@@ -539,6 +539,48 @@ app.get(/^\/(?!api).*/, (req, res) => {
     res.sendFile(path.join(__dirname, "public", "index.html"));
   }
 });
+// === Google рейтинг ===
+app.get("/api/google-rating", async (req, res) => {
+  try {
+    const ratingRow = await db.get("SELECT value FROM settings WHERE key = ?", ["google_rating"]);
+    const reviewsRow = await db.get("SELECT value FROM settings WHERE key = ?", ["google_reviews_count"]);
+    
+    res.json({
+      status: "success",
+      rating: ratingRow ? parseFloat(ratingRow.value) : 5.0,
+      reviewsCount: reviewsRow ? parseInt(reviewsRow.value) : 1,
+      name: "КонкурентЪ Натяжные потолки"
+    });
+  } catch (error) {
+    res.json({
+      status: "success",
+      rating: 5.0,
+      reviewsCount: 1,
+      name: "КонкурентЪ Натяжные потолки"
+    });
+  }
+});
+
+app.post("/api/admin/update-rating", requireAdmin, async (req, res) => {
+  const { rating, reviewsCount } = req.body;
+  
+  try {
+    await db.run(
+  "INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)",
+  ["google_rating", rating]
+);
+
+await db.run(
+  "INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)",
+  ["google_reviews_count", reviewsCount]
+);
+   
+    res.json({ status: "success", message: "Рейтинг обновлен" });
+  } catch (error) {
+    console.error("Ошибка обновления рейтинга:", error);
+    res.status(500).json({ status: "error", message: "Ошибка сервера" });
+  }
+});
 
 // === Запуск ===
 app.listen(PORT, () => console.log(`✅ Сервер запущен: http://localhost:${PORT}`));

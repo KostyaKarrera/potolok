@@ -194,3 +194,55 @@ if (lightbox) {
     lightboxImg.src = galleryImages[currentIndex].src;
   });
 }
+// ====== GOOGLE RATING ======
+
+// Загрузка реального рейтинга
+async function loadGoogleRating() {
+  try {
+    const response = await fetch('/api/google-rating');
+    const data = await response.json();
+    
+    if (data.status === 'success') {
+      // Обновляем рейтинг
+      const ratingValue = document.getElementById('rating-value');
+      const reviewsCount = document.getElementById('reviews-count');
+      const companyName = document.getElementById('company-name');
+      const ratingStars = document.getElementById('rating-stars');
+      
+      if (ratingValue) ratingValue.textContent = data.rating;
+      if (reviewsCount) reviewsCount.textContent = `(${data.reviewsCount} ${getReviewsWord(data.reviewsCount)})`;
+      if (companyName) companyName.textContent = data.name;
+      if (ratingStars) ratingStars.innerHTML = getStars(data.rating);
+    }
+  } catch (error) {
+    console.error('Ошибка загрузки рейтинга:', error);
+  }
+}
+
+// Функция для генерации звезд
+function getStars(rating) {
+  const fullStars = Math.floor(rating);
+  const decimal = rating % 1;
+  let stars = '';
+  
+  for (let i = 1; i <= 5; i++) {
+    if (i <= fullStars) {
+      stars += '★';
+    } else if (i === fullStars + 1 && decimal >= 0.5) {
+      stars += '★';
+    } else {
+      stars += '☆';
+    }
+  }
+  
+  return stars;
+}
+
+// Функция для правильного склонения слова "отзыв"
+function getReviewsWord(count) {
+  if (count % 10 === 1 && count % 100 !== 11) return 'отзыв';
+  if (count % 10 >= 2 && count % 10 <= 4 && (count % 100 < 10 || count % 100 >= 20)) return 'отзыва';
+  return 'отзывов';
+}
+// Загружаем рейтинг Google при старте страницы
+loadGoogleRating();

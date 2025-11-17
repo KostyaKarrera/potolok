@@ -11,6 +11,7 @@ function checkAuth() {
     initTabs();
     loadRequests();
     loadContracts();
+    initRatingForm(); // ДОБАВЛЕНО
   }
 }
 
@@ -36,6 +37,7 @@ document.getElementById("login-form").addEventListener("submit", async (e) => {
       initTabs();
       loadRequests();
       loadContracts();
+      initRatingForm(); // ДОБАВЛЕНО
     } else {
       errorEl.textContent = data.message || "Ошибка входа";
     }
@@ -258,7 +260,8 @@ function initTabs() {
   const btns = document.querySelectorAll(".tab-btn");
   const leadsTable = document.querySelector(".table-container");
   const contractsTab = document.getElementById("contracts-tab");
-  const partnersTab = document.getElementById("partners-tab"); // ДОБАВЛЕНО
+  const partnersTab = document.getElementById("partners-tab");
+  const ratingTab = document.getElementById("rating-tab"); // ДОБАВЛЕНО
   const stats = document.querySelector(".stats");
 
   btns.forEach(btn => {
@@ -271,18 +274,28 @@ function initTabs() {
         leadsTable.style.display = "";
         stats.style.display = "";
         contractsTab.style.display = "none";
-        partnersTab.style.display = "none"; // ДОБАВЛЕНО
+        partnersTab.style.display = "none";
+        ratingTab.style.display = "none";
       } else if (tab === "contracts-tab") {
         leadsTable.style.display = "none";
         stats.style.display = "none";
         contractsTab.style.display = "";
-        partnersTab.style.display = "none"; // ДОБАВЛЕНО
-      } else if (tab === "partners-tab") { // ДОБАВЛЕНО
+        partnersTab.style.display = "none";
+        ratingTab.style.display = "none";
+      } else if (tab === "partners-tab") {
         leadsTable.style.display = "none";
         stats.style.display = "none";
         contractsTab.style.display = "none";
         partnersTab.style.display = "";
-        loadPartnersList(); // Загружаем список при переключении на вкладку
+        ratingTab.style.display = "none";
+        loadPartnersList();
+      } else if (tab === "rating-tab") { // ДОБАВЛЕНО
+        leadsTable.style.display = "none";
+        stats.style.display = "none";
+        contractsTab.style.display = "none";
+        partnersTab.style.display = "none";
+        ratingTab.style.display = "";
+        loadCurrentRating(); // Загружаем текущие данные
       }
     });
   });
@@ -442,7 +455,7 @@ async function loadPartners() {
   }
 }
 
-// ====== СПИСОК ПАРТНЁРОВ ====== // ДОБАВЛЕНО
+// ====== СПИСОК ПАРТНЁРОВ ======
 async function loadPartnersList() {
   try {
     const res = await fetch(`${API}/partners`, {
@@ -469,7 +482,6 @@ function renderPartnersList(partners) {
 
   partners.forEach(p => {
     const tr = document.createElement("tr");
-    // Форматируем телефон для отображения
     const formattedPhone = p.phone ? p.phone.replace(/^7(\d{3})(\d{3})(\d{2})(\d{2})$/, '+7 ($1) $2-$3-$4') : '-';
     
     tr.innerHTML = `
@@ -482,6 +494,99 @@ function renderPartnersList(partners) {
     tbody.appendChild(tr);
   });
 }
+
+// ====== GOOGLE RATING MANAGEMENT ======
+
+// Загрузка текущего рейтинга
+async function loadCurrentRating() {
+  try {
+    const res = await fetch('/api/google-rating');
+    const data = await res.json();
+    
+    if (data.status === 'success') {
+      document.getElementById('google-rating').value = data.rating;
+      document.getElementById('google-reviews').value = data.reviewsCount;
+      updateCurrentRatingDisplay(data.rating, data.reviewsCount);
+    }
+  } catch (error) {
+    console.error('Ошибка загрузки рейтинга:', error);
+  }
+}
+
+// Обновление отображения текущего рейтинга
+function updateCurrentRatingDisplay(rating, reviewsCount) {
+  const ratingValue = document.getElementById('current-rating-value');
+  const reviewsCountEl = document.getElementById('current-reviews-count');
+  
+  if (ratingValue) ratingValue.textContent = rating;
+  if (reviewsCountEl) {
+    const reviewsWord = getReviewsWord(reviewsCount);
+    reviewsCountEl.textContent = `${reviewsCount} ${reviewsWord}`;
+  }
+}
+
+// Функция для правильного склонения слова "отзыв"
+function getReviewsWord(count) {
+  if (count % 10 === 1 && count % 100 !== 11) return 'отзыв';
+  if (count % 10 >= 2 && count % 10 <= 4 && (count % 100 < 10 || count % 100 >= 20)) return 'отзыва';
+  return 'отзывов';
+}
+
+// Обновление рейтинга
+async function updateGoogleRating() {
+  const rating = document.getElementById('google-rating').value;
+  const reviews = document.getElementById('google-reviews').value;
+  const messageEl = document.getElementById('rating-form-msg');
+  
+  if (!rating || rating < 0 || rating > 5) {
+    messageEl.textContent = 'Рейтинг должен быть от 0.0 до 5.0';
+    messageEl.style.color = '#e74c3c';
+    return;
+  }
+  
+  try {
+    const res = await fetch('/api/admin/update-rating', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${adminToken}`
+      },
+      body: JSON.stringify({ rating, reviewsCount: reviews })
+    });
+    
+    const data = await res.json();
+    if (data.status === 'success') {
+      messageEl.textContent = '✅ Рейтинг успешно обновлен!';
+      messageEl.style.color = '#27ae60';
+      updateCurrentRatingDisplay(rating, reviews);
+      
+      setTimeout(() => {
+        messageEl.textContent = '';
+      }, 3000);
+    } else {
+      messageEl.textContent = '❌ Ошибка: ' + data.message;
+      messageEl.style.color = '#e74c3c';
+    }
+  } catch (error) {
+    messageEl.textContent = '❌ Ошибка подключения к серверу';
+    messageEl.style.color = '#e74c3c';
+  }
+}
+
+// Инициализация формы рейтинга
+function initRatingForm() {
+  const ratingForm = document.getElementById('rating-form');
+  if (ratingForm) {
+    ratingForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      updateGoogleRating();
+    });
+  }
+}
+
+// Глобальные функции для кнопок
+window.loadCurrentRating = loadCurrentRating;
+window.updateGoogleRating = updateGoogleRating;
 
 // Инициализация
 checkAuth();

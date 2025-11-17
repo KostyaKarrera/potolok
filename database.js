@@ -50,6 +50,13 @@ export async function initDB() {
       createdAt TEXT
     );
   `);
+  // В initDB()
+await db.exec(`
+  CREATE TABLE IF NOT EXISTS settings (
+    key TEXT PRIMARY KEY,
+    value TEXT
+  )
+`);
 
   return db;
 }
