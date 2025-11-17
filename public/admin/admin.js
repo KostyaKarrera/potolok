@@ -299,6 +299,7 @@ function initTabs() {
   const partnersTab = document.getElementById("partners-tab");
   const ratingTab = document.getElementById("rating-tab"); // ДОБАВЛЕНО
   const stats = document.querySelector(".stats");
+  const clicksTab = document.getElementById("clicks-tab");
 
   btns.forEach(btn => {
     btn.addEventListener("click", () => {
@@ -339,7 +340,6 @@ function initTabs() {
         contractsTab.style.display = "none";
         partnersTab.style.display = "none";
         ratingTab.style.display = "none";
-
         document.getElementById("clicks-tab").style.display = "";
         loadPhoneClicks();
       
