@@ -11,7 +11,8 @@ function checkAuth() {
     initTabs();
     loadRequests();
     loadContracts();
-    initRatingForm(); // ДОБАВЛЕНО
+    initRatingForm();
+    loadPhoneClicks(); // ДОБАВЛЕНО
   }
 }
 
@@ -313,18 +314,21 @@ function initTabs() {
         contractsTab.style.display = "none";
         partnersTab.style.display = "none";
         ratingTab.style.display = "none";
+        clicksTab.style.display = "none";
       } else if (tab === "contracts-tab") {
         leadsTable.style.display = "none";
         stats.style.display = "none";
         contractsTab.style.display = "";
         partnersTab.style.display = "none";
         ratingTab.style.display = "none";
+        clicksTab.style.display = "none";
       } else if (tab === "partners-tab") {
         leadsTable.style.display = "none";
         stats.style.display = "none";
         contractsTab.style.display = "none";
         partnersTab.style.display = "";
         ratingTab.style.display = "none";
+        clicksTab.style.display = "none";
         loadPartnersList();
       } else if (tab === "rating-tab") { // ДОБАВЛЕНО
         leadsTable.style.display = "none";
@@ -332,18 +336,17 @@ function initTabs() {
         contractsTab.style.display = "none";
         partnersTab.style.display = "none";
         ratingTab.style.display = "";
+        clicksTab.style.display = "none";
         loadCurrentRating(); // Загружаем текущие данные
-      
       } else if (tab === "clicks-tab") {
         leadsTable.style.display = "none";
         stats.style.display = "none";
         contractsTab.style.display = "none";
         partnersTab.style.display = "none";
         ratingTab.style.display = "none";
-        document.getElementById("clicks-tab").style.display = "";
+        clicksTab.style.display = "";
         loadPhoneClicks();
       
-
       }
       
     });
