@@ -913,3 +913,15 @@ footer .btn i {
     height: 350px;
   }
 }
+.city-text-link {
+  color: var(--primary-color);
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.3s ease;
+  border-bottom: 1px dashed var(--primary-color);
+}
+
+.city-text-link:hover {
+  color: var(--accent-color);
+  border-bottom-color: var(--accent-color);
+}
