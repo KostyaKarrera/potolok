@@ -117,13 +117,13 @@ if (calculatorForm) {
 
     if (area < 1) return alert("Введите корректную площадь");
 
-    const price = area * 1200 + lamps * 300 + chandeliers * 500;
+    const price = area * 600 + lamps * 550 + chandeliers * 700;
 
     estimateModal.style.display = "block";
     successMessage.style.display = "none";
     estimateForm.style.display = "block";
 
-    animateNumber(estimateText, 0, price, 1200);
+    animateNumber(estimateText, 0, price, 600);
   });
 
   closeEstimate.addEventListener("click", () => (estimateModal.style.display = "none"));
