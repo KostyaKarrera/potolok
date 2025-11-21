@@ -258,9 +258,10 @@
 </section>
 
 
-<!-- 🔹 Google Карта + Рейтинг -->
+<!-- 🔹 Google Карта + Все платформы отзывов -->
 <section class="section" id="google-rating-section">
-  <h2>Мы на Google Картах — отзывы, рейтинг и расположение</h2>
+  <h2>Мы на картах — отзывы, рейтинг и расположение</h2>
+  
   <div class="container google-rating-container">
     <!-- Левая колонка - Карта -->
     <div class="google-map">
@@ -277,23 +278,63 @@
       </div>
     </div>
 
-    <!-- Правая колонка - Отзывы -->
-    <div class="google-reviews">
-      <div class="reviews-header">
-        <span class="reviews-icon">🔍</span>
-        <div>
-          <div class="reviews-title">Google Отзывы</div>
-          <div class="reviews-rating">
-            <span id="rating-stars">★★★★★</span>
-            <span id="rating-value">5.0</span>
-            <span id="reviews-count">(1 отзыв)</span>
+    <!-- Правая колонка - Все платформы отзывов -->
+    <div class="all-reviews-platforms">
+      <!-- Google -->
+      <div class="review-platform google-platform">
+        <div class="platform-header">
+          <div class="platform-logo">
+            <i class="fab fa-google"></i>
+            <span>Google</span>
+          </div>
+          <div class="platform-rating">
+            <span class="rating-stars" id="rating-stars">★★★★★</span>
+            <span class="rating-value" id="rating-value">5.0</span>
           </div>
         </div>
+        <div class="platform-info">
+          <span class="reviews-count" id="reviews-count">1 отзыв</span>
+          <p>Помогите другим клиентам узнать о качестве наших услуг</p>
+          <a href="https://share.google/vMb1uqP82k3akvipZ" 
+             target="_blank" class="review-btn google-btn">
+            ⭐ Оставить отзыв
+          </a>
+        </div>
       </div>
-      <p>Помогите другим клиентам узнать о качестве наших услуг</p>
-      <a href="https://share.google/N3Q2ucm0Sady9o1Bx" target="_blank" class="reviews-btn">
-        ⭐ Оставить отзыв
-      </a>
+
+      <!-- Яндекс -->
+      <div class="review-platform yandex-platform">
+        <div class="platform-header">
+          <div class="platform-logo">
+            <i class="fab fa-yandex"></i>
+            <span>Яндекс</span>
+          </div>
+        </div>
+        <div class="platform-info">
+          <p>Оставьте отзыв на Яндекс Картах</p>
+          <a href="https://yandex.ru/maps/-/CLSzNY1Y" 
+             target="_blank" class="review-btn yandex-btn">
+            📝 Оставить отзыв
+          </a>
+        </div>
+      </div>
+
+      <!-- 2GIS -->
+      <div class="review-platform gis-platform">
+        <div class="platform-header">
+          <div class="platform-logo">
+            <i class="fas fa-map"></i>
+            <span>2GIS</span>
+          </div>
+        </div>
+        <div class="platform-info">
+          <p>Оставьте отзыв в 2GIS</p>
+          <a href="https://go.2gis.com/MrUyw" 
+             target="_blank" class="review-btn gis-btn">
+            🗺️ Оставить отзыв
+          </a>
+        </div>
+      </div>
     </div>
   </div>
 </section>

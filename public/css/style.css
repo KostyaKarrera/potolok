@@ -925,3 +925,148 @@ footer .btn i {
   color: var(--accent-color);
   border-bottom-color: var(--accent-color);
 }
+/* 🔹 Все платформы отзывов - ИСПРАВЛЕННАЯ ВЕРСИЯ */
+.all-reviews-platforms {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.review-platform {
+  background: var(--background-white);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  border: 1px solid var(--border-color);
+  transition: transform 0.3s, box-shadow 0.3s;
+  /* УБИРАЕМ flex: 1 - это было причиной растягивания */
+}
+
+.review-platform:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+}
+
+.platform-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.platform-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-weight: 600;
+  font-size: var(--font-size-base);
+}
+
+.platform-logo i {
+  font-size: 1.25rem;
+}
+
+.platform-rating {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  font-size: var(--font-size-base);
+}
+
+.rating-stars {
+  color: #FFD700;
+  font-size: var(--font-size-base);
+}
+
+.rating-value {
+  font-size: var(--font-size-base);
+  color: var(--text-dark);
+}
+
+.platform-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  /* УБИРАЕМ height: 100% и justify-content: space-between */
+}
+
+.platform-info p {
+  color: var(--text-muted);
+  margin: 0;
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-normal);
+  font-weight: 400;
+  /* УБИРАЕМ min-height */
+}
+
+.review-btn {
+  display: inline-block;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.3s;
+  text-align: center;
+  font-size: var(--font-size-sm);
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  /* УБИРАЕМ margin-top: auto - это толкало кнопки вниз */
+}
+
+.review-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  color: white;
+}
+
+/* Цвета кнопок для разных платформ */
+.google-btn { 
+  background: #4285F4; 
+}
+.google-btn:hover { 
+  background: #3367D6; 
+}
+
+.yandex-btn { 
+  background: #FF0000; 
+}
+.yandex-btn:hover { 
+  background: #CC0000; 
+}
+
+.gis-btn { 
+  background: #4285F4;
+}
+.gis-btn:hover { 
+  background: #3367D6; 
+}
+
+/* 🔹 Адаптивность */
+@media (max-width: 768px) {
+  .all-reviews-platforms {
+    gap: 1rem;
+  }
+  
+  .review-platform {
+    padding: 1.25rem;
+  }
+  
+  .platform-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+  
+  .platform-rating {
+    align-self: flex-end;
+  }
+}
+
+@media (max-width: 480px) {
+  .review-platform {
+    padding: 1rem;
+  }
+}
