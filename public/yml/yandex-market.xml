@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<yml_catalog date="2025-01-01 12:00">
+<shop>
+
+    <name>КонкурентЪ — натяжные потолки в Чебоксарах и Марий-Эл</name>
+    <company>КонкурентЪ</company>
+    <url>https://potolok-konkurent.ru</url>
+    <phone>+79003304656</phone>
+
+    <currencies>
+        <currency id="RUR" rate="1"/>
+    </currencies>
+
+    <categories>
+        <category id="1">Натяжные потолки</category>
+        <category id="2">Глянцевые потолки</category>
+        <category id="3">Матовые потолки</category>
+        <category id="4">Многоуровневые потолки</category>
+        <category id="5">Ремонт потолков</category>
+    </categories>
+
+    <offers>
+
+        <!-- Матовые потолки -->
+        <offer id="matoviy-cheboksary" available="true">
+            <url>https://potolok-konkurent.ru/cheboksary/</url>
+            <price>650</price>
+            <currencyId>RUR</currencyId>
+            <categoryId>3</categoryId>
+            <picture>https://potolok-konkurent.ru/jobs/IMG_1166.JPG</picture>
+
+            <typePrefix>Матовый натяжной потолок</typePrefix>
+            <name>Матовые натяжные потолки в Чебоксарах — монтаж под ключ</name>
+            <description>Матовые натяжные потолки в Чебоксарах — это универсальное решение для квартир, домов и офисов. Мы выполняем профессиональный монтаж под ключ за 1 день, используем только качественные полотна и даём гарантию 10 лет. Бесплатно приедем на замер и предложим точный расчёт стоимости за м². Устанавливаем потолки любой сложности: с коробами, нишами под подсветку, трековые светильники и скрытые карнизы. Работаем по всему городу и пригородам.</description>
+
+            <param name="Город">Чебоксары</param>
+            <param name="Тип потолка">матовый</param>
+            <param name="Срок монтажа">1 день</param>
+            <param name="Гарантия">10 лет</param>
+        </offer>
+
+        <!-- Глянцевые -->
+        <offer id="glyanceviy-novocheboksarsk" available="true">
+            <url>https://potolok-konkurent.ru/novocheboksarsk/</url>
+            <price>650</price>
+            <currencyId>RUR</currencyId>
+            <categoryId>2</categoryId>
+            <picture>https://potolok-konkurent.ru/jobs/IMG_0477.JPG</picture>
+
+            <typePrefix>Глянцевый натяжной потолок</typePrefix>
+            <name>Глянцевые натяжные потолки в Новочебоксарске — установка за 1 день</name>
+            <description>Глянцевые натяжные потолки в Новочебоксарске — отличный способ визуально увеличить пространство и добавить современный блеск интерьеру. Монтаж выполняем под ключ за 1 день, материалы сертифицированы и безопасны. Бесплатный выезд замерщика в любой район города. Предлагаем большой выбор оттенков и фактур, устанавливаем точечные светильники, треки, подсветку. Наши специалисты обеспечивают идеальное натяжение и долговечность покрытия.</description>
+
+            <param name="Город">Новочебоксарск</param>
+            <param name="Эффект">зеркальная поверхность</param>
+            <param name="Гарантия">10 лет</param>
+        </offer>
+
+        <!-- Йошкар-Ола -->
+        <offer id="potolki-yoshkarola" available="true">
+            <url>https://potolok-konkurent.ru/yoshkar-ola/</url>
+            <price>890</price>
+            <currencyId>RUR</currencyId>
+            <categoryId>1</categoryId>
+            <picture>https://potolok-konkurent.ru/jobs/IMG_1362.JPG</picture>
+
+            <typePrefix>Натяжной потолок</typePrefix>
+            <name>Натяжные потолки в Йошкар-Оле — монтаж под ключ</name>
+            <description>Устанавливаем натяжные потолки в Йошкар-Оле и по всей республике Марий-Эл. Предлагаем большой выбор фактур: матовые, глянцевые, сатиновые, тканевые и многоуровневые конструкции. Выполняем монтаж под ключ с гарантией 10 лет и бесплатным выездом замерщика в любой район города. Работаем со сложными объектами: нестандартные формы, ниши, скрытая подсветка, трек-системы. Цена рассчитывается индивидуально — быстро и точно.</description>
+
+            <param name="Регион">Марий-Эл</param>
+            <param name="Город">Йошкар-Ола</param>
+            <param name="Выезд замерщика">бесплатно</param>
+        </offer>
+
+        <!-- Многоуровневые -->
+        <offer id="multilevel-cheboksary" available="true">
+            <url>https://potolok-konkurent.ru/mnogourovnevye/</url>
+            <price>1200</price>
+            <currencyId>RUR</currencyId>
+            <categoryId>4</categoryId>
+            <picture>https://potolok-konkurent.ru/jobs/IMG_0436.jpg</picture>
+
+            <typePrefix>Многоуровневый потолок</typePrefix>
+            <name>Многоуровневые натяжные потолки в Чебоксарах — дизайнерские решения</name>
+            <description>Многоуровневые натяжные потолки в Чебоксарах — это современное дизайнерское решение для зонирования и эффектной подсветки интерьера. Изготавливаем конструкции любой сложности: двухуровневые, парящие, волнообразные, с нишами под светодиодные ленты и трековые системы. Предоставляем профессиональный проект, помогаем подобрать освещение. Монтаж под ключ, гарантия на материалы и работу. Индивидуальный расчёт стоимости — бесплатно.</description>
+
+            <param name="Сложность">индивидуальная</param>
+            <param name="Подсветка">возможно</param>
+            <param name="Город">Чебоксары</param>
+        </offer>
+
+        <!-- Ремонт -->
+        <offer id="remont-potolkov" available="true">
+            <url>https://potolok-konkurent.ru/remont/</url>
+            <price>500</price>
+            <currencyId>RUR</currencyId>
+            <categoryId>5</categoryId>
+
+            <typePrefix>Ремонт потолков</typePrefix>
+            <name>Ремонт натяжных потолков в Чебоксарах — устранение повреждений</name>
+            <description>Выполняем срочный ремонт натяжных потолков в Чебоксарах: устраняем порезы, проколы, провисы, дефекты после затопления. В большинство случаев восстановление возможно без замены полотна. Выезд мастера — в день обращения. Работаем аккуратно, используем профессиональные инструменты и даём гарантию 1 год. Восстанавливаем потолки любого типа: ПВХ, тканевые, глянцевые, матовые, сатиновые. Сохраняем внешний вид и герметичность покрытия.</description>
+
+            <param name="Тип услуги">ремонт</param>
+            <param name="Срок выезда">в день обращения</param>
+            <param name="Гарантия на ремонт">1 год</param>
+            <param name="Город">Чебоксары</param>
+        </offer>
+
+    </offers>
+
+</shop>
+</yml_catalog>
