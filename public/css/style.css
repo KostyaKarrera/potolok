@@ -1070,3 +1070,63 @@ footer .btn i {
     padding: 1rem;
   }
 }
+/* 🔹 Логотип в шапке */
+.logo {
+  display: flex;
+  align-items: center;
+}
+
+.logo-img {
+  height: 40px;
+  width: auto;
+  object-fit: contain;
+  display: block;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .topbar {
+    flex-direction: column; /* Меняем направление на колонку */
+    justify-content: center; /* Центрируем по вертикали */
+    gap: 10px;
+    padding: 10px 4%;
+    height: auto; /* Автоматическая высота */
+    min-height: 80px; /* Минимальная высота */
+  }
+  
+  .logo {
+    order: 1; /* Лого становится первым в порядке */
+    justify-content: center; /* Центрируем лого */
+    width: 100%; /* Занимает всю ширину */
+  }
+  
+  .logo-img {
+    height: 25px;
+  }
+  
+  .contacts {
+    order: 2; /* Контакты становятся вторыми */
+    justify-content: center; /* Центрируем контакты */
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .topbar {
+    padding: 8px 3%;
+    min-height: 70px;
+    gap: 8px;
+  }
+  
+  .logo-img {
+    height: 22px;
+  }
+  
+  .contacts {
+    gap: 8px;
+  }
+  
+  .contacts a:first-child {
+    display: none; /* Скрываем телефон на очень маленьких экранах */
+  }
+}
