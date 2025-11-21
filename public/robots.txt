@@ -4,4 +4,8 @@ Disallow: /admin/
 Disallow: /ajax/
 Disallow: /partners/
 
+# Существующие карты сайта
 Sitemap: https://potolok-konkurent.ru/sitemap.xml
+
+# Яндекс Маркет фид
+Sitemap: https://potolok-konkurent.ru/yml/yandex-market.xml
