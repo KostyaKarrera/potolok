@@ -1130,3 +1130,46 @@ footer .btn i {
     display: none; /* Скрываем телефон на очень маленьких экранах */
   }
 }
+/* 🔹 Плавающая кнопка звонка для мобильных */
+.floating-call-btn {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 60px;
+  height: 60px;
+  background: #27AE60;
+  border-radius: 50%;
+  display: none; /* Скрыта по умолчанию */
+  align-items: center;
+  justify-content: center;
+  color: white;
+  text-decoration: none;
+  font-size: 24px;
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
+  animation: pulse 2s infinite;
+  transition: all 0.3s ease;
+}
+
+.floating-call-btn:hover {
+  transform: scale(1.1);
+  background: #219653;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+/* Показывать только на мобильных */
+@media (max-width: 768px) {
+  .floating-call-btn {
+    display: flex;
+  }
+  
+  /* Скрываем номер в шапке на мобильных */
+  .contacts a[href*="tel:"] {
+    display: none !important;
+  }
+}
