@@ -46,26 +46,28 @@
       </div>
     </div>
 
-    <div class="table-container">
-      <table id="requests-table">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Имя</th>
-            <th>Телефон</th>
-            <th>Тип</th>
-            <th>Ориентировочная стоимость</th>
-            <th>Партнёр</th>
-            <th>Статус</th>
-            <th>Сумма договора</th>
-            <th>Дата</th>
-            <th>Действия</th>
-            <th>Удалить</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
+<div class="table-container">
+  <table id="requests-table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Имя</th>
+        <th>Телефон</th>
+        <th class="mobile-hidden">Тип</th>
+        <th class="mobile-hidden">Ориентировочная стоимость</th>
+        <th class="mobile-hidden">Партнёр</th>
+        <th>Статус</th>
+        <th class="mobile-hidden">Сумма договора</th>
+        <th class="mobile-hidden">Дата</th>
+        <th>Действия</th>
+        <th>Удалить</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- строки будут рендериться JavaScript -->
+    </tbody>
+  </table>
+</div>
 
     <div id="contracts-tab" class="tab-content" style="display:none;">
       <h2 style="margin-top:20px;">Добавить заключенный договор</h2>
