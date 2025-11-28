@@ -135,6 +135,19 @@ function handleModalForm({ buttonId, modalId, formId, successId, type }) {
       showToast("Введите корректный номер телефона", "error");
       return;
     }
+    
+    // Валидация промокода
+    if (promo) {
+      const validation = await validatePromo(promo);
+      if (!validation.valid) {
+        showToast(validation.message || "Неверный промокод", "error");
+        if (promoEl) {
+          promoEl.style.borderColor = "#e74c3c";
+          promoEl.focus();
+        }
+        return;
+      }
+    }
 
     const result = await sendRequest(name, phone, type, null, promo);
     if (result.status === "success") {
@@ -197,6 +210,19 @@ if (calculatorForm) {
     if (phone.length < 10) {
       showToast("Введите корректный номер телефона", "error");
       return;
+    }
+    
+    // Валидация промокода
+    if (promo) {
+      const validation = await validatePromo(promo);
+      if (!validation.valid) {
+        showToast(validation.message || "Неверный промокод", "error");
+        if (promoEl) {
+          promoEl.style.borderColor = "#e74c3c";
+          promoEl.focus();
+        }
+        return;
+      }
     }
 
     const result = await sendRequest(name, phone, "Калькулятор", estimatedPrice, promo);
@@ -356,25 +382,104 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
   });
 });
 
-// ====== 13. Валидация форм в реальном времени ======
+// ====== 13. Валидация промокодов ======
+async function validatePromo(promo) {
+  if (!promo || !promo.trim()) {
+    return { valid: true, message: "" }; // Пустой промокод - валиден (необязательное поле)
+  }
+
+  try {
+    const res = await fetch(`/api/validate-promo/${encodeURIComponent(promo.trim())}`);
+    const data = await res.json();
+    return {
+      valid: data.valid || false,
+      message: data.message || ""
+    };
+  } catch (err) {
+    console.error("Ошибка проверки промокода:", err);
+    return { valid: false, message: "Ошибка проверки промокода" };
+  }
+}
+
+// ====== 14. Валидация форм в реальном времени ======
 document.addEventListener("DOMContentLoaded", () => {
   const inputs = document.querySelectorAll("input[type='tel'], input[type='text']");
   inputs.forEach(input => {
-    input.addEventListener("blur", function() {
-      if (this.hasAttribute("required") && !this.value.trim()) {
-        this.style.borderColor = "#e74c3c";
-      } else if (this.type === "tel" && this.value.length > 0 && this.value.length < 10) {
-        this.style.borderColor = "#e74c3c";
-      } else if (this.value.trim()) {
-        this.style.borderColor = "var(--success-color)";
-      }
-    });
-    
-    input.addEventListener("input", function() {
-      if (this.style.borderColor === "rgb(231, 76, 60)" && this.value.trim()) {
-        this.style.borderColor = "";
-      }
-    });
+    // Валидация промокодов
+    if (input.placeholder && input.placeholder.includes("Промокод")) {
+      let validationTimeout;
+      
+      input.addEventListener("input", function() {
+        clearTimeout(validationTimeout);
+        const promo = this.value.trim();
+        
+        if (!promo) {
+          this.style.borderColor = "";
+          // Удаляем сообщение об ошибке, если есть
+          const errorMsg = this.parentElement.querySelector(".promo-error");
+          if (errorMsg) errorMsg.remove();
+          return;
+        }
+        
+        // Дебаунс - проверяем через 500ms после окончания ввода
+        validationTimeout = setTimeout(async () => {
+          const validation = await validatePromo(promo);
+          
+          if (validation.valid) {
+            this.style.borderColor = "var(--success-color)";
+            const errorMsg = this.parentElement.querySelector(".promo-error");
+            if (errorMsg) errorMsg.remove();
+          } else {
+            this.style.borderColor = "#e74c3c";
+            // Показываем сообщение об ошибке
+            let errorMsg = this.parentElement.querySelector(".promo-error");
+            if (!errorMsg) {
+              errorMsg = document.createElement("div");
+              errorMsg.className = "promo-error";
+              errorMsg.style.cssText = "color: #e74c3c; font-size: 12px; margin-top: 4px;";
+              this.parentElement.appendChild(errorMsg);
+            }
+            errorMsg.textContent = validation.message;
+          }
+        }, 500);
+      });
+      
+      input.addEventListener("blur", async function() {
+        clearTimeout(validationTimeout);
+        const promo = this.value.trim();
+        if (promo) {
+          const validation = await validatePromo(promo);
+          if (!validation.valid) {
+            this.style.borderColor = "#e74c3c";
+            let errorMsg = this.parentElement.querySelector(".promo-error");
+            if (!errorMsg) {
+              errorMsg = document.createElement("div");
+              errorMsg.className = "promo-error";
+              errorMsg.style.cssText = "color: #e74c3c; font-size: 12px; margin-top: 4px;";
+              this.parentElement.appendChild(errorMsg);
+            }
+            errorMsg.textContent = validation.message;
+          }
+        }
+      });
+    } else {
+      // Обычная валидация для других полей
+      input.addEventListener("blur", function() {
+        if (this.hasAttribute("required") && !this.value.trim()) {
+          this.style.borderColor = "#e74c3c";
+        } else if (this.type === "tel" && this.value.length > 0 && this.value.length < 10) {
+          this.style.borderColor = "#e74c3c";
+        } else if (this.value.trim()) {
+          this.style.borderColor = "var(--success-color)";
+        }
+      });
+      
+      input.addEventListener("input", function() {
+        if (this.style.borderColor === "rgb(231, 76, 60)" && this.value.trim()) {
+          this.style.borderColor = "";
+        }
+      });
+    }
   });
 });
 

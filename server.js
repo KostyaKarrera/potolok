@@ -207,6 +207,50 @@ app.get("/api/partners/contracts", async (req, res) => {
   }
 });
 
+// === Проверка промокода ===
+app.get("/api/validate-promo/:promo", async (req, res) => {
+  const { promo } = req.params;
+  
+  if (!promo) {
+    return res.json({ status: "error", message: "Промокод не указан", valid: false });
+  }
+
+  try {
+    const promoLower = promo.toLowerCase().trim();
+    
+    // Проверяем специальный промокод sale5
+    if (promoLower === "sale5") {
+      return res.json({ 
+        status: "success", 
+        valid: true, 
+        type: "sale5",
+        message: "Промокод действителен. Скидка 5% на сумму заказа."
+      });
+    }
+    
+    // Проверяем промокод партнёра
+    const partner = await db.get("SELECT id, name, promo FROM partners WHERE promo = ?", [promo]);
+    if (partner) {
+      return res.json({ 
+        status: "success", 
+        valid: true, 
+        type: "partner",
+        message: "Промокод действителен"
+      });
+    }
+    
+    // Промокод не найден
+    return res.json({ 
+      status: "error", 
+      valid: false, 
+      message: "Промокод не найден. Проверьте правильность ввода." 
+    });
+  } catch (err) {
+    console.error("Ошибка проверки промокода:", err);
+    return res.json({ status: "error", valid: false, message: "Ошибка проверки промокода" });
+  }
+});
+
 // === Заявки клиентов (с ref/promo) ===
 app.post("/api/request", async (req, res) => {
   const { name, phone, type, estimatedPrice, ref, promo } = req.body;
@@ -216,13 +260,42 @@ app.post("/api/request", async (req, res) => {
 
   try {
     let partnerId = null;
+    let promoValid = true;
+    let promoError = null;
 
-    // Проверяем промокод sale5 (не является промокодом партнёра)
-    const isSale5Promo = promo && promo.toLowerCase() === "sale5";
-    
-    if (ref || (promo && !isSale5Promo)) {
-      const partner = await db.get("SELECT id FROM partners WHERE promo = ?", [ref || promo]);
+    // Валидация промокода, если он указан
+    if (promo) {
+      const promoLower = promo.toLowerCase().trim();
+      
+      // Проверяем специальный промокод sale5
+      if (promoLower === "sale5") {
+        // Промокод sale5 валиден, не привязываем к партнёру
+        promoValid = true;
+      } else {
+        // Проверяем промокод партнёра
+        const partner = await db.get("SELECT id FROM partners WHERE promo = ?", [promo]);
+        if (partner) {
+          partnerId = partner.id;
+          promoValid = true;
+        } else {
+          promoValid = false;
+          promoError = "Промокод не найден";
+        }
+      }
+    }
+
+    // Если указан ref, проверяем его
+    if (ref && !promo) {
+      const partner = await db.get("SELECT id FROM partners WHERE promo = ?", [ref]);
       if (partner) partnerId = partner.id;
+    }
+
+    // Если промокод невалиден, возвращаем ошибку
+    if (promo && !promoValid) {
+      return res.status(400).json({ 
+        status: "error", 
+        message: promoError || "Неверный промокод. Проверьте правильность ввода." 
+      });
     }
 
     await db.run(
