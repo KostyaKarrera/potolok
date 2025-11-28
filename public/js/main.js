@@ -196,43 +196,26 @@ if (lightbox) {
 }
 // ====== GOOGLE RATING ======
 
-// Загрузка реального рейтинга (отложенная загрузка)
+// Загрузка реального рейтинга
 async function loadGoogleRating() {
-  // Загружаем только когда секция видна (Intersection Observer)
-  const ratingSection = document.getElementById('google-rating-section');
-  if (!ratingSection) return;
-  
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        observer.disconnect();
-        fetchRating();
-      }
-    });
-  }, { rootMargin: '100px' });
-  
-  observer.observe(ratingSection);
-  
-  async function fetchRating() {
-    try {
-      const response = await fetch('/api/google-rating');
-      const data = await response.json();
+  try {
+    const response = await fetch('/api/google-rating');
+    const data = await response.json();
+    
+    if (data.status === 'success') {
+      // Обновляем рейтинг
+      const ratingValue = document.getElementById('rating-value');
+      const reviewsCount = document.getElementById('reviews-count');
+      const companyName = document.getElementById('company-name');
+      const ratingStars = document.getElementById('rating-stars');
       
-      if (data.status === 'success') {
-        // Обновляем рейтинг
-        const ratingValue = document.getElementById('rating-value');
-        const reviewsCount = document.getElementById('reviews-count');
-        const companyName = document.getElementById('company-name');
-        const ratingStars = document.getElementById('rating-stars');
-        
-        if (ratingValue) ratingValue.textContent = data.rating;
-        if (reviewsCount) reviewsCount.textContent = `(${data.reviewsCount} ${getReviewsWord(data.reviewsCount)})`;
-        if (companyName) companyName.textContent = data.name;
-        if (ratingStars) ratingStars.innerHTML = getStars(data.rating);
-      }
-    } catch (error) {
-      console.error('Ошибка загрузки рейтинга:', error);
+      if (ratingValue) ratingValue.textContent = data.rating;
+      if (reviewsCount) reviewsCount.textContent = `(${data.reviewsCount} ${getReviewsWord(data.reviewsCount)})`;
+      if (companyName) companyName.textContent = data.name;
+      if (ratingStars) ratingStars.innerHTML = getStars(data.rating);
     }
+  } catch (error) {
+    console.error('Ошибка загрузки рейтинга:', error);
   }
 }
 
@@ -261,13 +244,8 @@ function getReviewsWord(count) {
   if (count % 10 >= 2 && count % 10 <= 4 && (count % 100 < 10 || count % 100 >= 20)) return 'отзыва';
   return 'отзывов';
 }
-
-// Загружаем рейтинг Google только когда секция видна
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', loadGoogleRating);
-} else {
-  loadGoogleRating();
-}
+// Загружаем рейтинг Google при старте страницы
+loadGoogleRating();
 
 
 //Отслеживаем клики для статистики

@@ -146,6 +146,7 @@ body {
 
 /* 🔹 Hero */
 header { 
+<<<<<<< HEAD
   position: relative;
   background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('/header/header-optimized.webp');
   background-size: cover;
@@ -168,6 +169,13 @@ header {
   header {
     background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('/header/header-optimized.jpg');
   }
+=======
+  background:linear-gradient(rgba(0,0,0,0.3),rgba(0,0,0,0.3)), url('/header/header-optimized.webp') center/cover no-repeat; 
+  color:white; 
+  text-align:center; 
+  padding:160px 20px 120px; 
+  margin-top:80px; 
+>>>>>>> parent of 37b7540 (Оптимизация процессов)
 }
 
 header h1 { 
@@ -304,9 +312,7 @@ header p {
   object-fit:cover; 
   border-radius:16px; 
   cursor:pointer; 
-  transition:transform 0.3s;
-  aspect-ratio: 3 / 2; /* Сохраняем пропорции */
-  background-color: #f0f0f0; /* Placeholder цвет */
+  transition:transform 0.3s; 
 }
 
 .gallery img:hover { 
@@ -807,6 +813,7 @@ footer .btn i {
   header{
     padding:100px 20px 60px;
     margin-top:70px;
+<<<<<<< HEAD
     min-height: 400px; /* Фиксированная высота для предотвращения CLS */
     background-attachment: scroll;
   }
@@ -817,6 +824,8 @@ footer .btn i {
   
   header p {
     font-size: 1.125rem;
+=======
+>>>>>>> parent of 37b7540 (Оптимизация процессов)
   } 
   
   header h1{

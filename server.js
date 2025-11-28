@@ -36,33 +36,7 @@ const bot = new TelegramBot(TELEGRAM_TOKEN);
 // === Middleware ===
 app.use(cors());
 app.use(bodyParser.json());
-
-// Кэширование статических ресурсов
-const staticOptions = {
-  maxAge: '1y',
-  etag: true,
-  lastModified: true,
-  setHeaders: (res, path) => {
-    // Кэширование изображений на 1 год
-    if (path.match(/\.(jpg|jpeg|png|gif|webp|svg|ico)$/i)) {
-      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
-    }
-    // Кэширование CSS и JS на 1 год
-    if (path.match(/\.(css|js)$/i)) {
-      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
-    }
-    // Кэширование шрифтов на 1 год
-    if (path.match(/\.(woff|woff2|ttf|eot)$/i)) {
-      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
-    }
-    // HTML кэшируем на 1 час
-    if (path.match(/\.html$/i)) {
-      res.setHeader('Cache-Control', 'public, max-age=3600');
-    }
-  }
-};
-
-app.use(express.static(path.join(__dirname, "public"), staticOptions));
+app.use(express.static(path.join(__dirname, "public")));
 
 const db = await initDB();
 
