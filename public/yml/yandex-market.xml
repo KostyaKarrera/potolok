@@ -2,7 +2,7 @@
 <yml_catalog date="2025-01-01 12:00">
 <shop>
 
-    <name>КонкурентЪ — натяжные потолки</name>
+    <name>КонкурентЪ</name>
     <company>КонкурентЪ</company>
     <url>https://potolok-konkurent.ru</url>
     <phone>+79003304656</phone>
@@ -12,89 +12,97 @@
     </currencies>
 
     <categories>
-        <category id="1">Услуги по ремонту и строительству</category>
-        <category id="2">Установка натяжных потолков</category>
+        <category id="1">Исполнитель</category>
+        <category id="11" parentId="1">Ремонт и строительство</category>
     </categories>
+
+    <sets>
+        <set id="cheboksary-set">
+            <name>Натяжные потолки в Чебоксарах</name>
+            <url>https://potolok-konkurent.ru/cheboksary/</url>
+        </set>
+
+        <set id="novocheboksarsk-set">
+            <name>Натяжные потолки в Новочебоксарске</name>
+            <url>https://potolok-konkurent.ru/novocheboksarsk/</url>
+        </set>
+
+        <set id="yoshkar-ola-set">
+            <name>Натяжные потолки в Йошкар-Оле</name>
+            <url>https://potolok-konkurent.ru/yoshkar-ola/</url>
+        </set>
+    </sets>
 
     <offers>
 
         <!-- ЧЕБОКСАРЫ -->
-        <offer id="executor-cheboksary" type="vendor.model" available="true">
-            <url>https://potolok-konkurent.ru</url>
+        <offer id="executor-cheboksary">
+            <name>КонкурентЪ Чебоксары</name>
+            <url>https://potolok-konkurent.ru/cheboksary/</url>
             <price>650</price>
             <currencyId>RUR</currencyId>
-            <categoryId>2</categoryId>
-
-            <picture>https://potolok-konkurent.ru/jobs/IMG_1166.JPG</picture>
+            <categoryId>11</categoryId>
             <picture>https://potolok-konkurent.ru/jobs/IMG_0477.JPG</picture>
-            <picture>https://potolok-konkurent.ru/jobs/IMG_1362.JPG</picture>
-
-            <name>Мастер по натяжным потолкам в Чебоксарах</name>
-            <description>
-Профессиональная установка натяжных потолков в Чебоксарах. Матовые, глянцевые, сатиновые, парящие и со скрытой подсветкой. Бесплатный замер, монтаж за 1 день, гарантия 10 лет. Работаем с 2018 года, выполняем проекты любой сложности в квартирах, домах и офисах.
-            </description>
+            <description>Установка натяжных потолков в Чебоксарах</description>
+            <set-ids>cheboksary-set</set-ids>
 
             <param name="Рейтинг">5</param>
             <param name="Число отзывов">10</param>
+            <param name="Годы опыта">7</param>
             <param name="Регион">Чебоксары</param>
             <param name="Конверсия">2</param>
-            <param name="Годы опыта">7</param>
 
             <param name="Тип услуг">установка натяжных потолков</param>
             <param name="Выезд">бесплатный</param>
             <param name="Срок выполнения">1 день</param>
             <param name="Гарантия">10 лет</param>
+
+            <param name="Организация">true</param>
+            <param name="Выполняется по адресу заказчика">true</param>
         </offer>
 
 
         <!-- НОВОЧЕБОКСАРСК -->
-        <offer id="executor-novocheboksarsk" type="vendor.model" available="true">
+        <offer id="executor-novocheboksarsk">
+            <name>КонкурентЪ Новочебоксарск</name>
             <url>https://potolok-konkurent.ru/novocheboksarsk/</url>
             <price>650</price>
             <currencyId>RUR</currencyId>
-            <categoryId>2</categoryId>
-
+            <categoryId>11</categoryId>
             <picture>https://potolok-konkurent.ru/jobs/IMG_0477.JPG</picture>
-
-            <name>Установка натяжных потолков в Новочебоксарске</name>
-            <description>
-Установка натяжных потолков в Новочебоксарске — матовые, глянцевые, сатиновые и парящие решения. Европейские материалы, профессиональный монтаж, аккуратная работа. Бесплатный замер, гарантия 10 лет. Оценим объект и выполним монтаж под ключ.
-            </description>
+            <description>Установка натяжных потолков в Новочебоксарске</description>
+            <set-ids>novocheboksarsk-set</set-ids>
 
             <param name="Рейтинг">5</param>
             <param name="Число отзывов">8</param>
+            <param name="Годы опыта">7</param>
             <param name="Регион">Новочебоксарск</param>
             <param name="Конверсия">2</param>
-            <param name="Годы опыта">7</param>
 
-            <param name="Тип услуг">натяжные потолки под ключ</param>
-            <param name="Гарантия">10 лет</param>
-            <param name="Выезд">бесплатный</param>
+            <param name="Организация">true</param>
+            <param name="Выполняется по адресу заказчика">true</param>
         </offer>
 
 
         <!-- ЙОШКАР-ОЛА -->
-        <offer id="executor-yoshkar-ola" type="vendor.model" available="true">
+        <offer id="executor-yoshkar-ola">
+            <name>КонкурентЪ Йошкар-Ола</name>
             <url>https://potolok-konkurent.ru/yoshkar-ola/</url>
             <price>890</price>
             <currencyId>RUR</currencyId>
-            <categoryId>2</categoryId>
-
+            <categoryId>11</categoryId>
             <picture>https://potolok-konkurent.ru/jobs/IMG_1362.JPG</picture>
-
-            <name>Мастер по натяжным потолкам в Йошкар-Оле</name>
-            <description>
-Профессиональная установка натяжных потолков в Йошкар-Оле и Марий-Эл. Работаем со всеми типами потолков: матовые, глянцевые, фактурные, многоуровневые. Гарантия 10 лет, быстрый и аккуратный монтаж, бесплатный замер.
-            </description>
+            <description>Установка натяжных потолков в Йошкар-Оле</description>
+            <set-ids>yoshkar-ola-set</set-ids>
 
             <param name="Рейтинг">5</param>
             <param name="Число отзывов">5</param>
+            <param name="Годы опыта">7</param>
             <param name="Регион">Йошкар-Ола</param>
             <param name="Конверсия">2</param>
-            <param name="Годы опыта">7</param>
 
-            <param name="Тип услуг">монтаж натяжных потолков</param>
-            <param name="Гарантия">10 лет</param>
+            <param name="Организация">true</param>
+            <param name="Выполняется по адресу заказчика">true</param>
         </offer>
 
     </offers>
