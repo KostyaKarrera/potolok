@@ -147,46 +147,27 @@ body {
 /* 🔹 Hero */
 header { 
   position: relative;
+  background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('/header/header-optimized.webp');
+  background-size: cover;
+  background-position: center;
+  background-attachment: scroll;
+  background-repeat: no-repeat;
   color:white; 
   text-align:center; 
   padding:160px 20px 120px; 
-  margin-top:80px; 
-  overflow: hidden;
+  margin-top:80px;
+  min-height: 500px; /* Фиксированная минимальная высота для предотвращения CLS */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 
-header::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3));
-  z-index: 2;
-}
-
-header > *:not(picture) {
-  position: relative;
-  z-index: 3;
-}
-
-header picture {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 0;
-}
-
-.hero-img {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  z-index: 0;
+/* Fallback для браузеров без поддержки WebP */
+@supports not (background-image: url('/header/header-optimized.webp')) {
+  header {
+    background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('/header/header-optimized.jpg');
+  }
 }
 
 header h1 { 
@@ -824,9 +805,10 @@ footer .btn i {
   }
 
   header{
-    padding:120px 20px 80px;
+    padding:100px 20px 60px;
     margin-top:70px;
-    min-height: 400px; /* Минимальная высота для мобильных */
+    min-height: 400px; /* Фиксированная высота для предотвращения CLS */
+    background-attachment: scroll;
   }
   
   header h1 {
