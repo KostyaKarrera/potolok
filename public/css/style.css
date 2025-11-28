@@ -147,10 +147,15 @@ body {
 /* 🔹 Hero */
 header { 
   background:linear-gradient(rgba(0,0,0,0.3),rgba(0,0,0,0.3)), url('/header/header-optimized.webp') center/cover no-repeat; 
+  background-size: cover;
+  background-position: center;
+  background-attachment: scroll; /* Отключаем fixed для мобильных */
   color:white; 
   text-align:center; 
   padding:160px 20px 120px; 
   margin-top:80px; 
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
 }
 
 header h1 { 
@@ -287,7 +292,9 @@ header p {
   object-fit:cover; 
   border-radius:16px; 
   cursor:pointer; 
-  transition:transform 0.3s; 
+  transition:transform 0.3s;
+  aspect-ratio: 3 / 2; /* Сохраняем пропорции */
+  background-color: #f0f0f0; /* Placeholder цвет */
 }
 
 .gallery img:hover { 
@@ -788,6 +795,7 @@ footer .btn i {
   header{
     padding:120px 20px 80px;
     margin-top:70px;
+    background-attachment: scroll; /* Отключаем fixed для производительности */
   } 
   
   header h1{
