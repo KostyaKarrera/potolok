@@ -238,6 +238,108 @@
 
   </div>
 
+  <!-- Модальное окно редактирования заявки -->
+  <div id="edit-request-modal" class="modal" style="display:none;">
+    <div class="modal-content">
+      <span class="modal-close" onclick="closeEditRequestModal()">&times;</span>
+      <h2>Редактировать заявку</h2>
+      <form id="edit-request-form">
+        <div class="form-field">
+          <label>Имя</label>
+          <input type="text" id="edit-request-name" required>
+        </div>
+        <div class="form-field">
+          <label>Телефон</label>
+          <input type="text" id="edit-request-phone" required>
+        </div>
+        <div class="form-field">
+          <label>Тип заявки</label>
+          <input type="text" id="edit-request-type" required>
+        </div>
+        <div class="form-field">
+          <label>Ориентировочная стоимость</label>
+          <input type="number" id="edit-request-estimated" min="0">
+        </div>
+        <div class="form-field">
+          <label>Сумма договора</label>
+          <input type="number" id="edit-request-amount" min="0">
+        </div>
+        <div class="form-field">
+          <label>Статус</label>
+          <select id="edit-request-status">
+            <option value="новая">Новая</option>
+            <option value="в_работе">В работе</option>
+            <option value="закрыта">Закрыта</option>
+            <option value="отменена">Отменена</option>
+          </select>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:20px;">
+          <button type="submit" class="save-btn">Сохранить</button>
+          <button type="button" class="cancel-btn" onclick="closeEditRequestModal()">Отмена</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Модальное окно редактирования договора -->
+  <div id="edit-contract-modal" class="modal" style="display:none;">
+    <div class="modal-content">
+      <span class="modal-close" onclick="closeEditContractModal()">&times;</span>
+      <h2>Редактировать договор</h2>
+      <form id="edit-contract-form">
+        <div class="form-grid">
+          <div class="form-field">
+            <label>Имя</label>
+            <input type="text" id="edit-contract-name" required>
+          </div>
+          <div class="form-field">
+            <label>Телефон</label>
+            <input type="text" id="edit-contract-phone" required>
+          </div>
+          <div class="form-field form-field-wide">
+            <label>Адрес</label>
+            <input type="text" id="edit-contract-address" required>
+          </div>
+          <div class="form-field">
+            <label>Сумма договора (₽)</label>
+            <input type="number" id="edit-contract-amount" min="0" step="1">
+          </div>
+          <div class="form-field">
+            <label>Дата договора</label>
+            <input type="date" id="edit-contract-date">
+          </div>
+          <div class="form-field">
+            <label>Дата монтажа</label>
+            <input type="date" id="edit-contract-install-date">
+          </div>
+          <div class="form-field">
+            <label>Предоплата (₽)</label>
+            <input type="number" id="edit-contract-prepayment" min="0" step="1">
+          </div>
+          <div class="form-field">
+            <label>Рефер (партнёр)</label>
+            <select id="edit-contract-ref">
+              <option value="">— Без рефера —</option>
+            </select>
+          </div>
+          <div class="form-field form-field-wide">
+            <label>Добавить фото (можно выбрать несколько)</label>
+            <input type="file" id="edit-contract-photos" multiple accept="image/*">
+            <div id="edit-contract-photos-preview" class="photos-preview" style="margin-top:10px;"></div>
+          </div>
+          <div class="form-field form-field-wide">
+            <label>Текущие фото</label>
+            <div id="edit-contract-current-photos" class="photos-preview" style="margin-top:10px;"></div>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:20px;">
+          <button type="submit" class="save-btn">Сохранить</button>
+          <button type="button" class="cancel-btn" onclick="closeEditContractModal()">Отмена</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <script src="admin.js"></script>
 </body>
 </html>

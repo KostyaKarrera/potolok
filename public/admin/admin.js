@@ -99,49 +99,58 @@ function renderRequests(requests) {
     return;
   }
 
+  const isMobile = window.innerWidth <= 768;
+  const table = document.querySelector("#requests-table");
+
   requests.forEach(req => {
     const tr = document.createElement("tr");
+    if (isMobile) {
+      tr.className = "mobile-card-view";
+    }
     tr.innerHTML = `
-      <td>${req.id}</td>
-      <td>${req.name}</td>
-      <td>${req.phone}</td>
-      <td>${req.type || "-"}</td>
-      <td>
+      <td data-label="ID">${req.id}</td>
+      <td data-label="Имя">${req.name}</td>
+      <td data-label="Телефон">${req.phone}</td>
+      <td data-label="Тип">${req.type || "-"}</td>
+      <td data-label="Ориентировочная стоимость">
         <input type="number" 
                id="estimated-${req.id}" 
                value="${req.estimatedPrice || ""}" 
                placeholder="0"
                min="0"
-               style="width:120px;padding:6px;border:1px solid #ddd;border-radius:6px;">
+               style="width:100%;max-width:120px;padding:6px;border:1px solid #ddd;border-radius:6px;">
       </td>
-      <td class="partner-info">
+      <td data-label="Партнёр" class="partner-info">
         ${req.partnerName ? `<strong>${req.partnerName}</strong><br><small>${req.partnerPromo}</small>` : "-"}
       </td>
-      <td>
+      <td data-label="Статус">
         <span class="status-badge status-${req.status || "новая"}">${req.status || "новая"}</span>
       </td>
-      <td>
+      <td data-label="Сумма договора">
         <input type="number" 
                id="amount-${req.id}" 
                value="${req.contractAmount || ""}" 
                placeholder="0"
                min="0"
-               style="width:120px;padding:6px;border:1px solid #ddd;border-radius:6px;">
+               style="width:100%;max-width:120px;padding:6px;border:1px solid #ddd;border-radius:6px;">
       </td>
-      <td>${new Date(req.createdAt).toLocaleDateString("ru-RU")}</td>
-      <td>
+      <td data-label="Дата">${new Date(req.createdAt).toLocaleDateString("ru-RU")}</td>
+      <td data-label="Действия">
         <div class="edit-form">
-          <select id="status-${req.id}" style="width:140px;padding:6px;border:1px solid #ddd;border-radius:6px;">
+          <select id="status-${req.id}" style="width:100%;max-width:140px;padding:6px;border:1px solid #ddd;border-radius:6px;">
             <option value="новая" ${req.status === "новая" ? "selected" : ""}>Новая</option>
             <option value="в_работе" ${req.status === "в_работе" ? "selected" : ""}>В работе</option>
             <option value="закрыта" ${req.status === "закрыта" ? "selected" : ""}>Закрыта</option>
             <option value="отменена" ${req.status === "отменена" ? "selected" : ""}>Отменена</option>
           </select>
-          <button class="save-btn" onclick="saveRequest(${req.id})">Сохранить</button>
+          <button class="save-btn" onclick="saveRequest(${req.id})" style="width:100%;margin-top:5px;">Сохранить</button>
         </div>
       </td>
-      <td>
-        <button class="delete-btn" onclick="deleteRequest(${req.id})" title="Удалить заявку">🗑️</button>
+      <td data-label="Управление">
+        <div style="display:flex;gap:5px;align-items:center;flex-wrap:wrap;justify-content:center;">
+          <button class="edit-btn" onclick="editRequest(${req.id})" title="Редактировать заявку">✏️</button>
+          <button class="delete-btn" onclick="deleteRequest(${req.id})" title="Удалить заявку">🗑️</button>
+        </div>
       </td>
     `;
     tbody.appendChild(tr);
@@ -434,24 +443,32 @@ function renderContracts(contracts) {
     return;
   }
 
+  const isMobile = window.innerWidth <= 768;
+
   contracts.forEach(c => {
     const tr = document.createElement("tr");
+    if (isMobile) {
+      tr.className = "mobile-card-view";
+    }
     const photosHtml = (c.photos || [])
       .map(src => `<a href="${src}" target="_blank"><img src="${src}" alt="" style="width:48px;height:48px;object-fit:cover;border-radius:4px;border:1px solid #eee;margin-right:4px;"></a>`)
       .join("");
     tr.innerHTML = `
-      <td>${c.id}</td>
-      <td>${c.name}</td>
-      <td>${c.phone}</td>
-      <td>${c.address || "-"}</td>
-      <td>${c.contractAmount || "-"}</td>
-      <td>${c.contractDate ? new Date(c.contractDate).toLocaleDateString("ru-RU") : "-"}</td>
-      <td>${c.installDate ? new Date(c.installDate).toLocaleDateString("ru-RU") : "-"}</td>
-      <td>${c.prepayment || "-"}</td>
-      <td class="partner-info">${c.partnerName ? `<strong>${c.partnerName}</strong><br><small>${c.partnerPromo}</small>` : "-"}</td>
-      <td>${photosHtml || "-"}</td>
-      <td>
-        <button class="delete-btn" onclick="deleteContract(${c.id})" title="Удалить договор">🗑️</button>
+      <td data-label="ID">${c.id}</td>
+      <td data-label="Имя">${c.name}</td>
+      <td data-label="Телефон">${c.phone}</td>
+      <td data-label="Адрес">${c.address || "-"}</td>
+      <td data-label="Сумма">${c.contractAmount || "-"}</td>
+      <td data-label="Договор">${c.contractDate ? new Date(c.contractDate).toLocaleDateString("ru-RU") : "-"}</td>
+      <td data-label="Монтаж">${c.installDate ? new Date(c.installDate).toLocaleDateString("ru-RU") : "-"}</td>
+      <td data-label="Предоплата">${c.prepayment || "-"}</td>
+      <td data-label="Партнёр" class="partner-info">${c.partnerName ? `<strong>${c.partnerName}</strong><br><small>${c.partnerPromo}</small>` : "-"}</td>
+      <td data-label="Фото">${photosHtml || "-"}</td>
+      <td data-label="Управление">
+        <div style="display:flex;gap:5px;align-items:center;flex-wrap:wrap;justify-content:center;">
+          <button class="edit-btn" onclick="editContract(${c.id})" title="Редактировать договор">✏️</button>
+          <button class="delete-btn" onclick="deleteContract(${c.id})" title="Удалить договор">🗑️</button>
+        </div>
       </td>
     `;
     tbody.appendChild(tr);
@@ -636,10 +653,310 @@ function initRatingForm() {
   }
 }
 
+// ====== РЕДАКТИРОВАНИЕ ЗАЯВКИ ======
+let currentEditRequestId = null;
+
+async function editRequest(id) {
+  try {
+    const res = await fetch(`${API}/requests`, {
+      headers: { Authorization: `Bearer ${adminToken}` }
+    });
+    const data = await res.json();
+    if (data.status === "success") {
+      const request = data.requests.find(r => r.id === id);
+      if (request) {
+        currentEditRequestId = id;
+        document.getElementById("edit-request-name").value = request.name || "";
+        document.getElementById("edit-request-phone").value = request.phone || "";
+        document.getElementById("edit-request-type").value = request.type || "";
+        document.getElementById("edit-request-estimated").value = request.estimatedPrice || "";
+        document.getElementById("edit-request-amount").value = request.contractAmount || "";
+        document.getElementById("edit-request-status").value = request.status || "новая";
+        document.getElementById("edit-request-modal").style.display = "flex";
+      }
+    }
+  } catch (err) {
+    showNotification("Ошибка загрузки данных заявки", "error");
+  }
+}
+
+function closeEditRequestModal() {
+  document.getElementById("edit-request-modal").style.display = "none";
+  currentEditRequestId = null;
+}
+
+document.getElementById("edit-request-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  if (!currentEditRequestId) return;
+
+  const name = document.getElementById("edit-request-name").value.trim();
+  const phone = document.getElementById("edit-request-phone").value.trim();
+  const type = document.getElementById("edit-request-type").value.trim();
+  const estimatedPrice = document.getElementById("edit-request-estimated").value ? parseInt(document.getElementById("edit-request-estimated").value) : null;
+  const contractAmount = document.getElementById("edit-request-amount").value ? parseInt(document.getElementById("edit-request-amount").value) : null;
+  const status = document.getElementById("edit-request-status").value;
+
+  if (!name || !phone || !type) {
+    showNotification("Заполните все обязательные поля", "error");
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API}/requests/${currentEditRequestId}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${adminToken}`
+      },
+      body: JSON.stringify({ name, phone, type, estimatedPrice, contractAmount, status })
+    });
+
+    const data = await res.json();
+    if (data.status === "success") {
+      showNotification("Заявка успешно обновлена", "success");
+      closeEditRequestModal();
+      loadRequests();
+    } else {
+      showNotification("Ошибка: " + data.message, "error");
+    }
+  } catch (err) {
+    showNotification("Ошибка сохранения", "error");
+  }
+});
+
+// Закрытие модального окна при клике вне его
+document.getElementById("edit-request-modal").addEventListener("click", (e) => {
+  if (e.target.id === "edit-request-modal") {
+    closeEditRequestModal();
+  }
+});
+
+// ====== РЕДАКТИРОВАНИЕ ДОГОВОРА ======
+let currentEditContractId = null;
+
+async function editContract(id) {
+  try {
+    const res = await fetch(`${API}/contracts`, {
+      headers: { Authorization: `Bearer ${adminToken}` }
+    });
+    const data = await res.json();
+    if (data.status === "success") {
+      const contract = data.contracts.find(c => c.id === id);
+      if (contract) {
+        currentEditContractId = id;
+        document.getElementById("edit-contract-name").value = contract.name || "";
+        document.getElementById("edit-contract-phone").value = contract.phone || "";
+        document.getElementById("edit-contract-address").value = contract.address || "";
+        document.getElementById("edit-contract-amount").value = contract.contractAmount || "";
+        document.getElementById("edit-contract-date").value = contract.contractDate ? contract.contractDate.split('T')[0] : "";
+        document.getElementById("edit-contract-install-date").value = contract.installDate ? contract.installDate.split('T')[0] : "";
+        document.getElementById("edit-contract-prepayment").value = contract.prepayment || "";
+        document.getElementById("edit-contract-ref").value = contract.ref || "";
+        
+        // Отображаем текущие фото
+        const currentPhotosDiv = document.getElementById("edit-contract-current-photos");
+        if (contract.photos && contract.photos.length > 0) {
+          currentPhotosDiv.innerHTML = contract.photos.map(photo => `
+            <div style="position:relative;display:inline-block;">
+              <img src="${photo}" alt="Фото" style="width:80px;height:80px;object-fit:cover;border-radius:6px;border:1px solid #eee;">
+              <button type="button" onclick="removeContractPhoto('${photo}', ${id})" 
+                      style="position:absolute;top:-5px;right:-5px;background:#e74c3c;color:white;border:none;border-radius:50%;width:20px;height:20px;cursor:pointer;font-size:12px;">×</button>
+            </div>
+          `).join("");
+        } else {
+          currentPhotosDiv.innerHTML = "<span style='color:#999;'>Нет фото</span>";
+        }
+        
+        // Очищаем превью новых фото
+        document.getElementById("edit-contract-photos-preview").innerHTML = "";
+        document.getElementById("edit-contract-photos").value = "";
+        
+        // Загружаем партнёров в селект
+        await loadPartnersForEdit();
+        document.getElementById("edit-contract-modal").style.display = "flex";
+      }
+    }
+  } catch (err) {
+    showNotification("Ошибка загрузки данных договора", "error");
+  }
+}
+
+// Удаление фото из договора
+async function removeContractPhoto(photoPath, contractId) {
+  if (!confirm("Удалить это фото?")) return;
+  
+  try {
+    const res = await fetch(`${API}/contracts/${contractId}/photos`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${adminToken}`
+      },
+      body: JSON.stringify({ photoPath })
+    });
+    
+    const data = await res.json();
+    if (data.status === "success") {
+      showNotification("Фото удалено", "success");
+      editContract(contractId); // Перезагружаем данные
+    } else {
+      showNotification("Ошибка: " + data.message, "error");
+    }
+  } catch (err) {
+    showNotification("Ошибка удаления фото", "error");
+  }
+}
+
+// Превью новых фото при выборе
+document.getElementById("edit-contract-photos").addEventListener("change", function() {
+  const preview = document.getElementById("edit-contract-photos-preview");
+  preview.innerHTML = "";
+  Array.from(this.files || []).forEach(file => {
+    const url = URL.createObjectURL(file);
+    const img = document.createElement("img");
+    img.src = url;
+    preview.appendChild(img);
+  });
+});
+
+async function loadPartnersForEdit() {
+  const select = document.getElementById("edit-contract-ref");
+  if (!select) return;
+  select.innerHTML = `<option value="">— Без рефера —</option>`;
+  try {
+    const res = await fetch(`${API}/partners`, {
+      headers: { Authorization: `Bearer ${adminToken}` }
+    });
+    const data = await res.json();
+    if (data.status === "success") {
+      (data.partners || []).forEach(p => {
+        const opt = document.createElement("option");
+        opt.value = p.id;
+        opt.textContent = `${p.name} (${p.promo})`;
+        select.appendChild(opt);
+      });
+    }
+  } catch (e) {
+    console.error("Ошибка загрузки партнёров:", e);
+  }
+}
+
+function closeEditContractModal() {
+  document.getElementById("edit-contract-modal").style.display = "none";
+  currentEditContractId = null;
+}
+
+document.getElementById("edit-contract-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  if (!currentEditContractId) return;
+
+  const name = document.getElementById("edit-contract-name").value.trim();
+  const phone = document.getElementById("edit-contract-phone").value.trim();
+  const address = document.getElementById("edit-contract-address").value.trim();
+  const contractAmount = document.getElementById("edit-contract-amount").value ? parseInt(document.getElementById("edit-contract-amount").value) : null;
+  const contractDate = document.getElementById("edit-contract-date").value || null;
+  const installDate = document.getElementById("edit-contract-install-date").value || null;
+  const prepayment = document.getElementById("edit-contract-prepayment").value ? parseInt(document.getElementById("edit-contract-prepayment").value) : null;
+  const ref = document.getElementById("edit-contract-ref").value || null;
+  const photosInput = document.getElementById("edit-contract-photos");
+  const hasNewPhotos = photosInput.files && photosInput.files.length > 0;
+
+  if (!name || !phone || !address) {
+    showNotification("Заполните все обязательные поля", "error");
+    return;
+  }
+
+  try {
+    // Если есть новые фото, используем FormData, иначе JSON
+    if (hasNewPhotos) {
+      const formData = new FormData();
+      formData.append("name", name);
+      formData.append("phone", phone);
+      formData.append("address", address);
+      if (contractAmount) formData.append("contractAmount", contractAmount);
+      if (contractDate) formData.append("contractDate", contractDate);
+      if (installDate) formData.append("installDate", installDate);
+      if (prepayment) formData.append("prepayment", prepayment);
+      if (ref) formData.append("ref", ref);
+      
+      Array.from(photosInput.files).forEach(file => {
+        formData.append("photos", file);
+      });
+
+      const res = await fetch(`${API}/contracts/${currentEditContractId}`, {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${adminToken}`
+        },
+        body: formData
+      });
+
+      const data = await res.json();
+      if (data.status === "success") {
+        showNotification("Договор успешно обновлен", "success");
+        closeEditContractModal();
+        loadContracts();
+      } else {
+        showNotification("Ошибка: " + data.message, "error");
+      }
+    } else {
+      // Обновление без фото - используем JSON
+      const res = await fetch(`${API}/contracts/${currentEditContractId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${adminToken}`
+        },
+        body: JSON.stringify({ name, phone, address, contractAmount, contractDate, installDate, prepayment, ref })
+      });
+
+      const data = await res.json();
+      if (data.status === "success") {
+        showNotification("Договор успешно обновлен", "success");
+        closeEditContractModal();
+        loadContracts();
+      } else {
+        showNotification("Ошибка: " + data.message, "error");
+      }
+    }
+  } catch (err) {
+    showNotification("Ошибка сохранения", "error");
+  }
+});
+
+// Закрытие модального окна при клике вне его
+document.getElementById("edit-contract-modal").addEventListener("click", (e) => {
+  if (e.target.id === "edit-contract-modal") {
+    closeEditContractModal();
+  }
+});
+
 // Глобальные функции для кнопок
 window.loadCurrentRating = loadCurrentRating;
 window.updateGoogleRating = updateGoogleRating;
 window.loadPhoneClicks = loadPhoneClicks;
+window.editRequest = editRequest;
+window.editContract = editContract;
+window.closeEditRequestModal = closeEditRequestModal;
+window.closeEditContractModal = closeEditContractModal;
+window.removeContractPhoto = removeContractPhoto;
+
+// Обработчик изменения размера окна для адаптивности
+let resizeTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => {
+    // Перерисовываем таблицы при изменении размера
+    const leadsTable = document.querySelector(".table-container");
+    if (leadsTable && leadsTable.style.display !== "none") {
+      loadRequests();
+    }
+    const contractsTab = document.getElementById("contracts-tab");
+    if (contractsTab && contractsTab.style.display !== "none") {
+      loadContracts();
+    }
+  }, 250);
+});
 
 // Инициализация
 checkAuth();

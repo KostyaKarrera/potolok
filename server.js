@@ -261,23 +261,24 @@ app.get("/api/admin/requests", async (req, res) => {
   }
 });
 
-// === Админка: обновить заявку (сумма и статус) ===
-app.patch("/api/admin/requests/:id", async (req, res) => {
-  const auth = req.headers.authorization?.split(" ")[1];
-  if (!auth) return res.status(401).json({ status: "error", message: "Нет токена" });
-
+// === Админка: обновить заявку ===
+app.patch("/api/admin/requests/:id", requireAdmin, async (req, res) => {
   try {
-    const payload = jwt.verify(auth, JWT_SECRET);
-    if (payload.role !== "admin") {
-      return res.status(403).json({ status: "error", message: "Нет доступа" });
-    }
-
-    const { contractAmount, status, estimatedPrice } = req.body;
+    const { name, phone, type, contractAmount, status, estimatedPrice } = req.body;
     const id = req.params.id;
 
+    // Если переданы базовые поля, обновляем их
+    if (name || phone || type) {
+      await db.run(
+        "UPDATE requests SET name = COALESCE(?, name), phone = COALESCE(?, phone), type = COALESCE(?, type) WHERE id = ?",
+        [name || null, phone || null, type || null, id]
+      );
+    }
+
+    // Обновляем остальные поля
     await db.run(
-      "UPDATE requests SET contractAmount = ?, status = ?, estimatedPrice = ? WHERE id = ?",
-      [contractAmount || null, status || "новая", estimatedPrice || null, id]
+      "UPDATE requests SET contractAmount = COALESCE(?, contractAmount), status = COALESCE(?, status), estimatedPrice = COALESCE(?, estimatedPrice) WHERE id = ?",
+      [contractAmount || null, status || null, estimatedPrice || null, id]
     );
 
     res.json({ status: "success", message: "Заявка обновлена" });
@@ -451,6 +452,108 @@ app.delete("/api/admin/requests/:id", requireAdmin, async (req, res) => {
       status: 'error',
       message: 'Ошибка сервера при удалении заявки'
     });
+  }
+});
+
+// === Админка: обновить договор ===
+app.patch("/api/admin/contracts/:id", requireAdmin, upload.array("photos", 10), async (req, res) => {
+  try {
+    const {
+      name,
+      phone,
+      address,
+      contractAmount,
+      contractDate,
+      installDate,
+      prepayment,
+      ref
+    } = req.body;
+    const id = req.params.id;
+
+    // Определим partnerId по promo (если передан нечисловой ref)
+    let partnerId = null;
+    if (ref) {
+      if (/^\d+$/.test(String(ref))) {
+        partnerId = Number(ref);
+      } else {
+        const partner = await db.get("SELECT id FROM partners WHERE promo = ?", [ref]);
+        if (partner) partnerId = partner.id;
+      }
+    }
+
+    // Обновляем основные поля
+    await db.run(
+      `UPDATE contracts SET
+        name = COALESCE(?, name),
+        phone = COALESCE(?, phone),
+        address = COALESCE(?, address),
+        contractAmount = COALESCE(?, contractAmount),
+        contractDate = COALESCE(?, contractDate),
+        installDate = COALESCE(?, installDate),
+        prepayment = COALESCE(?, prepayment),
+        ref = COALESCE(?, ref)
+      WHERE id = ?`,
+      [
+        name || null,
+        phone || null,
+        address || null,
+        contractAmount ? Number(contractAmount) : null,
+        contractDate || null,
+        installDate || null,
+        prepayment ? Number(prepayment) : null,
+        partnerId,
+        id
+      ]
+    );
+
+    // Если есть новые фото, добавляем их
+    if (req.files && req.files.length > 0) {
+      const contract = await db.get("SELECT photos FROM contracts WHERE id = ?", [id]);
+      const existingPhotos = contract.photos ? JSON.parse(contract.photos) : [];
+      const newPhotos = await saveContractPhotos(id, req.files);
+      const allPhotos = [...existingPhotos, ...newPhotos];
+      await db.run("UPDATE contracts SET photos = ? WHERE id = ?", [JSON.stringify(allPhotos), id]);
+    }
+
+    res.json({ status: "success", message: "Договор обновлен" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ status: "error", message: "Ошибка сервера" });
+  }
+});
+
+// === Админка: удалить фото из договора ===
+app.delete("/api/admin/contracts/:id/photos", requireAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { photoPath } = req.body;
+
+    if (!photoPath) {
+      return res.status(400).json({ status: "error", message: "Не указан путь к фото" });
+    }
+
+    // Получаем текущие фото
+    const contract = await db.get("SELECT photos FROM contracts WHERE id = ?", [id]);
+    if (!contract) {
+      return res.status(404).json({ status: "error", message: "Договор не найден" });
+    }
+
+    const photos = contract.photos ? JSON.parse(contract.photos) : [];
+    const updatedPhotos = photos.filter(p => p !== photoPath);
+
+    // Удаляем файл
+    const fullPath = path.join(__dirname, "public", photoPath);
+    if (fs.existsSync(fullPath)) {
+      fs.unlinkSync(fullPath);
+    }
+
+    // Обновляем список фото в БД
+    await db.run("UPDATE contracts SET photos = ? WHERE id = ?", [JSON.stringify(updatedPhotos), id]);
+
+    res.json({ status: "success", message: "Фото удалено" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ status: "error", message: "Ошибка сервера" });
   }
 });
 
