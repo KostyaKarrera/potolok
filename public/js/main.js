@@ -62,24 +62,61 @@ async function sendRequest(name, phone, type, estimatedPrice = null, promo = nul
   }
 }
 
+// ====== 4.1. Toast уведомления ======
+function showToast(message, type = "info") {
+  const toast = document.createElement("div");
+  toast.className = `toast toast-${type}`;
+  toast.textContent = message;
+  document.body.appendChild(toast);
+  
+  setTimeout(() => toast.classList.add("show"), 10);
+  setTimeout(() => {
+    toast.classList.remove("show");
+    setTimeout(() => toast.remove(), 300);
+  }, 3000);
+}
+
+// ====== 4.2. Улучшенные модальные окна ======
+function showModal(modalId) {
+  const modal = document.getElementById(modalId);
+  if (modal) {
+    modal.style.display = "flex";
+    modal.classList.add("show");
+    document.body.style.overflow = "hidden";
+  }
+}
+
+function hideModal(modalId) {
+  const modal = document.getElementById(modalId);
+  if (modal) {
+    modal.classList.remove("show");
+    setTimeout(() => {
+      modal.style.display = "none";
+      document.body.style.overflow = "";
+    }, 300);
+  }
+}
+
 // ====== 5. Утилита: универсальная обработка форм ======
 function handleModalForm({ buttonId, modalId, formId, successId, type }) {
   const btn = document.getElementById(buttonId);
   const modal = document.getElementById(modalId);
   const form = document.getElementById(formId);
   const success = document.getElementById(successId);
-  const close = modal.querySelector(".close");
+  const close = modal?.querySelector(".close");
 
   if (!btn || !modal || !form) return;
 
   btn.addEventListener("click", () => {
-    modal.style.display = "block";
+    showModal(modalId);
     form.style.display = "block";
     if (success) success.style.display = "none";
   });
 
-  close.addEventListener("click", () => (modal.style.display = "none"));
-  window.addEventListener("click", e => { if (e.target === modal) modal.style.display = "none"; });
+  if (close) {
+    close.addEventListener("click", () => hideModal(modalId));
+  }
+  window.addEventListener("click", e => { if (e.target === modal) hideModal(modalId); });
 
   form.addEventListener("submit", async e => {
     e.preventDefault();
@@ -87,14 +124,25 @@ function handleModalForm({ buttonId, modalId, formId, successId, type }) {
     const phone = form.querySelector('input[placeholder="Ваш телефон"]').value.trim();
     const promoEl = form.querySelector('input[placeholder="Промокод (если есть)"]');
     const promo = promoEl ? promoEl.value.trim() || null : null;
-    if (!name || !phone) return alert("Заполните все поля");
+    
+    // Валидация
+    if (!name || !phone) {
+      showToast("Заполните все обязательные поля", "error");
+      return;
+    }
+    
+    if (phone.length < 10) {
+      showToast("Введите корректный номер телефона", "error");
+      return;
+    }
 
     const result = await sendRequest(name, phone, type, null, promo);
     if (result.status === "success") {
       form.style.display = "none";
       if (success) success.style.display = "block";
+      showToast("Заявка успешно отправлена!", "success");
     } else {
-      alert("Ошибка: " + result.message);
+      showToast("Ошибка: " + result.message, "error");
     }
   });
 }
@@ -115,19 +163,24 @@ if (calculatorForm) {
     const lamps = Number(calculatorForm.querySelector('input[placeholder*="Светильники"]').value);
     const chandeliers = Number(calculatorForm.querySelector('input[placeholder*="Люстры"]').value);
 
-    if (area < 1) return alert("Введите корректную площадь");
+    if (area < 1) {
+      showToast("Введите корректную площадь", "error");
+      return;
+    }
 
     const price = area * 600 + lamps * 550 + chandeliers * 700;
 
-    estimateModal.style.display = "block";
+    showModal("estimateModal");
     successMessage.style.display = "none";
     estimateForm.style.display = "block";
 
     animateNumber(estimateText, 0, price, 600);
   });
 
-  closeEstimate.addEventListener("click", () => (estimateModal.style.display = "none"));
-  window.addEventListener("click", e => { if (e.target === estimateModal) estimateModal.style.display = "none"; });
+  if (closeEstimate) {
+    closeEstimate.addEventListener("click", () => hideModal("estimateModal"));
+  }
+  window.addEventListener("click", e => { if (e.target === estimateModal) hideModal("estimateModal"); });
 
   estimateForm.addEventListener("submit", async e => {
     e.preventDefault();
@@ -136,14 +189,23 @@ if (calculatorForm) {
     const promoEl = estimateForm.querySelector('input[placeholder="Промокод (если есть)"]');
     const promo = promoEl ? promoEl.value.trim() || null : null;
     const estimatedPrice = estimateText.textContent.match(/\d+/g)?.join("") || null;
-    if (!name || !phone) return alert("Заполните все поля");
+    if (!name || !phone) {
+      showToast("Заполните все обязательные поля", "error");
+      return;
+    }
+    
+    if (phone.length < 10) {
+      showToast("Введите корректный номер телефона", "error");
+      return;
+    }
 
     const result = await sendRequest(name, phone, "Калькулятор", estimatedPrice, promo);
     if (result.status === "success") {
       estimateForm.style.display = "none";
       successMessage.style.display = "block";
+      showToast("Заявка успешно отправлена!", "success");
     } else {
-      alert("Ошибка: " + result.message);
+      showToast("Ошибка: " + result.message, "error");
     }
   });
 }
@@ -268,4 +330,69 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   });
+});
+
+// ====== 9. Sticky Header при скролле ======
+window.addEventListener("scroll", () => {
+  const topbar = document.querySelector(".topbar");
+  if (window.scrollY > 50) {
+    topbar.classList.add("scrolled");
+  } else {
+    topbar.classList.remove("scrolled");
+  }
+});
+
+// ====== 10. Smooth Scroll ======
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+  anchor.addEventListener("click", function (e) {
+    e.preventDefault();
+    const target = document.querySelector(this.getAttribute("href"));
+    if (target) {
+      target.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
+    }
+  });
+});
+
+// ====== 13. Валидация форм в реальном времени ======
+document.addEventListener("DOMContentLoaded", () => {
+  const inputs = document.querySelectorAll("input[type='tel'], input[type='text']");
+  inputs.forEach(input => {
+    input.addEventListener("blur", function() {
+      if (this.hasAttribute("required") && !this.value.trim()) {
+        this.style.borderColor = "#e74c3c";
+      } else if (this.type === "tel" && this.value.length > 0 && this.value.length < 10) {
+        this.style.borderColor = "#e74c3c";
+      } else if (this.value.trim()) {
+        this.style.borderColor = "var(--success-color)";
+      }
+    });
+    
+    input.addEventListener("input", function() {
+      if (this.style.borderColor === "rgb(231, 76, 60)" && this.value.trim()) {
+        this.style.borderColor = "";
+      }
+    });
+  });
+});
+
+// ====== 14. Кнопка "Наверх" ======
+const scrollTopBtn = document.createElement("button");
+scrollTopBtn.innerHTML = "↑";
+scrollTopBtn.className = "scroll-top-btn";
+scrollTopBtn.setAttribute("aria-label", "Наверх");
+document.body.appendChild(scrollTopBtn);
+
+scrollTopBtn.addEventListener("click", () => {
+  window.scrollTo({ top: 0, behavior: "smooth" });
+});
+
+window.addEventListener("scroll", () => {
+  if (window.scrollY > 300) {
+    scrollTopBtn.classList.add("show");
+  } else {
+    scrollTopBtn.classList.remove("show");
+  }
 });
