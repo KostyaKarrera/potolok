@@ -146,16 +146,38 @@ body {
 
 /* 🔹 Hero */
 header { 
-  background:linear-gradient(rgba(0,0,0,0.3),rgba(0,0,0,0.3)), url('/header/header-optimized.webp') center/cover no-repeat; 
-  background-size: cover;
-  background-position: center;
-  background-attachment: scroll; /* Отключаем fixed для мобильных */
+  position: relative;
   color:white; 
   text-align:center; 
   padding:160px 20px 120px; 
   margin-top:80px; 
-  image-rendering: -webkit-optimize-contrast;
-  image-rendering: crisp-edges;
+  overflow: hidden;
+}
+
+header::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3));
+  z-index: 1;
+}
+
+header > * {
+  position: relative;
+  z-index: 2;
+}
+
+.hero-img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
 }
 
 header h1 { 
@@ -795,7 +817,15 @@ footer .btn i {
   header{
     padding:120px 20px 80px;
     margin-top:70px;
-    background-attachment: scroll; /* Отключаем fixed для производительности */
+    min-height: 400px; /* Минимальная высота для мобильных */
+  }
+  
+  header h1 {
+    font-size: 1.75rem;
+  }
+  
+  header p {
+    font-size: 1.125rem;
   } 
   
   header h1{
