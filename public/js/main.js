@@ -396,3 +396,41 @@ window.addEventListener("scroll", () => {
     scrollTopBtn.classList.remove("show");
   }
 });
+
+// ====== 15. Плавающая кнопка "Подарок" ======
+document.addEventListener("DOMContentLoaded", () => {
+  const saleBtn = document.getElementById("saleBtn");
+  const saleModal = document.getElementById("saleModal");
+  const saleOrderBtn = document.getElementById("saleOrderBtn");
+  const saleClose = saleModal?.querySelector(".close");
+  
+  if (!saleBtn || !saleModal) return;
+  
+  // Открытие модального окна
+  saleBtn.addEventListener("click", () => {
+    showModal("saleModal");
+  });
+  
+  // Закрытие модального окна
+  if (saleClose) {
+    saleClose.addEventListener("click", () => hideModal("saleModal"));
+  }
+  
+  window.addEventListener("click", e => {
+    if (e.target === saleModal) hideModal("saleModal");
+  });
+  
+  // Кнопка "Оставить заявку" в модальном окне акции
+  if (saleOrderBtn) {
+    saleOrderBtn.addEventListener("click", () => {
+      hideModal("saleModal");
+      // Открываем форму заказа звонка (без промокода, так как это акция с подарком)
+      setTimeout(() => {
+        const callBtn = document.getElementById("callBtn");
+        if (callBtn) {
+          callBtn.click();
+        }
+      }, 300);
+    });
+  }
+});

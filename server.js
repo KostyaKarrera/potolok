@@ -44,7 +44,7 @@ const db = await initDB();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } }); // до 10 МБ на файл
 
 // === Отправка заявки в Telegram ===
-async function sendTelegram(name, phone, type, estimatedPrice, ref) {
+async function sendTelegram(name, phone, type, estimatedPrice, ref, promo) {
   const escapeHTML = (str) =>
     str.replace(/&/g, "&amp;")
       .replace(/</g, "&lt;")
@@ -58,6 +58,15 @@ async function sendTelegram(name, phone, type, estimatedPrice, ref) {
     message += `\n<b>Ориентировочная стоимость:</b> ${escapeHTML(estimatedPrice.toString())} ₽`;
   if (ref)
     message += `\n\n💎 <b>Реферальный код:</b> ${escapeHTML(ref)}`;
+  
+  // Специальное уведомление для промокода sale5
+  if (promo && promo.toLowerCase() === "sale5") {
+    message += `\n\n🎉 <b>ПРОМОКОД АКТИВИРОВАН!</b>\n`;
+    message += `🔥 <b>Промокод:</b> ${escapeHTML(promo.toUpperCase())}\n`;
+    message += `💰 <b>Клиент получит скидку 5% на сумму заказа!</b>`;
+  } else if (promo) {
+    message += `\n\n🎫 <b>Промокод:</b> ${escapeHTML(promo)}`;
+  }
 
   try {
     await bot.sendMessage(CHAT_ID, message, { parse_mode: "HTML" });
@@ -208,7 +217,10 @@ app.post("/api/request", async (req, res) => {
   try {
     let partnerId = null;
 
-    if (ref || promo) {
+    // Проверяем промокод sale5 (не является промокодом партнёра)
+    const isSale5Promo = promo && promo.toLowerCase() === "sale5";
+    
+    if (ref || (promo && !isSale5Promo)) {
       const partner = await db.get("SELECT id FROM partners WHERE promo = ?", [ref || promo]);
       if (partner) partnerId = partner.id;
     }
@@ -219,7 +231,7 @@ app.post("/api/request", async (req, res) => {
       [name, phone, type, estimatedPrice, partnerId]
     );
 
-    await sendTelegram(name, phone, type, estimatedPrice, ref || promo);
+    await sendTelegram(name, phone, type, estimatedPrice, ref, promo);
 
     res.json({ status: "success", message: "Заявка отправлена!" });
   } catch (err) {
