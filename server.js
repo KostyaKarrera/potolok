@@ -455,8 +455,8 @@ app.delete("/api/admin/requests/:id", requireAdmin, async (req, res) => {
   }
 });
 
-// === Админка: обновить договор ===
-app.patch("/api/admin/contracts/:id", requireAdmin, upload.array("photos", 10), async (req, res) => {
+// === Админка: обновить договор (общая функция) ===
+async function updateContractHandler(req, res) {
   try {
     const {
       name,
@@ -520,7 +520,26 @@ app.patch("/api/admin/contracts/:id", requireAdmin, upload.array("photos", 10), 
     console.error(err);
     res.status(500).json({ status: "error", message: "Ошибка сервера" });
   }
-});
+}
+
+// Middleware для условной обработки multipart/form-data
+const handleMultipartOrJson = (req, res, next) => {
+  const contentType = req.headers['content-type'] || '';
+  if (contentType.includes('multipart/form-data')) {
+    return upload.array("photos", 10)(req, res, (err) => {
+      if (err) {
+        console.error("Multer error:", err);
+        return res.status(400).json({ status: "error", message: "Ошибка загрузки файлов: " + err.message });
+      }
+      next();
+    });
+  }
+  // Для JSON запросов просто пропускаем дальше
+  next();
+};
+
+// Маршрут для обновления (работает и с JSON, и с FormData)
+app.patch("/api/admin/contracts/:id", requireAdmin, handleMultipartOrJson, updateContractHandler);
 
 // === Админка: удалить фото из договора ===
 app.delete("/api/admin/contracts/:id/photos", requireAdmin, async (req, res) => {
