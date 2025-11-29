@@ -44,7 +44,7 @@ const db = await initDB();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } }); // до 10 МБ на файл
 
 // === Отправка заявки в Telegram ===
-async function sendTelegram(name, phone, type, estimatedPrice, ref, promo, giftPromo = false) {
+async function sendTelegram(name, phone, type, estimatedPrice, ref, promo, giftPromo = false, cartItems = null) {
   const escapeHTML = (str) =>
     str.replace(/&/g, "&amp;")
       .replace(/</g, "&lt;")
@@ -58,6 +58,20 @@ async function sendTelegram(name, phone, type, estimatedPrice, ref, promo, giftP
     message += `\n<b>Ориентировочная стоимость:</b> ${escapeHTML(estimatedPrice.toString())} ₽`;
   if (ref)
     message += `\n\n💎 <b>Реферальный код:</b> ${escapeHTML(ref)}`;
+  
+  // Информация о товарах из корзины
+  if (cartItems && Array.isArray(cartItems) && cartItems.length > 0) {
+    message += `\n\n🛒 <b>Выбранные готовые решения:</b>\n`;
+    cartItems.forEach((item, index) => {
+      message += `\n${index + 1}. <b>${escapeHTML(item.title || 'Товар')}</b>\n`;
+      if (item.area) message += `   Площадь: ${escapeHTML(item.area)}\n`;
+      if (item.fabric) message += `   Полотно: ${escapeHTML(item.fabric)}\n`;
+      if (item.lights) message += `   Светильники: ${escapeHTML(item.lights)}\n`;
+      if (item.curtains && item.curtains !== '—') message += `   Гардина: ${escapeHTML(item.curtains)}\n`;
+      if (item.extras && item.extras !== '—') message += `   Допы: ${escapeHTML(item.extras)}\n`;
+      message += `   <b>Цена: ${escapeHTML(item.price || 'Цена не указана')}</b>\n`;
+    });
+  }
   
   // Специальное уведомление для акции "Подарок" (6 светильников)
   if (giftPromo) {
@@ -260,7 +274,7 @@ app.get("/api/validate-promo/:promo", async (req, res) => {
 
 // === Заявки клиентов (с ref/promo) ===
 app.post("/api/request", async (req, res) => {
-  const { name, phone, type, estimatedPrice, ref, promo, giftPromo } = req.body;
+  const { name, phone, type, estimatedPrice, ref, promo, giftPromo, cartItems } = req.body;
 
   if (!name || !phone || !type)
     return res.status(400).json({ status: "error", message: "Не все обязательные поля заполнены" });
@@ -311,7 +325,7 @@ app.post("/api/request", async (req, res) => {
       [name, phone, type, estimatedPrice, partnerId]
     );
 
-    await sendTelegram(name, phone, type, estimatedPrice, ref, promo, giftPromo);
+    await sendTelegram(name, phone, type, estimatedPrice, ref, promo, giftPromo, cartItems);
 
     res.json({ status: "success", message: "Заявка отправлена!" });
   } catch (err) {

@@ -44,7 +44,7 @@ function animateNumber(element, start, end, duration) {
 }
 
 // ====== 4. Отправка заявки на сервер ======
-async function sendRequest(name, phone, type, estimatedPrice = null, promo = null, giftPromo = false) {
+async function sendRequest(name, phone, type, estimatedPrice = null, promo = null, giftPromo = false, cartItems = null) {
   try {
     const API_URL = "/api/request";
     const ref = getReferralCode();
@@ -52,7 +52,7 @@ async function sendRequest(name, phone, type, estimatedPrice = null, promo = nul
     const res = await fetch(API_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, phone, type, estimatedPrice, ref, promo, giftPromo })
+      body: JSON.stringify({ name, phone, type, estimatedPrice, ref, promo, giftPromo, cartItems })
     });
 
     return await res.json();
@@ -110,7 +110,10 @@ function handleModalForm({ buttonId, modalId, formId, successId, type }) {
   btn.addEventListener("click", () => {
     showModal(modalId);
     form.style.display = "block";
-    if (success) success.style.display = "none";
+    if (success) {
+      success.style.display = "none";
+      success.style.visibility = "hidden";
+    }
   });
 
   if (close) {
@@ -159,9 +162,16 @@ function handleModalForm({ buttonId, modalId, formId, successId, type }) {
       form.removeAttribute("data-gift-promo");
     }
     if (result.status === "success") {
-      form.style.display = "none";
-      if (success) success.style.display = "block";
+      form.reset();
+      // Гарантируем, что success сообщение скрыто
+      if (success) {
+        success.style.display = "none";
+        success.style.visibility = "hidden";
+      }
       showToast("Заявка успешно отправлена!", "success");
+      setTimeout(() => {
+        hideModal(modalId);
+      }, 500);
     } else {
       showToast("Ошибка: " + result.message, "error");
     }
@@ -192,7 +202,10 @@ if (calculatorForm) {
     const price = area * 600 + lamps * 550 + chandeliers * 700;
 
     showModal("estimateModal");
-    successMessage.style.display = "none";
+    if (successMessage) {
+      successMessage.style.display = "none";
+      successMessage.style.visibility = "hidden";
+    }
     estimateForm.style.display = "block";
 
     animateNumber(estimateText, 0, price, 600);
@@ -235,9 +248,16 @@ if (calculatorForm) {
 
     const result = await sendRequest(name, phone, "Калькулятор", estimatedPrice, promo);
     if (result.status === "success") {
-      estimateForm.style.display = "none";
-      successMessage.style.display = "block";
+      estimateForm.reset();
+      // Гарантируем, что success сообщение скрыто
+      if (successMessage) {
+        successMessage.style.display = "none";
+        successMessage.style.visibility = "hidden";
+      }
       showToast("Заявка успешно отправлена!", "success");
+      setTimeout(() => {
+        hideModal("estimateModal");
+      }, 500);
     } else {
       showToast("Ошибка: " + result.message, "error");
     }
@@ -253,12 +273,17 @@ handleModalForm({
   type: "Заказ звонка"
 });
 
-handleModalForm({
-  buttonId: "measureBtn",
-  modalId: "measureModal",
-  formId: "measureForm",
-  successId: "measureSuccess",
-  type: "Вызов специалиста"
+// Кнопка "Подобрать готовое решение" - прокрутка к секции
+document.addEventListener("DOMContentLoaded", () => {
+  const solutionsBtn = document.getElementById("solutionsBtn");
+  if (solutionsBtn) {
+    solutionsBtn.addEventListener("click", () => {
+      const readySolutions = document.getElementById("ready-solutions");
+      if (readySolutions) {
+        readySolutions.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    });
+  }
 });
 
 // ====== 8. Лайтбокс ======
@@ -379,15 +404,108 @@ window.addEventListener("scroll", () => {
 // ====== 10. Smooth Scroll ======
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
   anchor.addEventListener("click", function (e) {
+    const href = this.getAttribute("href");
+    if (href === "#" || !href) return;
+    
     e.preventDefault();
-    const target = document.querySelector(this.getAttribute("href"));
+    const target = document.querySelector(href);
     if (target) {
-      target.scrollIntoView({
-        behavior: "smooth",
-        block: "start"
+      const topbar = document.querySelector(".topbar");
+      const topbarHeight = topbar ? topbar.offsetHeight : 80;
+      const targetPosition = target.offsetTop - topbarHeight;
+      
+      window.scrollTo({
+        top: targetPosition,
+        behavior: "smooth"
       });
+      
+      // Закрываем мобильное меню после клика
+      const hamburger = document.getElementById("hamburger");
+      const mainNav = document.getElementById("mainNav");
+      if (hamburger && mainNav) {
+        hamburger.classList.remove("active");
+        mainNav.classList.remove("active");
+      }
     }
   });
+});
+
+// ====== 11. Навигационное меню (Гамбургер) ======
+document.addEventListener("DOMContentLoaded", () => {
+  const hamburger = document.getElementById("hamburger");
+  const mainNav = document.getElementById("mainNav");
+  const navLinks = document.querySelectorAll(".nav-link");
+  
+  if (hamburger && mainNav) {
+    hamburger.addEventListener("click", () => {
+      hamburger.classList.toggle("active");
+      mainNav.classList.toggle("active");
+      document.body.style.overflow = mainNav.classList.contains("active") ? "hidden" : "";
+    });
+    
+    // Закрываем меню при клике на ссылку
+    navLinks.forEach(link => {
+      link.addEventListener("click", () => {
+        hamburger.classList.remove("active");
+        mainNav.classList.remove("active");
+        document.body.style.overflow = "";
+      });
+    });
+    
+    // Закрываем меню при клике вне его
+    document.addEventListener("click", (e) => {
+      if (!hamburger.contains(e.target) && !mainNav.contains(e.target)) {
+        hamburger.classList.remove("active");
+        mainNav.classList.remove("active");
+        document.body.style.overflow = "";
+      }
+    });
+  }
+  
+  // Подсветка активного пункта меню при скролле
+  const sections = document.querySelectorAll("section[id]");
+  const navLinksArray = Array.from(document.querySelectorAll(".nav-link"));
+  
+  function highlightNav() {
+    const scrollPos = window.scrollY + 150;
+    
+    sections.forEach(section => {
+      const sectionTop = section.offsetTop;
+      const sectionHeight = section.offsetHeight;
+      const sectionId = section.getAttribute("id");
+      
+      if (scrollPos >= sectionTop && scrollPos < sectionTop + sectionHeight) {
+        navLinksArray.forEach(link => {
+          link.classList.remove("active");
+          if (link.getAttribute("href") === `#${sectionId}`) {
+            link.classList.add("active");
+          }
+        });
+      }
+    });
+  }
+  
+  window.addEventListener("scroll", highlightNav);
+  highlightNav(); // Вызываем сразу для начальной позиции
+  
+  // Модалка телефона
+  const phoneBtn = document.getElementById("phoneBtn");
+  const phoneModal = document.getElementById("phoneModal");
+  
+  if (phoneBtn && phoneModal) {
+    phoneBtn.addEventListener("click", () => {
+      showModal("phoneModal");
+    });
+    
+    const closePhone = phoneModal.querySelector(".close");
+    if (closePhone) {
+      closePhone.addEventListener("click", () => hideModal("phoneModal"));
+    }
+    
+    window.addEventListener("click", e => {
+      if (e.target === phoneModal) hideModal("phoneModal");
+    });
+  }
 });
 
 // ====== 13. Валидация промокодов ======
@@ -552,3 +670,814 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 });
+
+// ====== 16. Корзина (Бета) ======
+// Данные товаров - готовые решения
+const productsData = {
+  rooms: [
+    {
+      id: 1,
+      title: "Кухня",
+      area: "до 14 м²",
+      note: null,
+      basic: {
+        fabric: "MSD Standard",
+        lights: "4x GX53",
+        curtains: "На потолок, до 3 м",
+        price: "12 200 ₽"
+      },
+      comfort: {
+        fabric: "BAUF 205",
+        lights: "6x IN HOME RLP VC",
+        curtains: "Скрытая, до 3 м",
+        price: "16 100 ₽"
+      }
+    },
+    {
+      id: 2,
+      title: "Зал (Гостиная)",
+      area: "до 18 м²",
+      note: null,
+      basic: {
+        fabric: "MSD Standard",
+        lights: "6x GX53",
+        curtains: "На потолок, до 3 м",
+        price: "14 400 ₽"
+      },
+      comfort: {
+        fabric: "BAUF 205",
+        lights: "8x IN HOME RLP VC",
+        curtains: "Скрытая, до 3 м",
+        price: "19 200 ₽"
+      }
+    },
+    {
+      id: 3,
+      title: "Спальня",
+      area: "до 14 м²",
+      note: null,
+      basic: {
+        fabric: "MSD Standard",
+        lights: "6x GX53",
+        curtains: "На потолок, до 3 м",
+        price: "10 700 ₽"
+      },
+      comfort: {
+        fabric: "BAUF 205",
+        lights: "6x IN HOME RLP VC",
+        curtains: "Скрытая, до 3 м",
+        price: "14 500 ₽"
+      }
+    },
+    {
+      id: 4,
+      title: "Прихожая",
+      area: "до 8 м²",
+      note: null,
+      basic: {
+        fabric: "MSD Standard",
+        lights: "4x GX53",
+        curtains: "—",
+        price: "6 400 ₽"
+      },
+      comfort: {
+        fabric: "BAUF 205",
+        lights: "4x IN HOME RLP VC",
+        curtains: "—",
+        price: "8 200 ₽"
+      }
+    },
+    {
+      id: 5,
+      title: "Ванная + Санузел",
+      area: "до 6 м²",
+      note: "Монтаж на стены из керамогранита рассчитывается отдельно.",
+      basic: {
+        fabric: "MSD Standard",
+        lights: "6x GX53",
+        curtains: "—",
+        extras: "—",
+        price: "4 300 ₽"
+      },
+      comfort: {
+        fabric: "BAUF 205",
+        lights: "6x IN HOME RLP VC",
+        curtains: "—",
+        extras: "Вент. решетка",
+        price: "5 200 ₽"
+      }
+    }
+  ],
+  apartments: [
+    {
+      id: 6,
+      title: "Однокомнатная квартира",
+      area: "до 40 м² | до 50 м²",
+      note: "Монтаж в санузле на керамогранит рассчитывается отдельно.",
+      variants: [
+        {
+          type: "basic",
+          area: "до 40 м²",
+          fabric: "MSD Standard",
+          lights: "21x GX53",
+          curtains: "2x на потолок",
+          price: "29 800 ₽"
+        },
+        {
+          type: "basic",
+          area: "до 50 м²",
+          fabric: "MSD Standard",
+          lights: "21x GX53",
+          curtains: "2x на потолок",
+          price: "31 600 ₽"
+        },
+        {
+          type: "comfort",
+          area: "до 40 м²",
+          fabric: "BAUF 205",
+          lights: "24x IN HOME RLP VC",
+          curtains: "2x скрытые",
+          price: "33 900 ₽"
+        },
+        {
+          type: "comfort",
+          area: "до 50 м²",
+          fabric: "BAUF 205",
+          lights: "24x IN HOME RLP VC",
+          curtains: "2x скрытые",
+          price: "35 700 ₽"
+        }
+      ]
+    },
+    {
+      id: 7,
+      title: "Двухкомнатная квартира",
+      area: "до 55 м² | до 65 м²",
+      note: "Монтаж в санузле на керамогранит рассчитывается отдельно.",
+      variants: [
+        {
+          type: "basic",
+          area: "до 55 м²",
+          fabric: "MSD Standard",
+          lights: "30x GX53",
+          curtains: "3x на потолок",
+          price: "38 600 ₽"
+        },
+        {
+          type: "basic",
+          area: "до 65 м²",
+          fabric: "MSD Standard",
+          lights: "30x GX53",
+          curtains: "3x на потолок",
+          price: "40 800 ₽"
+        },
+        {
+          type: "comfort",
+          area: "до 55 м²",
+          fabric: "BAUF 205",
+          lights: "34x IN HOME RLP VC",
+          curtains: "3x скрытые",
+          price: "43 900 ₽"
+        },
+        {
+          type: "comfort",
+          area: "до 65 м²",
+          fabric: "BAUF 205",
+          lights: "34x IN HOME RLP VC",
+          curtains: "3x скрытые",
+          price: "46 100 ₽"
+        }
+      ]
+    },
+    {
+      id: 8,
+      title: "Трехкомнатная квартира",
+      area: "до 70 м² | до 80 м²",
+      note: "Монтаж в санузле на керамогранит рассчитывается отдельно.",
+      variants: [
+        {
+          type: "basic",
+          area: "до 70 м²",
+          fabric: "MSD Standard",
+          lights: "42x GX53",
+          curtains: "4x на потолок",
+          price: "47 800 ₽"
+        },
+        {
+          type: "basic",
+          area: "до 80 м²",
+          fabric: "MSD Standard",
+          lights: "42x GX53",
+          curtains: "4x на потолок",
+          price: "50 000 ₽"
+        },
+        {
+          type: "comfort",
+          area: "до 70 м²",
+          fabric: "BAUF 205",
+          lights: "46x IN HOME RLP VC",
+          curtains: "4x скрытые",
+          price: "54 200 ₽"
+        },
+        {
+          type: "comfort",
+          area: "до 80 м²",
+          fabric: "BAUF 205",
+          lights: "46x IN HOME RLP VC",
+          curtains: "4x скрытые",
+          price: "56 400 ₽"
+        }
+      ]
+    }
+  ]
+};
+
+// Управление корзиной
+const Cart = {
+  getItems() {
+    const cart = localStorage.getItem('cart');
+    return cart ? JSON.parse(cart) : [];
+  },
+
+  addItem(product) {
+    const items = this.getItems();
+    // Проверяем, нет ли уже этого товара в корзине
+    if (!items.find(item => item.id === product.id)) {
+      items.push(product);
+      localStorage.setItem('cart', JSON.stringify(items));
+      this.updateBadge();
+      return true;
+    }
+    return false;
+  },
+
+  removeItem(productId) {
+    const items = this.getItems();
+    const filtered = items.filter(item => String(item.id) !== String(productId));
+    localStorage.setItem('cart', JSON.stringify(filtered));
+    this.updateBadge();
+    return filtered;
+  },
+
+  clear() {
+    localStorage.removeItem('cart');
+    this.updateBadge();
+  },
+
+  updateBadge() {
+    const count = this.getItems().length;
+    
+    // Обновляем бейдж в шапке (мобильная версия)
+    const badge = document.getElementById('cartBadge');
+    if (badge) {
+      badge.textContent = count > 0 ? count : '';
+    }
+    
+    // Обновляем бейдж плавающей кнопки (десктоп)
+    const floatingBadge = document.getElementById('floatingCartBadge');
+    if (floatingBadge) {
+      floatingBadge.textContent = count > 0 ? count : '';
+    }
+    
+    // Скрываем/показываем кнопки корзины
+    const cartBtn = document.getElementById('cartBtn');
+    const floatingCartBtn = document.getElementById('floatingCartBtn');
+    
+    if (count > 0) {
+      // Показываем кнопки, если есть товары
+      if (cartBtn) cartBtn.style.display = 'flex';
+      if (floatingCartBtn) {
+        floatingCartBtn.style.display = 'flex';
+        floatingCartBtn.classList.remove('hidden');
+      }
+    } else {
+      // Скрываем кнопки, если корзина пуста
+      if (cartBtn) cartBtn.style.display = 'none';
+      if (floatingCartBtn) {
+        floatingCartBtn.style.display = 'none';
+        floatingCartBtn.classList.add('hidden');
+      }
+    }
+  },
+
+  getItemsCount() {
+    return this.getItems().length;
+  }
+};
+
+// Функция для преобразования обозначений в понятный текст
+const formatQuantity = (text) => {
+    if (!text || text === '—') return text;
+    
+    // Обработка светильников: "4x GX53" → "GX53 - 4шт" или "8x IN HOME RLP VC" → "IN HOME RLP VC - 8шт"
+    // Сначала обрабатываем "IN HOME RLP VC" (полное название с пробелами)
+    text = text.replace(/(\d+)x\s+(IN HOME RLP VC)/g, (match, count, type) => {
+      return `${type} - ${count}шт`;
+    });
+    // Затем обрабатываем GX53
+    text = text.replace(/(\d+)x\s+(GX53)/g, (match, count, type) => {
+      return `${type} - ${count}шт`;
+    });
+    
+    // Обработка гардин: "2x на потолок" → "На потолок - 2шт"
+    text = text.replace(/(\d+)x\s+на\s+потолок/g, (match, count) => {
+      return `На потолок - ${count}шт`;
+    });
+    
+    // Обработка скрытых гардин: "2x скрытые" → "Скрытые - 2шт"
+    text = text.replace(/(\d+)x\s+скрытые/g, (match, count) => {
+      return `Скрытые - ${count}шт`;
+    });
+    
+    return text;
+};
+
+// Инициализация корзины
+document.addEventListener("DOMContentLoaded", () => {
+  // Обновляем бейдж при загрузке
+  Cart.updateBadge();
+
+  // Функция для получения информации о светильнике (изображение и название)
+  const getLightInfo = (lightsText) => {
+    if (!lightsText || lightsText === '—') return { image: null, name: null };
+    
+    // Определяем тип светильника
+    // Используем WebP с fallback на PNG для совместимости
+    if (lightsText.includes('GX53')) {
+      return { image: 'ligth/gx53.webp', name: 'GX53', fallback: 'ligth/gx53.png' };
+    } else if (lightsText.includes('IN HOME RLP VC') || lightsText.includes('RLP VC')) {
+      return { image: 'ligth/rlp-vc.webp', name: 'IN HOME RLP VC', fallback: 'ligth/rlp-vc.png' };
+    }
+    return { image: null, name: null };
+  };
+
+  // Функция для получения описания полотна
+  const getFabricInfo = (fabricText) => {
+    if (!fabricText || fabricText === '—') return null;
+    
+    const descriptions = {
+      'MSD Standard': {
+        name: 'MSD Standard',
+        description: 'Базовое полотно MSD Standard — качественное решение для стандартных помещений. Отличается хорошей прочностью и долговечностью при доступной цене.'
+      },
+      'BAUF 205': {
+        name: 'BAUF 205',
+        description: 'Премиум полотно BAUF 205 — высококачественный материал премиум-класса. Отличается превосходной текстурой, повышенной прочностью и долговечностью. Идеально подходит для гостиных, спален и других важных помещений.'
+      }
+    };
+    
+    return descriptions[fabricText] || null;
+  };
+
+  // Функция для рендеринга состава варианта (улучшенное описание)
+  const renderVariantDetails = (variant) => {
+    const details = [];
+    
+    // Полотно
+    if (variant.fabric && variant.fabric !== '—') {
+      const fabricInfo = getFabricInfo(variant.fabric);
+      if (fabricInfo) {
+        details.push(`<div class="variant-detail-item"><strong>Полотно:</strong> <span class="fabric-name-clickable" onclick="showFabricModal('${fabricInfo.name}', '${variant.fabric}', \`${fabricInfo.description}\`)" title="Нажмите, чтобы узнать больше">${variant.fabric}</span></div>`);
+      } else {
+        details.push(`<div class="variant-detail-item"><strong>Полотно:</strong> ${variant.fabric}</div>`);
+      }
+    }
+    
+    // Светильники
+    if (variant.lights && variant.lights !== '—') {
+      const formattedLights = formatQuantity(variant.lights);
+      const lightInfo = getLightInfo(variant.lights);
+      if (lightInfo.image) {
+        // Разделяем текст на части: название светильника и количество
+        // Формат: "GX53 - 4шт" или "IN HOME RLP VC - 6шт"
+        const parts = formattedLights.split(' - ');
+        if (parts.length === 2) {
+          const lightName = parts[0].trim();
+          const quantity = parts[1].trim();
+          details.push(`<div class="variant-detail-item"><strong>Светильники:</strong> <span class="lights-text"><span class="light-name-clickable" onclick="showLightModal('${lightInfo.image}', '${lightInfo.name}', '${lightInfo.fallback || ''}')" title="Нажмите, чтобы посмотреть изображение">${lightName}</span> - ${quantity}</span></div>`);
+        } else {
+          details.push(`<div class="variant-detail-item"><strong>Светильники:</strong> <span class="lights-text light-name-clickable" onclick="showLightModal('${lightInfo.image}', '${lightInfo.name}', '${lightInfo.fallback || ''}')" title="Нажмите, чтобы посмотреть изображение">${formattedLights}</span></div>`);
+        }
+      } else {
+        details.push(`<div class="variant-detail-item"><strong>Светильники:</strong> ${formattedLights}</div>`);
+      }
+    }
+    
+    // Гардина
+    if (variant.curtains && variant.curtains !== '—') {
+      const formattedCurtains = formatQuantity(variant.curtains);
+      details.push(`<div class="variant-detail-item"><strong>Гардина:</strong> ${formattedCurtains}</div>`);
+    }
+    
+    // Дополнительно
+    if (variant.extras && variant.extras !== '—') {
+      details.push(`<div class="variant-detail-item"><strong>Дополнительно:</strong> ${variant.extras}</div>`);
+    }
+    
+    return details.length > 0 ? details.join('') : '';
+  };
+
+  // Рендерим карточки комнат (полные карточки без аккордеона внутри)
+  const roomsGrid = document.getElementById('roomsGrid');
+  if (roomsGrid) {
+    roomsGrid.innerHTML = productsData.rooms.map(room => `
+      <div class="product-card room-card">
+        <div class="product-header">
+          <h3 class="product-title">${room.title}</h3>
+          <div class="product-area">Площадь: ${room.area}</div>
+          ${room.note ? `<div class="product-note">${room.note}</div>` : ''}
+        </div>
+        <div class="product-variants">
+          <div class="product-variant">
+            <div class="variant-header">БАЗОВЫЙ</div>
+            <div class="variant-content">
+              <div class="variant-details">
+                ${renderVariantDetails(room.basic)}
+              </div>
+              <div class="variant-price">${room.basic.price}</div>
+              <button class="add-to-cart-btn" onclick="addRoomToCart(${room.id}, 'basic')">
+                <i class="fa fa-shopping-cart"></i> Добавить в корзину
+              </button>
+            </div>
+          </div>
+          <div class="product-variant">
+            <div class="variant-header variant-comfort">КОМФОРТ</div>
+            <div class="variant-content">
+              <div class="variant-details">
+                ${renderVariantDetails(room.comfort)}
+              </div>
+              <div class="variant-price">${room.comfort.price}</div>
+              <button class="add-to-cart-btn btn-comfort" onclick="addRoomToCart(${room.id}, 'comfort')">
+                <i class="fa fa-shopping-cart"></i> Добавить в корзину
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // Рендерим карточки квартир
+  const apartmentsGrid = document.getElementById('apartmentsGrid');
+  if (apartmentsGrid) {
+    apartmentsGrid.innerHTML = productsData.apartments.map(apartment => {
+      // Определяем, какие строки нужно показывать (убираем пустые)
+      const hasCurtains = apartment.variants.some(v => v.curtains && v.curtains !== '—');
+      
+      return `
+      <div class="product-card apartment-card">
+        <div class="product-header">
+          <h3 class="product-title">${apartment.title}</h3>
+          <div class="product-area">Площадь: ${apartment.area}</div>
+          ${apartment.note ? `<div class="product-note">${apartment.note}</div>` : ''}
+        </div>
+        <div class="apartment-variants-table">
+          <table class="variants-table">
+            <thead>
+              <tr>
+                <th></th>
+                <th colspan="2">БАЗОВЫЙ</th>
+                <th colspan="2">КОМФОРТ</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Метраж</strong></td>
+                ${apartment.variants.filter(v => v.type === 'basic').map(v => `<td>${v.area}</td>`).join('')}
+                ${apartment.variants.filter(v => v.type === 'comfort').map(v => `<td>${v.area}</td>`).join('')}
+              </tr>
+              <tr>
+                <td><strong>Полотно</strong></td>
+                ${apartment.variants.filter(v => v.type === 'basic').map(v => {
+                  const fabricInfo = getFabricInfo(v.fabric);
+                  if (fabricInfo) {
+                    return `<td><span class="fabric-name-clickable" onclick="showFabricModal('${fabricInfo.name}', '${v.fabric}', \`${fabricInfo.description}\`)" title="Нажмите, чтобы узнать больше">${v.fabric}</span></td>`;
+                  } else {
+                    return `<td>${v.fabric}</td>`;
+                  }
+                }).join('')}
+                ${apartment.variants.filter(v => v.type === 'comfort').map(v => {
+                  const fabricInfo = getFabricInfo(v.fabric);
+                  if (fabricInfo) {
+                    return `<td><span class="fabric-name-clickable" onclick="showFabricModal('${fabricInfo.name}', '${v.fabric}', \`${fabricInfo.description}\`)" title="Нажмите, чтобы узнать больше">${v.fabric}</span></td>`;
+                  } else {
+                    return `<td>${v.fabric}</td>`;
+                  }
+                }).join('')}
+              </tr>
+              <tr>
+                <td><strong>Светильники</strong></td>
+                ${apartment.variants.filter(v => v.type === 'basic').map(v => {
+                  const formattedLights = formatQuantity(v.lights);
+                  const lightInfo = getLightInfo(v.lights);
+                  if (lightInfo.image) {
+                    const parts = formattedLights.split(' - ');
+                    if (parts.length === 2) {
+                      const lightName = parts[0].trim();
+                      const quantity = parts[1].trim();
+                      return `<td class="lights-cell"><span class="lights-text"><span class="light-name-clickable" onclick="showLightModal('${lightInfo.image}', '${lightInfo.name}', '${lightInfo.fallback || ''}')" title="Нажмите, чтобы посмотреть изображение">${lightName}</span> - ${quantity}</span></td>`;
+                    } else {
+                      return `<td class="lights-cell"><span class="lights-text light-name-clickable" onclick="showLightModal('${lightInfo.image}', '${lightInfo.name}', '${lightInfo.fallback || ''}')" title="Нажмите, чтобы посмотреть изображение">${formattedLights}</span></td>`;
+                    }
+                  } else {
+                    return `<td class="lights-cell"><span class="lights-text">${formattedLights}</span></td>`;
+                  }
+                }).join('')}
+                ${apartment.variants.filter(v => v.type === 'comfort').map(v => {
+                  const formattedLights = formatQuantity(v.lights);
+                  const lightInfo = getLightInfo(v.lights);
+                  if (lightInfo.image) {
+                    const parts = formattedLights.split(' - ');
+                    if (parts.length === 2) {
+                      const lightName = parts[0].trim();
+                      const quantity = parts[1].trim();
+                      return `<td class="lights-cell"><span class="lights-text"><span class="light-name-clickable" onclick="showLightModal('${lightInfo.image}', '${lightInfo.name}', '${lightInfo.fallback || ''}')" title="Нажмите, чтобы посмотреть изображение">${lightName}</span> - ${quantity}</span></td>`;
+                    } else {
+                      return `<td class="lights-cell"><span class="lights-text light-name-clickable" onclick="showLightModal('${lightInfo.image}', '${lightInfo.name}', '${lightInfo.fallback || ''}')" title="Нажмите, чтобы посмотреть изображение">${formattedLights}</span></td>`;
+                    }
+                  } else {
+                    return `<td class="lights-cell"><span class="lights-text">${formattedLights}</span></td>`;
+                  }
+                }).join('')}
+              </tr>
+              ${hasCurtains ? `
+              <tr>
+                <td><strong>Гардины</strong></td>
+                ${apartment.variants.filter(v => v.type === 'basic').map(v => `<td>${formatQuantity(v.curtains)}</td>`).join('')}
+                ${apartment.variants.filter(v => v.type === 'comfort').map(v => `<td>${formatQuantity(v.curtains)}</td>`).join('')}
+              </tr>
+              ` : ''}
+              <tr>
+                <td><strong>Цена</strong></td>
+                ${apartment.variants.filter(v => v.type === 'basic').map(v => `<td class="price-cell">${v.price}</td>`).join('')}
+                ${apartment.variants.filter(v => v.type === 'comfort').map(v => `<td class="price-cell">${v.price}</td>`).join('')}
+              </tr>
+              <tr>
+                <td><strong>Кнопка</strong></td>
+                ${apartment.variants.map((v, idx) => `<td><button class="add-to-cart-btn ${v.type === 'comfort' ? 'btn-comfort' : ''}" onclick="addApartmentToCart(${apartment.id}, ${idx})"><i class="fa fa-shopping-cart"></i> Добавить</button></td>`).join('')}
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
+    }).join('');
+  }
+
+  // Открытие корзины
+  const cartBtn = document.getElementById('cartBtn');
+  const floatingCartBtn = document.getElementById('floatingCartBtn');
+  const cartModal = document.getElementById('cartModal');
+  const cartClose = cartModal?.querySelector('.close');
+
+  const openCart = () => {
+    renderCart();
+    showModal('cartModal');
+  };
+
+  if (cartBtn && cartModal) {
+    cartBtn.addEventListener('click', openCart);
+  }
+  
+  if (floatingCartBtn && cartModal) {
+    floatingCartBtn.addEventListener('click', openCart);
+  }
+
+  if (cartClose) {
+    cartClose.addEventListener('click', () => hideModal('cartModal'));
+  }
+
+  window.addEventListener('click', e => {
+    if (e.target === cartModal) hideModal('cartModal');
+    const lightModal = document.getElementById('lightModal');
+    if (lightModal && e.target === lightModal) hideModal('lightModal');
+    const fabricModal = document.getElementById('fabricModal');
+    if (fabricModal && e.target === fabricModal) hideModal('fabricModal');
+    const featureModal = document.getElementById('featureModal');
+    if (featureModal && e.target === featureModal) hideModal('featureModal');
+  });
+
+  // Обработка формы корзины
+  const cartForm = document.getElementById('cartForm');
+  if (cartForm) {
+    cartForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = cartForm.querySelector('input[placeholder="Ваше имя"]').value.trim();
+      const phone = cartForm.querySelector('input[placeholder="Ваш телефон"]').value.trim();
+
+      if (!name || !phone) {
+        showToast("Заполните все обязательные поля", "error");
+        return;
+      }
+
+      if (phone.length < 10) {
+        showToast("Введите корректный номер телефона", "error");
+        return;
+      }
+
+      const cartItems = Cart.getItems();
+      const itemsInfo = cartItems.map(item => `${item.title} (${item.price})`).join(', ');
+
+      const result = await sendRequest(name, phone, "Готовые решения", null, null, false, cartItems);
+
+      if (result.status === "success") {
+        cartForm.reset();
+        Cart.clear();
+        Cart.updateBadge();
+        showToast("Заявка успешно отправлена!", "success");
+        setTimeout(() => {
+          hideModal('cartModal');
+        }, 500);
+      } else {
+        showToast("Ошибка: " + result.message, "error");
+      }
+    });
+  }
+});
+
+// Функция переключения раздела "Комнаты" (аккордеон)
+window.toggleRoomsSection = function(headerElement) {
+  const section = headerElement.closest('.products-section');
+  const content = section.querySelector('.section-accordion-content');
+  const arrow = headerElement.querySelector('.section-arrow');
+  
+  // Переключаем видимость раздела
+  content.classList.toggle('section-content-collapsed');
+  arrow.classList.toggle('section-arrow-open');
+};
+
+// Функция переключения раздела "Квартиры" (аккордеон)
+window.toggleApartmentsSection = function(headerElement) {
+  const section = headerElement.closest('.products-section');
+  const content = section.querySelector('.section-accordion-content');
+  const arrow = headerElement.querySelector('.section-arrow');
+  
+  // Переключаем видимость раздела
+  content.classList.toggle('section-content-collapsed');
+  arrow.classList.toggle('section-arrow-open');
+};
+
+// Функция показа модального окна с изображением светильника
+window.showLightModal = function(imageSrc, lightName, fallbackSrc) {
+  const modal = document.getElementById('lightModal');
+  const modalImage = document.getElementById('lightModalImage');
+  const modalImageWebP = document.getElementById('lightModalImageWebP');
+  const modalTitle = document.getElementById('lightModalTitle');
+  
+  if (modal && modalImage && modalTitle) {
+    // Используем picture элемент для нативной поддержки WebP с fallback
+    if (modalImageWebP && imageSrc.endsWith('.webp')) {
+      modalImageWebP.srcset = imageSrc;
+      if (fallbackSrc) {
+        modalImage.src = fallbackSrc;
+      } else {
+        modalImage.src = imageSrc.replace('.webp', '.png');
+      }
+    } else {
+      // Если нет picture элемента или это PNG, используем обычный img
+      modalImage.src = imageSrc;
+    }
+    
+    modalTitle.textContent = `Светильник ${lightName}`;
+    showModal('lightModal');
+  }
+};
+
+// Функция показа модального окна с описанием полотна
+window.showFabricModal = function(fabricName, fullName, description) {
+  const modal = document.getElementById('fabricModal');
+  const modalTitle = document.getElementById('fabricModalTitle');
+  const modalDescription = document.getElementById('fabricModalDescription');
+  
+  if (modal && modalTitle && modalDescription) {
+    modalTitle.textContent = `Полотно ${fullName}`;
+    modalDescription.textContent = description;
+    showModal('fabricModal');
+  }
+};
+
+// Функция показа модального окна с описанием преимущества
+window.showFeatureModal = function(featureId, title, description) {
+  const modal = document.getElementById('featureModal');
+  const modalIcon = document.getElementById('featureModalIcon');
+  const modalTitle = document.getElementById('featureModalTitle');
+  const modalDescription = document.getElementById('featureModalDescription');
+  
+  if (modal && modalTitle && modalDescription) {
+    // Определяем иконку в зависимости от типа преимущества
+    const icons = {
+      'install': '<i class="fa fa-clock"></i>',
+      'warranty': '<i class="fa fa-shield-alt"></i>',
+      'clients': '<i class="fa fa-smile"></i>'
+    };
+    
+    if (modalIcon) {
+      modalIcon.innerHTML = icons[featureId] || '<i class="fa fa-star"></i>';
+    }
+    
+    modalTitle.textContent = title;
+    modalDescription.textContent = description;
+    showModal('featureModal');
+  }
+};
+
+// Функция добавления комнаты в корзину
+window.addRoomToCart = function(roomId, variant) {
+  const room = productsData.rooms.find(r => r.id === roomId);
+  if (room) {
+    const variantData = variant === 'basic' ? room.basic : room.comfort;
+    const cartItem = {
+      id: `room-${roomId}-${variant}`,
+      title: `${room.title} (${variant === 'basic' ? 'БАЗОВЫЙ' : 'КОМФОРТ'})`,
+      area: room.area,
+      fabric: variantData.fabric,
+      lights: variantData.lights,
+      curtains: variantData.curtains,
+      extras: variantData.extras || null,
+      price: variantData.price,
+      type: 'room',
+      variant: variant
+    };
+    
+    const added = Cart.addItem(cartItem);
+    if (added) {
+      showToast(`${cartItem.title} добавлен в корзину`, "success");
+    } else {
+      showToast("Товар уже в корзине", "info");
+    }
+  }
+};
+
+// Функция добавления квартиры в корзину
+window.addApartmentToCart = function(apartmentId, variantIndex) {
+  const apartment = productsData.apartments.find(a => a.id === apartmentId);
+  if (apartment && apartment.variants[variantIndex]) {
+    const variant = apartment.variants[variantIndex];
+    const cartItem = {
+      id: `apartment-${apartmentId}-${variantIndex}`,
+      title: `${apartment.title} (${variant.type === 'basic' ? 'БАЗОВЫЙ' : 'КОМФОРТ'}, ${variant.area})`,
+      area: variant.area,
+      fabric: variant.fabric,
+      lights: variant.lights,
+      curtains: variant.curtains,
+      price: variant.price,
+      type: 'apartment',
+      variant: variant.type
+    };
+    
+    const added = Cart.addItem(cartItem);
+    if (added) {
+      showToast(`${cartItem.title} добавлен в корзину`, "success");
+    } else {
+      showToast("Товар уже в корзине", "info");
+    }
+  }
+};
+
+// Функция удаления из корзины
+window.removeFromCart = function(productId) {
+  Cart.removeItem(productId);
+  renderCart();
+  showToast("Товар удалён из корзины", "info");
+};
+
+// Рендеринг корзины
+function renderCart() {
+  const cartItems = Cart.getItems();
+  const cartItemsContainer = document.getElementById('cartItems');
+  const cartEmpty = document.getElementById('cartEmpty');
+  const cartFormContainer = document.getElementById('cartFormContainer');
+
+  if (cartItems.length === 0) {
+    if (cartItemsContainer) cartItemsContainer.style.display = "none";
+    if (cartEmpty) cartEmpty.style.display = "block";
+    if (cartFormContainer) cartFormContainer.style.display = "none";
+  } else {
+    if (cartEmpty) cartEmpty.style.display = "none";
+    if (cartItemsContainer) {
+      cartItemsContainer.style.display = "block";
+      cartItemsContainer.innerHTML = cartItems.map(item => {
+        let details = '';
+        if (item.fabric) details += `<div class="cart-item-detail"><strong>Полотно:</strong> ${item.fabric}</div>`;
+        if (item.lights) details += `<div class="cart-item-detail"><strong>Светильники:</strong> ${formatQuantity(item.lights)}</div>`;
+        if (item.curtains && item.curtains !== '—') details += `<div class="cart-item-detail"><strong>Гардина:</strong> ${formatQuantity(item.curtains)}</div>`;
+        if (item.extras && item.extras !== '—') details += `<div class="cart-item-detail"><strong>Дополнительно:</strong> ${item.extras}</div>`;
+        
+        return `
+        <div class="cart-item">
+          <div class="cart-item-info">
+            <div class="cart-item-title">${item.title}</div>
+            ${item.area ? `<div class="cart-item-area">Площадь: ${item.area}</div>` : ''}
+            ${details}
+            <div class="cart-item-price">${item.price}</div>
+          </div>
+          <button class="remove-item-btn" onclick="removeFromCart('${item.id}')">
+            <i class="fa fa-trash"></i> Удалить
+          </button>
+        </div>
+      `;
+      }).join('');
+    }
+    if (cartFormContainer) cartFormContainer.style.display = "block";
+  }
+}
