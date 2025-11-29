@@ -44,7 +44,7 @@ const db = await initDB();
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } }); // до 10 МБ на файл
 
 // === Отправка заявки в Telegram ===
-async function sendTelegram(name, phone, type, estimatedPrice, ref, promo) {
+async function sendTelegram(name, phone, type, estimatedPrice, ref, promo, giftPromo = false) {
   const escapeHTML = (str) =>
     str.replace(/&/g, "&amp;")
       .replace(/</g, "&lt;")
@@ -58,6 +58,13 @@ async function sendTelegram(name, phone, type, estimatedPrice, ref, promo) {
     message += `\n<b>Ориентировочная стоимость:</b> ${escapeHTML(estimatedPrice.toString())} ₽`;
   if (ref)
     message += `\n\n💎 <b>Реферальный код:</b> ${escapeHTML(ref)}`;
+  
+  // Специальное уведомление для акции "Подарок" (6 светильников)
+  if (giftPromo) {
+    message += `\n\n🎁 <b>АКЦИЯ "ПОДАРОК" АКТИВИРОВАНА!</b>\n`;
+    message += `🎉 <b>Клиент заказал через сайт и получит 6 светильников в подарок!</b>\n`;
+    message += `✨ <b>Не забудьте предоставить подарок при оформлении заказа!</b>`;
+  }
   
   // Специальное уведомление для промокода sale5
   if (promo && promo.toLowerCase() === "sale5") {
@@ -253,7 +260,7 @@ app.get("/api/validate-promo/:promo", async (req, res) => {
 
 // === Заявки клиентов (с ref/promo) ===
 app.post("/api/request", async (req, res) => {
-  const { name, phone, type, estimatedPrice, ref, promo } = req.body;
+  const { name, phone, type, estimatedPrice, ref, promo, giftPromo } = req.body;
 
   if (!name || !phone || !type)
     return res.status(400).json({ status: "error", message: "Не все обязательные поля заполнены" });
@@ -304,7 +311,7 @@ app.post("/api/request", async (req, res) => {
       [name, phone, type, estimatedPrice, partnerId]
     );
 
-    await sendTelegram(name, phone, type, estimatedPrice, ref, promo);
+    await sendTelegram(name, phone, type, estimatedPrice, ref, promo, giftPromo);
 
     res.json({ status: "success", message: "Заявка отправлена!" });
   } catch (err) {

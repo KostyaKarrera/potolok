@@ -44,7 +44,7 @@ function animateNumber(element, start, end, duration) {
 }
 
 // ====== 4. Отправка заявки на сервер ======
-async function sendRequest(name, phone, type, estimatedPrice = null, promo = null) {
+async function sendRequest(name, phone, type, estimatedPrice = null, promo = null, giftPromo = false) {
   try {
     const API_URL = "/api/request";
     const ref = getReferralCode();
@@ -52,7 +52,7 @@ async function sendRequest(name, phone, type, estimatedPrice = null, promo = nul
     const res = await fetch(API_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, phone, type, estimatedPrice, ref, promo })
+      body: JSON.stringify({ name, phone, type, estimatedPrice, ref, promo, giftPromo })
     });
 
     return await res.json();
@@ -125,6 +125,9 @@ function handleModalForm({ buttonId, modalId, formId, successId, type }) {
     const promoEl = form.querySelector('input[placeholder="Промокод (если есть)"]');
     const promo = promoEl ? promoEl.value.trim() || null : null;
     
+    // Проверяем, является ли это заявкой по акции "Подарок"
+    const isGiftPromo = form.hasAttribute("data-gift-promo") && form.getAttribute("data-gift-promo") === "true";
+    
     // Валидация
     if (!name || !phone) {
       showToast("Заполните все обязательные поля", "error");
@@ -149,7 +152,12 @@ function handleModalForm({ buttonId, modalId, formId, successId, type }) {
       }
     }
 
-    const result = await sendRequest(name, phone, type, null, promo);
+    const result = await sendRequest(name, phone, type, null, promo, isGiftPromo);
+    
+    // Удаляем метку акции после отправки
+    if (isGiftPromo) {
+      form.removeAttribute("data-gift-promo");
+    }
     if (result.status === "success") {
       form.style.display = "none";
       if (success) success.style.display = "block";
@@ -529,10 +537,15 @@ document.addEventListener("DOMContentLoaded", () => {
   if (saleOrderBtn) {
     saleOrderBtn.addEventListener("click", () => {
       hideModal("saleModal");
-      // Открываем форму заказа звонка (без промокода, так как это акция с подарком)
+      // Открываем форму заказа звонка и помечаем её как заявку по акции
       setTimeout(() => {
         const callBtn = document.getElementById("callBtn");
         if (callBtn) {
+          // Помечаем форму как заявку по акции
+          const callForm = document.getElementById("callForm");
+          if (callForm) {
+            callForm.setAttribute("data-gift-promo", "true");
+          }
           callBtn.click();
         }
       }, 300);
