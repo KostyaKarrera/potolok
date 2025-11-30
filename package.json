@@ -10,6 +10,7 @@
     "bytes": "^3.1.2",
     "call-bind-apply-helpers": "^1.0.2",
     "call-bound": "^1.0.4",
+    "compression": "^1.7.4",
     "content-disposition": "^1.0.0",
     "content-type": "^1.0.5",
     "cookie": "^0.7.2",
@@ -51,7 +52,6 @@
     "multer": "^2.0.2",
     "negotiator": "^1.0.0",
     "node-telegram-bot-api": "^0.66.0",
-    "nodemailer": "^7.0.6",
     "object-assign": "^4.1.1",
     "object-inspect": "^1.13.4",
     "on-finished": "^2.4.1",
@@ -84,7 +84,15 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "start": "node server.js",
+    "build": "node scripts/build.js",
+    "minify": "node scripts/minify.js",
+    "deploy": "node scripts/deploy.js"
+  },
+  "devDependencies": {
+    "cssnano": "^7.0.6",
+    "postcss": "^8.4.47",
+    "terser": "^5.36.0"
   },
   "keywords": [],
   "author": "",

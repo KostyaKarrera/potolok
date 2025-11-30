@@ -36,6 +36,12 @@
   box-sizing: border-box; 
 }
 
+/* Оптимизация загрузки шрифтов */
+@font-face {
+  font-family: "Montserrat";
+  font-display: swap; /* Показываем системный шрифт пока загружается Montserrat */
+}
+
 body { 
   margin:0; 
   font-family: "Montserrat", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;

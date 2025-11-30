@@ -1,0 +1,19 @@
+#!/bin/bash
+# Пример скрипта деплоя для сервера
+# Скопируйте этот файл в deploy.sh и настройте под вашу систему
+# chmod +x deploy.sh
+
+echo "🔄 Обновление кода из GitHub..."
+git pull origin main
+
+echo "📦 Установка зависимостей..."
+npm install --production=false
+
+echo "🔨 Запуск автоматического деплоя..."
+NODE_ENV=production npm run deploy
+
+echo "🔄 Перезапуск сервера..."
+sudo systemctl restart potolok.service
+
+echo "✅ Деплой завершен!"
+

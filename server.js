@@ -1,6 +1,7 @@
 import express from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
+import compression from "compression";
 import TelegramBot from "node-telegram-bot-api";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -35,8 +36,43 @@ const bot = new TelegramBot(TELEGRAM_TOKEN);
 
 // === Middleware ===
 app.use(cors());
+
+// Сжатие ответов (gzip/brotli)
+app.use(compression({
+  level: 6, // Уровень сжатия (1-9, 6 - оптимальный баланс)
+  filter: (req, res) => {
+    // Сжимаем только текстовые файлы и JSON
+    if (req.headers['x-no-compression']) {
+      return false;
+    }
+    return compression.filter(req, res);
+  }
+}));
+
 app.use(bodyParser.json());
-app.use(express.static(path.join(__dirname, "public")));
+
+// Статические файлы с кэшированием
+app.use(express.static(path.join(__dirname, "public"), {
+  maxAge: '1y', // Кэш на 1 год для статических файлов
+  etag: true, // Включить ETag для валидации кэша
+  lastModified: true, // Включить Last-Modified заголовок
+  setHeaders: (res, path) => {
+    // Дополнительные заголовки для разных типов файлов
+    if (path.endsWith('.html')) {
+      // HTML не кэшируем долго (для обновлений)
+      res.setHeader('Cache-Control', 'public, max-age=3600'); // 1 час
+    } else if (path.endsWith('.webp') || path.endsWith('.png') || path.endsWith('.jpg') || path.endsWith('.jpeg')) {
+      // Изображения кэшируем долго
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable'); // 1 год
+    } else if (path.endsWith('.css') || path.endsWith('.js')) {
+      // CSS и JS кэшируем долго, но с возможностью обновления через версионирование
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable'); // 1 год
+    } else if (path.endsWith('.woff2') || path.endsWith('.woff')) {
+      // Шрифты кэшируем очень долго
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable'); // 1 год
+    }
+  }
+}));
 
 const db = await initDB();
 
