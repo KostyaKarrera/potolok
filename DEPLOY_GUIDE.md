@@ -120,7 +120,7 @@ chmod +x .git/hooks/post-merge
 ### Шаг 8: Проверьте права доступа
 
 ```bash
-ls -l .git/hooks/post-merge
+t
 ```
 
 Должно быть что-то вроде:

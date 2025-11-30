@@ -392,9 +392,6 @@ body {
 .floating-cart-btn.hidden {
   display: none !important;
 }
-  font-weight: 500;
-  transition: color 0.3s;
-}
 
 .contacts a.btn {
   color: #fff;
