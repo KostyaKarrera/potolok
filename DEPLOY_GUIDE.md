@@ -70,6 +70,13 @@ echo "🚀 Автоматический деплой после git pull"
 echo "=========================================="
 echo ""
 
+# Если есть локальные изменения в HTML (от предыдущего деплоя), игнорируем их
+# deploy.js обновит их заново после pull
+if ! git diff --quiet public/*.html public/*/*.html 2>/dev/null; then
+    echo "💾 Игнорируем локальные изменения в HTML (будут обновлены deploy.js)..."
+    git checkout -- public/*.html public/*/*.html 2>/dev/null || true
+fi
+
 # Шаг 1: Установка зависимостей
 echo "📦 Шаг 1: Установка зависимостей..."
 npm install --production=false
@@ -431,9 +438,18 @@ git push origin main
 
 ### На сервере:
 
+**Важно:** Используйте безопасный скрипт для pull:
+
 ```bash
-# Просто делаете git pull - все остальное автоматически!
+# Используйте скрипт git-pull-safe.sh (рекомендуется)
+./git-pull-safe.sh
+
+# Или вручную сбросьте изменения HTML перед pull:
+git checkout -- public/*.html public/*/*.html
 git pull origin main
+```
+
+Скрипт автоматически обработает конфликты с локальными изменениями в HTML файлах.
 
 # Вы увидите:
 # ==========================================
