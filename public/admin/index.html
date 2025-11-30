@@ -5,6 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Админ-панель | Потолок Конкурент</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -27,6 +28,8 @@
       <button class="tab-btn active" data-tab="leads-tab">Лиды</button>
       <button class="tab-btn" data-tab="contracts-tab">Заявки (договоры)</button>
       <button class="tab-btn" data-tab="partners-tab">Партнёры</button>
+      <button class="tab-btn" data-tab="products-tab">Продукты</button>
+      <button class="tab-btn" data-tab="prices-tab">Цены</button>
       <button class="tab-btn" data-tab="rating-tab">Рейтинг Google</button>
       <button class="tab-btn" data-tab="clicks-tab">Клики по телефону</button>
     </div>
@@ -154,6 +157,101 @@
           <tbody></tbody>
         </table>
       </div>
+    </div>
+
+    <!-- ВКЛАДКА - Управление ценами -->
+    <div id="prices-tab" class="tab-content" style="display:none;">
+      <h2 style="margin-top:20px;">Управление ценами</h2>
+      <p style="color: #666; margin-bottom: 20px;">
+        Настройте цены для разделов "Комнаты" и "Квартиры". Цены рассчитываются автоматически на основе единиц измерения (шт, м, м²).
+      </p>
+      
+      <div id="prices-container" style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 30px;">
+        <!-- Комнаты -->
+        <div style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+          <h3 style="margin-bottom: 20px; color: var(--primary-color);">🏠 Комнаты</h3>
+          <div id="rooms-prices-container">
+            <!-- Динамически заполняется через JavaScript -->
+          </div>
+        </div>
+        
+        <!-- Квартиры -->
+        <div style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+          <h3 style="margin-bottom: 20px; color: var(--primary-color);">🏢 Квартиры</h3>
+          <div id="apartments-prices-container">
+            <!-- Динамически заполняется через JavaScript -->
+          </div>
+        </div>
+      </div>
+      
+      <div style="margin-top: 30px; display: flex; gap: 15px;">
+        <button onclick="savePrices()" class="save-btn" style="background: #0f9d58;">
+          💾 Сохранить все цены
+        </button>
+        <button onclick="loadPrices()" class="save-btn" style="background: #4285f4;">
+          🔄 Загрузить текущие цены
+        </button>
+      </div>
+      
+      <p id="prices-form-msg" class="form-msg" style="margin-top: 15px;"></p>
+      
+      <div style="margin-top: 30px; padding: 20px; background: #fff3cd; border-radius: 8px; border: 1px solid #ffeaa7;">
+        <h4 style="color: #856404; margin-bottom: 10px;">💡 Как работает расчет цен</h4>
+        <p style="color: #856404; margin: 0; font-size: 14px; line-height: 1.6;">
+          Цены рассчитываются автоматически на основе указанных единиц измерения:<br>
+          • Полотно: площадь × цена за м²<br>
+          • Светильники: количество × цена за шт<br>
+          • Гардины: метраж × цена за м<br>
+          • Монтаж: базовая стоимость + (площадь × цена за м²)
+        </p>
+      </div>
+    </div>
+
+    <!-- ВКЛАДКА - Управление продуктами -->
+    <div id="products-tab" class="tab-content" style="display:none;">
+      <h2 style="margin-top:20px;">Управление продуктами</h2>
+      <p style="color: #666; margin-bottom: 20px;">
+        Редактируйте варианты продуктов для разделов "Комнаты" и "Квартиры". При добавлении новых атрибутов они автоматически появятся в разделе "Цены".
+      </p>
+      
+      <div style="display: flex; gap: 15px; margin-bottom: 20px;">
+        <button onclick="loadProducts()" class="save-btn" style="background: #4285f4;">
+          🔄 Загрузить продукты
+        </button>
+        <button onclick="saveProducts()" class="save-btn" style="background: #0f9d58;">
+          💾 Сохранить все изменения
+        </button>
+      </div>
+      
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 30px; min-width: 0;">
+        <!-- Комнаты -->
+        <div style="min-width: 0;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+            <h3 style="color: var(--primary-color); margin: 0;">🏠 Комнаты</h3>
+            <button onclick="addNewRoom()" class="save-btn" style="background: #34a853; padding: 8px 16px; font-size: 14px; white-space: nowrap;">
+              ➕ Добавить комнату
+            </button>
+          </div>
+          <div id="rooms-list" style="display: grid; gap: 15px; min-width: 0;">
+            <!-- Список комнат будет добавлен через JavaScript -->
+          </div>
+        </div>
+        
+        <!-- Квартиры -->
+        <div style="min-width: 0;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+            <h3 style="color: var(--primary-color); margin: 0;">🏢 Квартиры</h3>
+            <button onclick="addNewApartment()" class="save-btn" style="background: #34a853; padding: 8px 16px; font-size: 14px; white-space: nowrap;">
+              ➕ Добавить квартиру
+            </button>
+          </div>
+          <div id="apartments-list" style="display: grid; gap: 15px; min-width: 0;">
+            <!-- Список квартир будет добавлен через JavaScript -->
+          </div>
+        </div>
+      </div>
+      
+      <p id="products-form-msg" class="form-msg" style="margin-top: 15px;"></p>
     </div>
 
     <!-- НОВАЯ ВКЛАДКА - Управление рейтингом -->

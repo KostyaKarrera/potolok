@@ -501,6 +501,10 @@ tbody tr:hover {
   height: 42px;
 }
 
+.delete-btn i {
+  font-size: 16px;
+}
+
 .delete-btn:hover {
   background: #ff3742;
   transform: translateY(-2px);
@@ -535,6 +539,10 @@ tbody tr:hover {
   justify-content: center;
   width: 42px;
   height: 42px;
+}
+
+.edit-btn i {
+  font-size: 16px;
 }
 
 .edit-btn:hover {
@@ -618,4 +626,60 @@ tbody tr:hover {
 
 .cancel-btn:hover {
   background: #7f8c8d;
+}
+
+/* Стили для вкладки "Продукты" */
+.product-edit-card {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.product-edit-card input[type="text"] {
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Адаптивность для вкладки "Продукты" */
+@media (max-width: 1200px) {
+  #products-tab > div[style*="grid-template-columns: 1fr 1fr"] {
+    grid-template-columns: 1fr !important;
+  }
+  
+  .room-variants-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 768px) {
+  #products-tab > div[style*="grid-template-columns: 1fr 1fr"] {
+    grid-template-columns: 1fr !important;
+    gap: 20px !important;
+  }
+  
+  .product-edit-card {
+    padding: 15px !important;
+  }
+  
+  .room-variants-grid {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+  
+  /* Позиции в составе - адаптивность для мобильных */
+  .variant-item-row {
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+  }
+  
+  .variant-item-row > input,
+  .variant-item-row > select {
+    width: 100% !important;
+  }
+  
+  .variant-item-row > button {
+    width: auto !important;
+    align-self: flex-end;
+    justify-self: flex-end;
+  }
 }

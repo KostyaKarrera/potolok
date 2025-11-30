@@ -13,6 +13,7 @@ function checkAuth() {
     loadContracts();
     initRatingForm();
     loadPhoneClicks(); // ДОБАВЛЕНО
+    loadPrices(); // Загружаем цены при входе
   }
 }
 
@@ -39,6 +40,7 @@ document.getElementById("login-form").addEventListener("submit", async (e) => {
       loadRequests();
       loadContracts();
       initRatingForm(); // ДОБАВЛЕНО
+      loadPrices(); // Загружаем цены при входе
     } else {
       errorEl.textContent = data.message || "Ошибка входа";
     }
@@ -148,8 +150,8 @@ function renderRequests(requests) {
       </td>
       <td data-label="Управление">
         <div style="display:flex;gap:5px;align-items:center;flex-wrap:wrap;justify-content:center;">
-          <button class="edit-btn" onclick="editRequest(${req.id})" title="Редактировать заявку">✏️</button>
-          <button class="delete-btn" onclick="deleteRequest(${req.id})" title="Удалить заявку">🗑️</button>
+          <button class="edit-btn" onclick="editRequest(${req.id})" title="Редактировать заявку"><i class="fas fa-edit"></i></button>
+          <button class="delete-btn" onclick="deleteRequest(${req.id})" title="Удалить заявку"><i class="fas fa-trash"></i></button>
         </div>
       </td>
     `;
@@ -307,6 +309,8 @@ function initTabs() {
   const leadsTable = document.querySelector(".table-container");
   const contractsTab = document.getElementById("contracts-tab");
   const partnersTab = document.getElementById("partners-tab");
+  const productsTab = document.getElementById("products-tab");
+  const pricesTab = document.getElementById("prices-tab");
   const ratingTab = document.getElementById("rating-tab"); // ДОБАВЛЕНО
   const stats = document.querySelector(".stats");
   const clicksTab = document.getElementById("clicks-tab");
@@ -322,6 +326,8 @@ function initTabs() {
         stats.style.display = "";
         contractsTab.style.display = "none";
         partnersTab.style.display = "none";
+        productsTab.style.display = "none";
+        pricesTab.style.display = "none";
         ratingTab.style.display = "none";
         clicksTab.style.display = "none";
       } else if (tab === "contracts-tab") {
@@ -329,6 +335,8 @@ function initTabs() {
         stats.style.display = "none";
         contractsTab.style.display = "";
         partnersTab.style.display = "none";
+        productsTab.style.display = "none";
+        pricesTab.style.display = "none";
         ratingTab.style.display = "none";
         clicksTab.style.display = "none";
       } else if (tab === "partners-tab") {
@@ -336,14 +344,38 @@ function initTabs() {
         stats.style.display = "none";
         contractsTab.style.display = "none";
         partnersTab.style.display = "";
+        productsTab.style.display = "none";
+        pricesTab.style.display = "none";
         ratingTab.style.display = "none";
         clicksTab.style.display = "none";
         loadPartnersList();
+      } else if (tab === "products-tab") {
+        leadsTable.style.display = "none";
+        stats.style.display = "none";
+        contractsTab.style.display = "none";
+        partnersTab.style.display = "none";
+        productsTab.style.display = "";
+        pricesTab.style.display = "none";
+        ratingTab.style.display = "none";
+        clicksTab.style.display = "none";
+        loadProducts(); // Загружаем продукты при открытии вкладки
+      } else if (tab === "prices-tab") {
+        leadsTable.style.display = "none";
+        stats.style.display = "none";
+        contractsTab.style.display = "none";
+        partnersTab.style.display = "none";
+        productsTab.style.display = "none";
+        pricesTab.style.display = "";
+        ratingTab.style.display = "none";
+        clicksTab.style.display = "none";
+        loadPrices(); // Загружаем цены при открытии вкладки
       } else if (tab === "rating-tab") { // ДОБАВЛЕНО
         leadsTable.style.display = "none";
         stats.style.display = "none";
         contractsTab.style.display = "none";
         partnersTab.style.display = "none";
+        productsTab.style.display = "none";
+        pricesTab.style.display = "none";
         ratingTab.style.display = "";
         clicksTab.style.display = "none";
         loadCurrentRating(); // Загружаем текущие данные
@@ -352,6 +384,8 @@ function initTabs() {
         stats.style.display = "none";
         contractsTab.style.display = "none";
         partnersTab.style.display = "none";
+        productsTab.style.display = "none";
+        pricesTab.style.display = "none";
         ratingTab.style.display = "none";
         clicksTab.style.display = "";
         loadPhoneClicks();
@@ -466,8 +500,8 @@ function renderContracts(contracts) {
       <td data-label="Фото">${photosHtml || "-"}</td>
       <td data-label="Управление">
         <div style="display:flex;gap:5px;align-items:center;flex-wrap:wrap;justify-content:center;">
-          <button class="edit-btn" onclick="editContract(${c.id})" title="Редактировать договор">✏️</button>
-          <button class="delete-btn" onclick="deleteContract(${c.id})" title="Удалить договор">🗑️</button>
+          <button class="edit-btn" onclick="editContract(${c.id})" title="Редактировать договор"><i class="fas fa-edit"></i></button>
+          <button class="delete-btn" onclick="deleteContract(${c.id})" title="Удалить договор"><i class="fas fa-trash"></i></button>
         </div>
       </td>
     `;
@@ -931,6 +965,313 @@ document.getElementById("edit-contract-modal").addEventListener("click", (e) => 
   }
 });
 
+// === Управление ценами ===
+async function loadPrices() {
+  try {
+    const res = await fetch(`${API}/prices`, {
+      headers: { Authorization: `Bearer ${adminToken}` }
+    });
+    const data = await res.json();
+    
+    if (data.status === "success" && data.prices) {
+      const p = data.prices;
+      
+      // Динамически рендерим цены для комнат
+      renderPricesSection('rooms', p.rooms);
+      
+      // Динамически рендерим цены для квартир
+      renderPricesSection('apartments', p.apartments);
+      
+      const msgEl = document.getElementById("prices-form-msg");
+      if (msgEl) {
+        msgEl.textContent = "Цены загружены";
+        msgEl.style.color = "green";
+        setTimeout(() => { msgEl.textContent = ""; }, 3000);
+      }
+    }
+  } catch (err) {
+    console.error("Ошибка загрузки цен:", err);
+    const msgEl = document.getElementById("prices-form-msg");
+    if (msgEl) {
+      msgEl.textContent = "Ошибка загрузки цен";
+      msgEl.style.color = "red";
+    }
+  }
+}
+
+function renderPricesSection(sectionType, sectionPrices) {
+  if (!sectionPrices) return;
+  
+  const container = document.getElementById(`${sectionType}-prices-container`);
+  if (!container) return;
+  
+  let html = '';
+  
+  // Полотно
+  if (sectionPrices.fabric) {
+    html += `
+      <div style="margin-bottom: 25px;">
+        <h4 style="margin-bottom: 15px; font-size: 16px;">Полотно (за м²)</h4>
+        <div style="display: grid; gap: 10px;" id="${sectionType}-fabric-list">
+    `;
+    Object.keys(sectionPrices.fabric).forEach(fabricName => {
+      const fabricId = `${sectionType}-fabric-${fabricName.replace(/\s+/g, '-').toLowerCase()}`;
+      html += `
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <label style="flex: 1; font-size: 14px;">${fabricName}:</label>
+          <input type="number" id="${fabricId}" data-fabric="${fabricName}" min="0" step="1" 
+                 value="${sectionPrices.fabric[fabricName].pricePerM2 || 0}" 
+                 style="width: 120px; padding: 8px; border: 2px solid #ddd; border-radius: 6px;">
+          <span style="font-size: 14px; color: #666;">₽/м²</span>
+        </div>
+      `;
+    });
+    html += `</div></div>`;
+  }
+  
+  // Светильники
+  if (sectionPrices.lights) {
+    html += `
+      <div style="margin-bottom: 25px;">
+        <h4 style="margin-bottom: 15px; font-size: 16px;">Светильники (за шт)</h4>
+        <div style="display: grid; gap: 10px;" id="${sectionType}-lights-list">
+    `;
+    Object.keys(sectionPrices.lights).forEach(lightName => {
+      const lightId = `${sectionType}-lights-${lightName.replace(/\s+/g, '-').replace(/[^a-z0-9-]/gi, '').toLowerCase()}`;
+      html += `
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <label style="flex: 1; font-size: 14px;">${lightName}:</label>
+          <input type="number" id="${lightId}" data-light="${lightName}" min="0" step="1" 
+                 value="${sectionPrices.lights[lightName].pricePerUnit || 0}" 
+                 style="width: 120px; padding: 8px; border: 2px solid #ddd; border-radius: 6px;">
+          <span style="font-size: 14px; color: #666;">₽/шт</span>
+        </div>
+      `;
+    });
+    html += `</div></div>`;
+  }
+  
+  // Гардины
+  if (sectionPrices.curtains) {
+    html += `
+      <div style="margin-bottom: 25px;">
+        <h4 style="margin-bottom: 15px; font-size: 16px;">Гардины (за м)</h4>
+        <div style="display: grid; gap: 10px;" id="${sectionType}-curtains-list">
+    `;
+    Object.keys(sectionPrices.curtains).forEach(curtainName => {
+      const curtainId = `${sectionType}-curtains-${curtainName.replace(/\s+/g, '-').toLowerCase()}`;
+      html += `
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <label style="flex: 1; font-size: 14px;">${curtainName}:</label>
+          <input type="number" id="${curtainId}" data-curtain="${curtainName}" min="0" step="1" 
+                 value="${sectionPrices.curtains[curtainName].pricePerM || 0}" 
+                 style="width: 120px; padding: 8px; border: 2px solid #ddd; border-radius: 6px;">
+          <span style="font-size: 14px; color: #666;">₽/м</span>
+        </div>
+      `;
+    });
+    html += `</div></div>`;
+  }
+  
+  // Монтаж
+  if (sectionPrices.installation) {
+    html += `
+      <div style="margin-bottom: 25px;">
+        <h4 style="margin-bottom: 15px; font-size: 16px;">Монтаж</h4>
+        <div style="display: grid; gap: 10px;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <label style="flex: 1; font-size: 14px;">Базовая стоимость:</label>
+            <input type="number" id="${sectionType}-install-base" min="0" step="1" 
+                   value="${sectionPrices.installation.basePrice || 0}" 
+                   style="width: 120px; padding: 8px; border: 2px solid #ddd; border-radius: 6px;">
+            <span style="font-size: 14px; color: #666;">₽</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <label style="flex: 1; font-size: 14px;">За м²:</label>
+            <input type="number" id="${sectionType}-install-m2" min="0" step="1" 
+                   value="${sectionPrices.installation.pricePerM2 || 0}" 
+                   style="width: 120px; padding: 8px; border: 2px solid #ddd; border-radius: 6px;">
+            <span style="font-size: 14px; color: #666;">₽/м²</span>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+  
+  // Дополнительно (только для комнат)
+  if (sectionType === 'rooms' && sectionPrices.extras) {
+    html += `
+      <div style="margin-bottom: 25px;">
+        <h4 style="margin-bottom: 15px; font-size: 16px;">Дополнительно</h4>
+        <div style="display: grid; gap: 10px;" id="${sectionType}-extras-list">
+    `;
+    Object.keys(sectionPrices.extras).forEach(extraName => {
+      const extraId = `${sectionType}-extras-${extraName.replace(/\s+/g, '-').replace(/[^a-z0-9-]/gi, '').toLowerCase()}`;
+      html += `
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <label style="flex: 1; font-size: 14px;">${extraName}:</label>
+          <input type="number" id="${extraId}" data-extra="${extraName}" min="0" step="1" 
+                 value="${sectionPrices.extras[extraName].pricePerUnit || 0}" 
+                 style="width: 120px; padding: 8px; border: 2px solid #ddd; border-radius: 6px;">
+          <span style="font-size: 14px; color: #666;">₽/шт</span>
+        </div>
+      `;
+    });
+    html += `</div></div>`;
+  }
+  
+  container.innerHTML = html;
+}
+
+async function savePrices() {
+  try {
+    // Сначала загружаем текущие цены, чтобы сохранить структуру
+    const resLoad = await fetch(`${API}/prices`, {
+      headers: { Authorization: `Bearer ${adminToken}` }
+    });
+    const dataLoad = await resLoad.json();
+    
+    if (dataLoad.status !== "success" || !dataLoad.prices) {
+      throw new Error("Не удалось загрузить текущие цены");
+    }
+    
+    const prices = dataLoad.prices;
+    
+    // Обновляем цены для комнат
+    if (prices.rooms) {
+      // Полотно
+      if (prices.rooms.fabric) {
+        const fabricInputs = document.querySelectorAll(`[id^="rooms-fabric-"]`);
+        fabricInputs.forEach(input => {
+          const fabricName = input.getAttribute('data-fabric');
+          if (fabricName && prices.rooms.fabric[fabricName]) {
+            prices.rooms.fabric[fabricName].pricePerM2 = parseInt(input.value) || 0;
+          }
+        });
+      }
+      
+      // Светильники
+      if (prices.rooms.lights) {
+        const lightsInputs = document.querySelectorAll(`[id^="rooms-lights-"]`);
+        lightsInputs.forEach(input => {
+          const lightName = input.getAttribute('data-light');
+          if (lightName && prices.rooms.lights[lightName]) {
+            prices.rooms.lights[lightName].pricePerUnit = parseInt(input.value) || 0;
+          }
+        });
+      }
+      
+      // Гардины
+      if (prices.rooms.curtains) {
+        const curtainsInputs = document.querySelectorAll(`[id^="rooms-curtains-"]`);
+        curtainsInputs.forEach(input => {
+          const curtainName = input.getAttribute('data-curtain');
+          if (curtainName && prices.rooms.curtains[curtainName]) {
+            prices.rooms.curtains[curtainName].pricePerM = parseInt(input.value) || 0;
+          }
+        });
+      }
+      
+      // Монтаж
+      if (prices.rooms.installation) {
+        const baseInput = document.getElementById("rooms-install-base");
+        const m2Input = document.getElementById("rooms-install-m2");
+        if (baseInput) prices.rooms.installation.basePrice = parseInt(baseInput.value) || 0;
+        if (m2Input) prices.rooms.installation.pricePerM2 = parseInt(m2Input.value) || 0;
+      }
+      
+      // Дополнительно
+      if (prices.rooms.extras) {
+        const extrasInputs = document.querySelectorAll(`[id^="rooms-extras-"]`);
+        extrasInputs.forEach(input => {
+          const extraName = input.getAttribute('data-extra');
+          if (extraName && prices.rooms.extras[extraName]) {
+            prices.rooms.extras[extraName].pricePerUnit = parseInt(input.value) || 0;
+          }
+        });
+      }
+    }
+    
+    // Обновляем цены для квартир
+    if (prices.apartments) {
+      // Полотно
+      if (prices.apartments.fabric) {
+        const fabricInputs = document.querySelectorAll(`[id^="apartments-fabric-"]`);
+        fabricInputs.forEach(input => {
+          const fabricName = input.getAttribute('data-fabric');
+          if (fabricName && prices.apartments.fabric[fabricName]) {
+            prices.apartments.fabric[fabricName].pricePerM2 = parseInt(input.value) || 0;
+          }
+        });
+      }
+      
+      // Светильники
+      if (prices.apartments.lights) {
+        const lightsInputs = document.querySelectorAll(`[id^="apartments-lights-"]`);
+        lightsInputs.forEach(input => {
+          const lightName = input.getAttribute('data-light');
+          if (lightName && prices.apartments.lights[lightName]) {
+            prices.apartments.lights[lightName].pricePerUnit = parseInt(input.value) || 0;
+          }
+        });
+      }
+      
+      // Гардины
+      if (prices.apartments.curtains) {
+        const curtainsInputs = document.querySelectorAll(`[id^="apartments-curtains-"]`);
+        curtainsInputs.forEach(input => {
+          const curtainName = input.getAttribute('data-curtain');
+          if (curtainName && prices.apartments.curtains[curtainName]) {
+            prices.apartments.curtains[curtainName].pricePerM = parseInt(input.value) || 0;
+          }
+        });
+      }
+      
+      // Монтаж
+      if (prices.apartments.installation) {
+        const baseInput = document.getElementById("apartments-install-base");
+        const m2Input = document.getElementById("apartments-install-m2");
+        if (baseInput) prices.apartments.installation.basePrice = parseInt(baseInput.value) || 0;
+        if (m2Input) prices.apartments.installation.pricePerM2 = parseInt(m2Input.value) || 0;
+      }
+    }
+    
+    const res = await fetch(`${API}/prices`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${adminToken}`
+      },
+      body: JSON.stringify({ prices })
+    });
+    
+    const data = await res.json();
+    const msgEl = document.getElementById("prices-form-msg");
+    
+    if (data.status === "success") {
+      if (msgEl) {
+        msgEl.textContent = "Цены успешно сохранены";
+        msgEl.style.color = "green";
+      }
+      showNotification("Цены успешно сохранены", "success");
+    } else {
+      if (msgEl) {
+        msgEl.textContent = "Ошибка: " + (data.message || "Неизвестная ошибка");
+        msgEl.style.color = "red";
+      }
+      showNotification("Ошибка сохранения цен", "error");
+    }
+  } catch (err) {
+    console.error("Ошибка сохранения цен:", err);
+    const msgEl = document.getElementById("prices-form-msg");
+    if (msgEl) {
+      msgEl.textContent = "Ошибка сохранения цен";
+      msgEl.style.color = "red";
+    }
+    showNotification("Ошибка сохранения цен", "error");
+  }
+}
+
 // Глобальные функции для кнопок
 window.loadCurrentRating = loadCurrentRating;
 window.updateGoogleRating = updateGoogleRating;
@@ -940,6 +1281,461 @@ window.editContract = editContract;
 window.closeEditRequestModal = closeEditRequestModal;
 window.closeEditContractModal = closeEditContractModal;
 window.removeContractPhoto = removeContractPhoto;
+window.loadPrices = loadPrices;
+window.savePrices = savePrices;
+
+// === Управление продуктами ===
+let currentProductsData = null;
+
+async function loadProducts() {
+  try {
+    const res = await fetch(`${API}/products`, {
+      headers: { Authorization: `Bearer ${adminToken}` }
+    });
+    const data = await res.json();
+    
+    if (data.status === "success" && data.products) {
+      currentProductsData = data.products;
+      renderProducts();
+      const msgEl = document.getElementById("products-form-msg");
+      if (msgEl) {
+        msgEl.textContent = "Продукты загружены";
+        msgEl.style.color = "green";
+        setTimeout(() => { msgEl.textContent = ""; }, 3000);
+      }
+    }
+  } catch (err) {
+    console.error("Ошибка загрузки продуктов:", err);
+    const msgEl = document.getElementById("products-form-msg");
+    if (msgEl) {
+      msgEl.textContent = "Ошибка загрузки продуктов";
+      msgEl.style.color = "red";
+    }
+  }
+}
+
+async function saveProducts() {
+  if (!currentProductsData) {
+    showNotification("Нет данных для сохранения", "error");
+    return;
+  }
+  
+  try {
+    const res = await fetch(`${API}/products`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${adminToken}`
+      },
+      body: JSON.stringify({ products: currentProductsData })
+    });
+    
+    const data = await res.json();
+    const msgEl = document.getElementById("products-form-msg");
+    
+    if (data.status === "success") {
+      if (msgEl) {
+        msgEl.textContent = "Продукты успешно сохранены. Новые атрибуты добавлены в раздел 'Цены'.";
+        msgEl.style.color = "green";
+      }
+      showNotification("Продукты успешно сохранены", "success");
+      // Перезагружаем цены, чтобы показать новые атрибуты
+      if (document.getElementById("prices-tab").style.display !== "none") {
+        loadPrices();
+      }
+    } else {
+      if (msgEl) {
+        msgEl.textContent = "Ошибка: " + (data.message || "Неизвестная ошибка");
+        msgEl.style.color = "red";
+      }
+      showNotification("Ошибка сохранения продуктов", "error");
+    }
+  } catch (err) {
+    console.error("Ошибка сохранения продуктов:", err);
+    const msgEl = document.getElementById("products-form-msg");
+    if (msgEl) {
+      msgEl.textContent = "Ошибка сохранения продуктов";
+      msgEl.style.color = "red";
+    }
+    showNotification("Ошибка сохранения продуктов", "error");
+  }
+}
+
+function renderProducts() {
+  if (!currentProductsData) return;
+  
+  renderRooms();
+  renderApartments();
+}
+
+function renderRooms() {
+  const container = document.getElementById("rooms-list");
+  if (!container || !currentProductsData.rooms) return;
+  
+  container.innerHTML = currentProductsData.rooms.map(room => `
+    <div class="product-edit-card" style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); min-width: 0; overflow: hidden;">
+      <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px; gap: 10px; flex-wrap: wrap;">
+        <div style="flex: 1; min-width: 0;">
+          <div style="margin-bottom: 10px;">
+            <label style="font-size: 12px; color: #666; display: block; margin-bottom: 5px;"><strong>Название:</strong></label>
+            <input type="text" value="${room.title || ''}" onchange="updateRoomField(${room.id}, 'title', this.value)" 
+                   style="width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 16px; font-weight: bold; box-sizing: border-box;">
+          </div>
+          <div style="font-size: 14px; color: #666; margin-bottom: 10px;">
+            <strong>Площадь:</strong> <input type="text" value="${room.area || ''}" onchange="updateRoomField(${room.id}, 'area', this.value)" style="padding: 4px 8px; border: 1px solid #ddd; border-radius: 4px; width: 150px; max-width: 100%; box-sizing: border-box;">
+          </div>
+          ${room.note !== null ? `
+          <div style="font-size: 14px; color: #666; margin-bottom: 10px;">
+            <strong>Примечание:</strong> <input type="text" value="${room.note || ''}" onchange="updateRoomField(${room.id}, 'note', this.value)" style="padding: 4px 8px; border: 1px solid #ddd; border-radius: 4px; width: 100%; margin-top: 5px; box-sizing: border-box;">
+          </div>
+          ` : ''}
+        </div>
+        <button onclick="deleteRoom(${room.id})" class="delete-btn" style="padding: 5px 10px; font-size: 12px; flex-shrink: 0;"><i class="fas fa-trash"></i></button>
+      </div>
+      
+      <div class="room-variants-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; min-width: 0;">
+        <!-- БАЗОВЫЙ вариант -->
+        <div style="border: 2px solid #e0e0e0; border-radius: 8px; padding: 15px; min-width: 0; overflow: hidden;">
+          <div style="font-weight: bold; margin-bottom: 10px; color: var(--primary-color);">БАЗОВЫЙ</div>
+          ${renderVariantEditor(room.id, 'basic', room.basic, 'room')}
+        </div>
+        
+        <!-- КОМФОРТ вариант -->
+        <div style="border: 2px solid var(--accent-color); border-radius: 8px; padding: 15px; min-width: 0; overflow: hidden;">
+          <div style="font-weight: bold; margin-bottom: 10px; color: var(--accent-color);">КОМФОРТ</div>
+          ${renderVariantEditor(room.id, 'comfort', room.comfort, 'room')}
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderApartments() {
+  const container = document.getElementById("apartments-list");
+  if (!container || !currentProductsData.apartments) return;
+  
+  container.innerHTML = currentProductsData.apartments.map(apartment => `
+    <div class="product-edit-card" style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); min-width: 0; overflow: hidden;">
+      <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px; gap: 10px; flex-wrap: wrap;">
+        <div style="flex: 1; min-width: 0;">
+          <div style="margin-bottom: 10px;">
+            <label style="font-size: 12px; color: #666; display: block; margin-bottom: 5px;"><strong>Название:</strong></label>
+            <input type="text" value="${apartment.title || ''}" onchange="updateApartmentField(${apartment.id}, 'title', this.value)" 
+                   style="width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 16px; font-weight: bold; box-sizing: border-box;">
+          </div>
+          <div style="font-size: 14px; color: #666; margin-bottom: 10px;">
+            <strong>Площадь:</strong> <input type="text" value="${apartment.area || ''}" onchange="updateApartmentField(${apartment.id}, 'area', this.value)" style="padding: 4px 8px; border: 1px solid #ddd; border-radius: 4px; width: 200px; max-width: 100%; box-sizing: border-box;">
+          </div>
+          ${apartment.note ? `
+          <div style="font-size: 14px; color: #666; margin-bottom: 10px;">
+            <strong>Примечание:</strong> <input type="text" value="${apartment.note || ''}" onchange="updateApartmentField(${apartment.id}, 'note', this.value)" style="padding: 4px 8px; border: 1px solid #ddd; border-radius: 4px; width: 100%; margin-top: 5px; box-sizing: border-box;">
+          </div>
+          ` : ''}
+        </div>
+        <button onclick="deleteApartment(${apartment.id})" class="delete-btn" style="padding: 5px 10px; font-size: 12px; flex-shrink: 0;"><i class="fas fa-trash"></i></button>
+      </div>
+      
+      <div style="margin-top: 15px; min-width: 0;">
+        <strong style="margin-bottom: 10px; display: block;">Варианты:</strong>
+        <div id="apartment-variants-${apartment.id}" style="display: grid; gap: 10px; min-width: 0;">
+          ${apartment.variants.map((variant, idx) => renderApartmentVariant(apartment.id, idx, variant)).join('')}
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderVariantEditor(productId, variantType, variant, productType) {
+  const isRoom = productType === 'room';
+  const variantId = isRoom ? `${productId}-${variantType}` : `${productId}-${variantType}`;
+  
+  // Преобразуем старую структуру в новую (для обратной совместимости) - только если нет items
+  if (!variant.items || !Array.isArray(variant.items)) {
+    variant.items = [];
+    if (variant.fabric && variant.fabric !== '—' && variant.fabric !== null) {
+      variant.items.push({ name: 'Полотно', value: variant.fabric, unit: 'м²' });
+    }
+    if (variant.lights && variant.lights !== '—' && variant.lights !== null) {
+      variant.items.push({ name: 'Светильники', value: variant.lights, unit: 'шт' });
+    }
+    if (variant.curtains && variant.curtains !== '—' && variant.curtains !== null) {
+      variant.items.push({ name: 'Гардины', value: variant.curtains, unit: 'м' });
+    }
+    if (isRoom && variant.extras && variant.extras !== '—' && variant.extras !== null) {
+      variant.items.push({ name: 'Дополнительно', value: variant.extras, unit: 'шт' });
+    }
+  }
+  
+  return `
+    <div style="display: grid; gap: 10px; min-width: 0;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; flex-wrap: wrap; gap: 8px;">
+        <strong style="font-size: 13px; white-space: nowrap;">Позиции в составе:</strong>
+        <button onclick="addVariantItem('${variantId}', '${productType}')" class="save-btn" style="background: #34a853; padding: 4px 10px; font-size: 11px; white-space: nowrap; flex-shrink: 0;">
+          ➕ Добавить позицию
+        </button>
+      </div>
+      <div id="variant-items-${variantId}" style="display: grid; gap: 8px; min-width: 0;">
+        ${variant.items.map((item, idx) => renderVariantItem(variantId, idx, item, productType)).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function renderVariantItem(variantId, itemIndex, item, productType) {
+  return `
+    <div class="variant-item-row" style="display: grid; grid-template-columns: minmax(100px, 1.5fr) minmax(120px, 2.5fr) minmax(60px, 0.8fr) auto; gap: 8px; align-items: center; padding: 8px; background: #f9f9f9; border-radius: 6px; border: 1px solid #e0e0e0;">
+      <input type="text" value="${item.name || ''}" placeholder="Название" 
+             onchange="updateVariantItem('${variantId}', ${itemIndex}, 'name', this.value, '${productType}')"
+             style="padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px; min-width: 0; width: 100%; box-sizing: border-box;">
+      <input type="text" value="${item.value || ''}" placeholder="Значение" 
+             onchange="updateVariantItem('${variantId}', ${itemIndex}, 'value', this.value, '${productType}')"
+             style="padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px; min-width: 0; width: 100%; box-sizing: border-box;">
+      <select onchange="updateVariantItem('${variantId}', ${itemIndex}, 'unit', this.value, '${productType}')"
+              style="padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px; min-width: 0; width: 100%; box-sizing: border-box;">
+        <option value="шт" ${item.unit === 'шт' ? 'selected' : ''}>шт</option>
+        <option value="м" ${item.unit === 'м' ? 'selected' : ''}>м</option>
+        <option value="м²" ${item.unit === 'м²' ? 'selected' : ''}>м²</option>
+      </select>
+      <button onclick="removeVariantItem('${variantId}', ${itemIndex}, '${productType}')" class="delete-btn" style="padding: 4px 8px; font-size: 11px; flex-shrink: 0;"><i class="fas fa-trash"></i></button>
+    </div>
+  `;
+}
+
+function renderApartmentVariant(apartmentId, variantIndex, variant) {
+  // Преобразуем старую структуру в новую (для обратной совместимости)
+  if (!variant.items || !Array.isArray(variant.items)) {
+    variant.items = [];
+    if (variant.fabric && variant.fabric !== '—' && variant.fabric !== null) {
+      variant.items.push({ name: 'Полотно', value: variant.fabric, unit: 'м²' });
+    }
+    if (variant.lights && variant.lights !== '—' && variant.lights !== null) {
+      variant.items.push({ name: 'Светильники', value: variant.lights, unit: 'шт' });
+    }
+    if (variant.curtains && variant.curtains !== '—' && variant.curtains !== null) {
+      variant.items.push({ name: 'Гардины', value: variant.curtains, unit: 'м' });
+    }
+  }
+  
+  return `
+    <div style="border: 1px solid #ddd; border-radius: 8px; padding: 15px; background: #f9f9f9;">
+      <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
+        <strong style="color: ${variant.type === 'comfort' ? 'var(--accent-color)' : 'var(--primary-color)'};">${variant.type === 'basic' ? 'БАЗОВЫЙ' : 'КОМФОРТ'}</strong>
+        <button onclick="deleteApartmentVariant(${apartmentId}, ${variantIndex})" class="delete-btn" style="padding: 3px 8px; font-size: 11px;"><i class="fas fa-trash"></i></button>
+      </div>
+      <div style="margin-bottom: 10px;">
+        <label style="font-size: 12px; color: #666; display: block; margin-bottom: 5px;">Площадь:</label>
+        <input type="text" value="${variant.area || ''}" onchange="updateApartmentVariantField(${apartmentId}, ${variantIndex}, 'area', this.value)" 
+               style="width: 100%; padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+      </div>
+      ${renderVariantEditor(apartmentId, variantIndex, variant, 'apartment')}
+    </div>
+  `;
+}
+
+// Функции обновления полей
+window.updateRoomField = function(roomId, field, value) {
+  if (!currentProductsData || !currentProductsData.rooms) return;
+  const room = currentProductsData.rooms.find(r => r.id === roomId);
+  if (room) {
+    if (field === 'note' && value === '') {
+      room.note = null;
+    } else {
+      room[field] = value;
+    }
+  }
+};
+
+window.updateApartmentField = function(apartmentId, field, value) {
+  if (!currentProductsData || !currentProductsData.apartments) return;
+  const apartment = currentProductsData.apartments.find(a => a.id === apartmentId);
+  if (apartment) {
+    if (field === 'note' && value === '') {
+      apartment.note = null;
+    } else {
+      apartment[field] = value;
+    }
+  }
+};
+
+window.updateVariantItem = function(variantId, itemIndex, field, value, productType) {
+  if (!currentProductsData) return;
+  
+  let variant = null;
+  if (productType === 'room') {
+    const [roomId, variantType] = variantId.split('-');
+    const room = currentProductsData.rooms.find(r => r.id === parseInt(roomId));
+    if (room && room[variantType]) {
+      variant = room[variantType];
+    }
+  } else if (productType === 'apartment') {
+    const [apartmentId, variantIndex] = variantId.split('-');
+    const apartment = currentProductsData.apartments.find(a => a.id === parseInt(apartmentId));
+    if (apartment && apartment.variants[parseInt(variantIndex)]) {
+      variant = apartment.variants[parseInt(variantIndex)];
+    }
+  }
+  
+  if (variant && variant.items && variant.items[itemIndex]) {
+    variant.items[itemIndex][field] = value;
+  }
+};
+
+window.addVariantItem = function(variantId, productType) {
+  if (!currentProductsData) return;
+  
+  let variant = null;
+  if (productType === 'room') {
+    const [roomId, variantType] = variantId.split('-');
+    const room = currentProductsData.rooms.find(r => r.id === parseInt(roomId));
+    if (room && room[variantType]) {
+      variant = room[variantType];
+    }
+  } else if (productType === 'apartment') {
+    const [apartmentId, variantIndex] = variantId.split('-');
+    const apartment = currentProductsData.apartments.find(a => a.id === parseInt(apartmentId));
+    if (apartment && apartment.variants[parseInt(variantIndex)]) {
+      variant = apartment.variants[parseInt(variantIndex)];
+    }
+  }
+  
+  if (variant) {
+    if (!variant.items) variant.items = [];
+    variant.items.push({ name: 'Новая позиция', value: '', unit: 'шт' });
+    renderProducts();
+  }
+};
+
+window.removeVariantItem = function(variantId, itemIndex, productType) {
+  if (!confirm("Вы уверены, что хотите удалить эту позицию?")) return;
+  if (!currentProductsData) return;
+  
+  let variant = null;
+  if (productType === 'room') {
+    const [roomId, variantType] = variantId.split('-');
+    const room = currentProductsData.rooms.find(r => r.id === parseInt(roomId));
+    if (room && room[variantType]) {
+      variant = room[variantType];
+    }
+  } else if (productType === 'apartment') {
+    const [apartmentId, variantIndex] = variantId.split('-');
+    const apartment = currentProductsData.apartments.find(a => a.id === parseInt(apartmentId));
+    if (apartment && apartment.variants[parseInt(variantIndex)]) {
+      variant = apartment.variants[parseInt(variantIndex)];
+    }
+  }
+  
+  if (variant && variant.items && variant.items[itemIndex]) {
+    variant.items.splice(itemIndex, 1);
+    renderProducts();
+  }
+};
+
+window.updateApartmentVariantField = function(apartmentId, variantIndex, field, value) {
+  if (!currentProductsData || !currentProductsData.apartments) return;
+  const apartment = currentProductsData.apartments.find(a => a.id === apartmentId);
+  if (apartment && apartment.variants[variantIndex]) {
+    apartment.variants[variantIndex][field] = value;
+  }
+};
+
+// Функции добавления/удаления
+window.addNewRoom = function() {
+  if (!currentProductsData) currentProductsData = { rooms: [], apartments: [] };
+  if (!currentProductsData.rooms) currentProductsData.rooms = [];
+  
+  const newId = currentProductsData.rooms.length > 0 
+    ? Math.max(...currentProductsData.rooms.map(r => r.id)) + 1 
+    : 1;
+  
+  const newRoom = {
+    id: newId,
+    title: "Новая комната",
+    area: "до 10 м²",
+    note: null,
+    basic: {
+      items: [
+        { name: "Полотно", value: "MSD Standard", unit: "м²" },
+        { name: "Светильники", value: "4x GX53", unit: "шт" }
+      ]
+    },
+    comfort: {
+      items: [
+        { name: "Полотно", value: "BAUF 205", unit: "м²" },
+        { name: "Светильники", value: "6x IN HOME RLP VC", unit: "шт" }
+      ]
+    }
+  };
+  
+  currentProductsData.rooms.push(newRoom);
+  renderRooms();
+};
+
+window.addNewApartment = function() {
+  if (!currentProductsData) currentProductsData = { rooms: [], apartments: [] };
+  if (!currentProductsData.apartments) currentProductsData.apartments = [];
+  
+  const newId = currentProductsData.apartments.length > 0 
+    ? Math.max(...currentProductsData.apartments.map(a => a.id)) + 1 
+    : (currentProductsData.rooms.length > 0 ? Math.max(...currentProductsData.rooms.map(r => r.id)) + 1 : 1);
+  
+  const newApartment = {
+    id: newId,
+    title: "Новая квартира",
+    area: "до 40 м² | до 50 м²",
+    note: null,
+    variants: [
+      {
+        type: "basic",
+        area: "до 40 м²",
+        items: [
+          { name: "Полотно", value: "MSD Standard", unit: "м²" },
+          { name: "Светильники", value: "21x GX53", unit: "шт" },
+          { name: "Гардины", value: "2x на потолок", unit: "м" }
+        ]
+      },
+      {
+        type: "comfort",
+        area: "до 40 м²",
+        items: [
+          { name: "Полотно", value: "BAUF 205", unit: "м²" },
+          { name: "Светильники", value: "24x IN HOME RLP VC", unit: "шт" },
+          { name: "Гардины", value: "2x скрытые", unit: "м" }
+        ]
+      }
+    ]
+  };
+  
+  currentProductsData.apartments.push(newApartment);
+  renderApartments();
+};
+
+window.deleteRoom = function(roomId) {
+  if (!confirm("Вы уверены, что хотите удалить эту комнату?")) return;
+  if (!currentProductsData || !currentProductsData.rooms) return;
+  currentProductsData.rooms = currentProductsData.rooms.filter(r => r.id !== roomId);
+  renderRooms();
+};
+
+window.deleteApartment = function(apartmentId) {
+  if (!confirm("Вы уверены, что хотите удалить эту квартиру?")) return;
+  if (!currentProductsData || !currentProductsData.apartments) return;
+  currentProductsData.apartments = currentProductsData.apartments.filter(a => a.id !== apartmentId);
+  renderApartments();
+};
+
+
+window.deleteApartmentVariant = function(apartmentId, variantIndex) {
+  if (!confirm("Вы уверены, что хотите удалить этот вариант?")) return;
+  if (!currentProductsData || !currentProductsData.apartments) return;
+  const apartment = currentProductsData.apartments.find(a => a.id === apartmentId);
+  if (apartment && apartment.variants[variantIndex]) {
+    apartment.variants.splice(variantIndex, 1);
+    renderApartments();
+  }
+};
+
+window.loadProducts = loadProducts;
+window.saveProducts = saveProducts;
 
 // Обработчик изменения размера окна для адаптивности
 let resizeTimer;

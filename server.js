@@ -849,6 +849,318 @@ app.get("/api/admin/phone-clicks", requireAdmin, async (req, res) => {
   }
 });
 
+// === Админка: получить цены ===
+app.get("/api/admin/prices", requireAdmin, async (req, res) => {
+  try {
+    const pricesPath = path.join(__dirname, "data", "prices.json");
+    if (!fs.existsSync(pricesPath)) {
+      // Создаем файл с дефолтными ценами, если его нет
+      const defaultPrices = {
+        "rooms": {
+          "fabric": {
+            "MSD Standard": { "pricePerM2": 450, "unit": "м²" },
+            "BAUF 205": { "pricePerM2": 650, "unit": "м²" }
+          },
+          "lights": {
+            "GX53": { "pricePerUnit": 800, "unit": "шт" },
+            "IN HOME RLP VC": { "pricePerUnit": 1200, "unit": "шт" }
+          },
+          "curtains": {
+            "на потолок": { "pricePerM": 500, "unit": "м" },
+            "скрытые": { "pricePerM": 800, "unit": "м" }
+          },
+          "installation": { "basePrice": 2000, "pricePerM2": 300, "unit": "м²" },
+          "extras": {
+            "Вент. решетка": { "pricePerUnit": 500, "unit": "шт" }
+          }
+        },
+        "apartments": {
+          "fabric": {
+            "MSD Standard": { "pricePerM2": 420, "unit": "м²" },
+            "BAUF 205": { "pricePerM2": 600, "unit": "м²" }
+          },
+          "lights": {
+            "GX53": { "pricePerUnit": 750, "unit": "шт" },
+            "IN HOME RLP VC": { "pricePerUnit": 1100, "unit": "шт" }
+          },
+          "curtains": {
+            "на потолок": { "pricePerM": 450, "unit": "м" },
+            "скрытые": { "pricePerM": 750, "unit": "м" }
+          },
+          "installation": { "basePrice": 3000, "pricePerM2": 280, "unit": "м²" }
+        }
+      };
+      fs.writeFileSync(pricesPath, JSON.stringify(defaultPrices, null, 2), "utf8");
+      return res.json({ status: "success", prices: defaultPrices });
+    }
+    
+    const pricesData = fs.readFileSync(pricesPath, "utf8");
+    const prices = JSON.parse(pricesData);
+    res.json({ status: "success", prices });
+  } catch (err) {
+    console.error("Ошибка получения цен:", err);
+    res.status(500).json({ status: "error", message: "Ошибка сервера" });
+  }
+});
+
+// === Админка: обновить цены ===
+app.post("/api/admin/prices", requireAdmin, async (req, res) => {
+  try {
+    const { prices } = req.body;
+    if (!prices) {
+      return res.status(400).json({ status: "error", message: "Цены не указаны" });
+    }
+
+    const pricesPath = path.join(__dirname, "data", "prices.json");
+    const pricesDir = path.dirname(pricesPath);
+    
+    // Создаем директорию, если её нет
+    if (!fs.existsSync(pricesDir)) {
+      fs.mkdirSync(pricesDir, { recursive: true });
+    }
+
+    fs.writeFileSync(pricesPath, JSON.stringify(prices, null, 2), "utf8");
+    res.json({ status: "success", message: "Цены обновлены" });
+  } catch (err) {
+    console.error("Ошибка обновления цен:", err);
+    res.status(500).json({ status: "error", message: "Ошибка сервера" });
+  }
+});
+
+// === Публичный API: получить цены (для фронтенда) ===
+app.get("/api/prices", async (req, res) => {
+  try {
+    const pricesPath = path.join(__dirname, "data", "prices.json");
+    if (!fs.existsSync(pricesPath)) {
+      return res.status(404).json({ status: "error", message: "Цены не найдены" });
+    }
+    
+    const pricesData = fs.readFileSync(pricesPath, "utf8");
+    const prices = JSON.parse(pricesData);
+    res.json({ status: "success", prices });
+  } catch (err) {
+    console.error("Ошибка получения цен:", err);
+    res.status(500).json({ status: "error", message: "Ошибка сервера" });
+  }
+});
+
+// === Админка: получить продукты ===
+app.get("/api/admin/products", requireAdmin, async (req, res) => {
+  try {
+    const productsPath = path.join(__dirname, "data", "products.json");
+    if (!fs.existsSync(productsPath)) {
+      return res.status(404).json({ status: "error", message: "Продукты не найдены" });
+    }
+    
+    const productsData = fs.readFileSync(productsPath, "utf8");
+    const products = JSON.parse(productsData);
+    res.json({ status: "success", products });
+  } catch (err) {
+    console.error("Ошибка получения продуктов:", err);
+    res.status(500).json({ status: "error", message: "Ошибка сервера" });
+  }
+});
+
+// === Админка: обновить продукты ===
+app.post("/api/admin/products", requireAdmin, async (req, res) => {
+  try {
+    const { products } = req.body;
+    if (!products) {
+      return res.status(400).json({ status: "error", message: "Продукты не указаны" });
+    }
+
+    const productsPath = path.join(__dirname, "data", "products.json");
+    const productsDir = path.dirname(productsPath);
+    
+    // Создаем директорию, если её нет
+    if (!fs.existsSync(productsDir)) {
+      fs.mkdirSync(productsDir, { recursive: true });
+    }
+
+    // Синхронизируем новые атрибуты с ценами
+    await syncAttributesWithPrices(products);
+
+    fs.writeFileSync(productsPath, JSON.stringify(products, null, 2), "utf8");
+    res.json({ status: "success", message: "Продукты обновлены" });
+  } catch (err) {
+    console.error("Ошибка обновления продуктов:", err);
+    res.status(500).json({ status: "error", message: "Ошибка сервера" });
+  }
+});
+
+// Функция синхронизации атрибутов с ценами
+async function syncAttributesWithPrices(products) {
+  try {
+    const pricesPath = path.join(__dirname, "data", "prices.json");
+    if (!fs.existsSync(pricesPath)) {
+      return;
+    }
+
+    const pricesData = fs.readFileSync(pricesPath, "utf8");
+    const prices = JSON.parse(pricesData);
+
+    // Собираем уникальные атрибуты из продуктов (новая структура с items)
+    const priceMap = { rooms: {}, apartments: {} };
+
+    // Функция для обработки позиций варианта
+    const processVariantItems = (items, sectionType) => {
+      if (!items || !Array.isArray(items)) return;
+      
+      items.forEach(item => {
+        if (!item.name || !item.value || item.value === '—' || item.value === '') return;
+        
+        const unit = item.unit || 'шт';
+        const itemName = item.name.trim();
+        
+        // Определяем категорию по названию позиции или единице измерения
+        let category = 'extras';
+        let priceKey = itemName;
+        
+        if (itemName.toLowerCase().includes('полотно') || itemName.toLowerCase().includes('fabric')) {
+          category = 'fabric';
+          priceKey = item.value.trim();
+        } else if (itemName.toLowerCase().includes('светильник') || itemName.toLowerCase().includes('light')) {
+          category = 'lights';
+          const match = item.value.match(/\d+x\s+(.+)/);
+          priceKey = match ? match[1].trim() : item.value.trim();
+        } else if (itemName.toLowerCase().includes('гардин') || itemName.toLowerCase().includes('curtain')) {
+          category = 'curtains';
+          if (item.value.includes('на потолок')) priceKey = 'на потолок';
+          else if (item.value.includes('скрыт') || item.value.includes('Скрыт')) priceKey = 'скрытые';
+          else priceKey = itemName;
+        } else {
+          category = 'extras';
+          priceKey = itemName;
+        }
+        
+        if (!priceMap[sectionType][category]) {
+          priceMap[sectionType][category] = {};
+        }
+        
+        if (!priceMap[sectionType][category][priceKey]) {
+          const priceStructure = unit === 'м²' 
+            ? { pricePerM2: 0, unit: "м²" }
+            : unit === 'м'
+            ? { pricePerM: 0, unit: "м" }
+            : { pricePerUnit: 0, unit: "шт" };
+          priceMap[sectionType][category][priceKey] = priceStructure;
+        }
+      });
+    };
+
+    // Обрабатываем комнаты
+    if (products.rooms) {
+      products.rooms.forEach(room => {
+        if (room.basic && room.basic.items) {
+          processVariantItems(room.basic.items, 'rooms');
+        }
+        if (room.comfort && room.comfort.items) {
+          processVariantItems(room.comfort.items, 'rooms');
+        }
+        // Обратная совместимость со старой структурой
+        if (room.basic && !room.basic.items) {
+          if (room.basic.fabric && room.basic.fabric !== '—') {
+            if (!priceMap.rooms.fabric) priceMap.rooms.fabric = {};
+            if (!priceMap.rooms.fabric[room.basic.fabric]) {
+              priceMap.rooms.fabric[room.basic.fabric] = { pricePerM2: 0, unit: "м²" };
+            }
+          }
+          if (room.basic.lights && room.basic.lights !== '—') {
+            const match = room.basic.lights.match(/\d+x\s+(.+)/);
+            if (match) {
+              if (!priceMap.rooms.lights) priceMap.rooms.lights = {};
+              if (!priceMap.rooms.lights[match[1].trim()]) {
+                priceMap.rooms.lights[match[1].trim()] = { pricePerUnit: 0, unit: "шт" };
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // Обрабатываем квартиры
+    if (products.apartments) {
+      products.apartments.forEach(apartment => {
+        if (apartment.variants) {
+          apartment.variants.forEach(variant => {
+            if (variant.items) {
+              processVariantItems(variant.items, 'apartments');
+            }
+            // Обратная совместимость со старой структурой
+            if (!variant.items) {
+              if (variant.fabric && variant.fabric !== '—') {
+                if (!priceMap.apartments.fabric) priceMap.apartments.fabric = {};
+                if (!priceMap.apartments.fabric[variant.fabric]) {
+                  priceMap.apartments.fabric[variant.fabric] = { pricePerM2: 0, unit: "м²" };
+                }
+              }
+              if (variant.lights && variant.lights !== '—') {
+                const match = variant.lights.match(/\d+x\s+(.+)/);
+                if (match) {
+                  if (!priceMap.apartments.lights) priceMap.apartments.lights = {};
+                  if (!priceMap.apartments.lights[match[1].trim()]) {
+                    priceMap.apartments.lights[match[1].trim()] = { pricePerUnit: 0, unit: "шт" };
+                  }
+                }
+              }
+            }
+          });
+        }
+      });
+    }
+
+    // Обновляем цены для комнат
+    if (!prices.rooms) prices.rooms = {};
+    
+    ['fabric', 'lights', 'curtains', 'extras'].forEach(category => {
+      if (!prices.rooms[category]) prices.rooms[category] = {};
+      if (priceMap.rooms[category]) {
+        Object.keys(priceMap.rooms[category]).forEach(key => {
+          if (!prices.rooms[category][key]) {
+            prices.rooms[category][key] = priceMap.rooms[category][key];
+          }
+        });
+      }
+    });
+
+    // Обновляем цены для квартир
+    if (!prices.apartments) prices.apartments = {};
+    
+    ['fabric', 'lights', 'curtains'].forEach(category => {
+      if (!prices.apartments[category]) prices.apartments[category] = {};
+      if (priceMap.apartments[category]) {
+        Object.keys(priceMap.apartments[category]).forEach(key => {
+          if (!prices.apartments[category][key]) {
+            prices.apartments[category][key] = priceMap.apartments[category][key];
+          }
+        });
+      }
+    });
+
+    // Сохраняем обновленные цены
+    fs.writeFileSync(pricesPath, JSON.stringify(prices, null, 2), "utf8");
+  } catch (err) {
+    console.error("Ошибка синхронизации атрибутов с ценами:", err);
+  }
+}
+
+// === Публичный API: получить продукты (для фронтенда) ===
+app.get("/api/products", async (req, res) => {
+  try {
+    const productsPath = path.join(__dirname, "data", "products.json");
+    if (!fs.existsSync(productsPath)) {
+      return res.status(404).json({ status: "error", message: "Продукты не найдены" });
+    }
+    
+    const productsData = fs.readFileSync(productsPath, "utf8");
+    const products = JSON.parse(productsData);
+    res.json({ status: "success", products });
+  } catch (err) {
+    console.error("Ошибка получения продуктов:", err);
+    res.status(500).json({ status: "error", message: "Ошибка сервера" });
+  }
+});
+
 
 // === Запуск ===
 app.listen(PORT, () => console.log(`✅ Сервер запущен: http://localhost:${PORT}`));

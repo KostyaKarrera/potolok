@@ -672,8 +672,8 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // ====== 16. Корзина (Бета) ======
-// Данные товаров - готовые решения
-const productsData = {
+// Данные товаров - готовые решения (загружаются с сервера)
+let productsData = {
   rooms: [
     {
       id: 1,
@@ -947,15 +947,16 @@ const Cart = {
       // Показываем кнопки, если есть товары
       if (cartBtn) cartBtn.style.display = 'flex';
       if (floatingCartBtn) {
-        floatingCartBtn.style.display = 'flex';
         floatingCartBtn.classList.remove('hidden');
+        // Удаляем inline стиль, чтобы CSS медиа-запрос мог работать
+        floatingCartBtn.style.display = '';
       }
     } else {
       // Скрываем кнопки, если корзина пуста
       if (cartBtn) cartBtn.style.display = 'none';
       if (floatingCartBtn) {
-        floatingCartBtn.style.display = 'none';
         floatingCartBtn.classList.add('hidden');
+        floatingCartBtn.style.display = '';
       }
     }
   },
@@ -992,8 +993,241 @@ const formatQuantity = (text) => {
     return text;
 };
 
+// Глобальная переменная для хранения цен
+let pricesData = null;
+
+// Функция загрузки цен с сервера
+async function loadPrices() {
+  try {
+    const res = await fetch('/api/prices');
+    const data = await res.json();
+    if (data.status === 'success' && data.prices) {
+      pricesData = data.prices;
+      return true;
+    }
+    return false;
+  } catch (err) {
+    console.error('Ошибка загрузки цен:', err);
+    return false;
+  }
+}
+
+// Функция извлечения числа из строки (например, "до 14 м²" -> 14)
+function extractNumber(str) {
+  if (!str) return 0;
+  const match = str.match(/(\d+)/);
+  return match ? parseInt(match[1]) : 0;
+}
+
+// Функция расчета цены для варианта комнаты (возвращает объект с числом и строкой)
+function calculateRoomPrice(variant, areaStr, prices) {
+  if (!prices || !prices.rooms) return { numeric: 0, formatted: "—" };
+  
+  const area = extractNumber(areaStr);
+  let total = 0;
+  
+  // Новая структура с items
+  if (variant.items && Array.isArray(variant.items)) {
+    variant.items.forEach(item => {
+      if (!item.value || item.value === '—' || item.value === '') return;
+      
+      const unit = item.unit || 'шт';
+      const itemName = item.name.trim();
+      
+      // Определяем категорию и ключ для поиска цены
+      let category = 'extras';
+      let priceKey = itemName;
+      
+      if (itemName.toLowerCase().includes('полотно') || itemName.toLowerCase().includes('fabric')) {
+        category = 'fabric';
+        priceKey = item.value.trim();
+        if (prices.rooms.fabric && prices.rooms.fabric[priceKey]) {
+          total += area * (prices.rooms.fabric[priceKey].pricePerM2 || 0);
+        }
+      } else if (itemName.toLowerCase().includes('светильник') || itemName.toLowerCase().includes('light')) {
+        category = 'lights';
+        const match = item.value.match(/\d+x\s+(.+)/);
+        priceKey = match ? match[1].trim() : item.value.trim();
+        if (match && prices.rooms.lights && prices.rooms.lights[priceKey]) {
+          total += parseInt(match[1]) * (prices.rooms.lights[priceKey].pricePerUnit || 0);
+        }
+      } else if (itemName.toLowerCase().includes('гардин') || itemName.toLowerCase().includes('curtain')) {
+        category = 'curtains';
+        if (item.value.includes('на потолок')) priceKey = 'на потолок';
+        else if (item.value.includes('скрыт') || item.value.includes('Скрыт')) priceKey = 'скрытые';
+        else priceKey = itemName;
+        
+        const metersMatch = item.value.match(/до\s+(\d+)\s+м/) || item.value.match(/(\d+)x/);
+        const meters = metersMatch ? parseInt(metersMatch[1]) : (unit === 'м' ? 1 : 0);
+        if (meters > 0 && prices.rooms.curtains && prices.rooms.curtains[priceKey]) {
+          total += meters * (prices.rooms.curtains[priceKey].pricePerM || 0);
+        }
+      } else {
+        category = 'extras';
+        priceKey = itemName;
+        if (prices.rooms.extras && prices.rooms.extras[priceKey]) {
+          total += prices.rooms.extras[priceKey].pricePerUnit || 0;
+        }
+      }
+    });
+  } else {
+    // Обратная совместимость со старой структурой
+    if (variant.fabric && variant.fabric !== '—' && prices.rooms.fabric && prices.rooms.fabric[variant.fabric]) {
+      total += area * (prices.rooms.fabric[variant.fabric].pricePerM2 || 0);
+    }
+    if (variant.lights && variant.lights !== '—') {
+      const lightsMatch = variant.lights.match(/(\d+)x\s+(.+)/);
+      if (lightsMatch) {
+        const count = parseInt(lightsMatch[1]);
+        const lightType = lightsMatch[2].trim();
+        if (prices.rooms.lights && prices.rooms.lights[lightType]) {
+          total += count * (prices.rooms.lights[lightType].pricePerUnit || 0);
+        }
+      }
+    }
+    if (variant.curtains && variant.curtains !== '—') {
+      const curtainsMatch = variant.curtains.match(/до\s+(\d+)\s+м/);
+      if (curtainsMatch) {
+        const meters = parseInt(curtainsMatch[1]);
+        if (variant.curtains.includes('на потолок') && prices.rooms.curtains && prices.rooms.curtains['на потолок']) {
+          total += meters * (prices.rooms.curtains['на потолок'].pricePerM || 0);
+        } else if (variant.curtains.includes('Скрытая') && prices.rooms.curtains && prices.rooms.curtains['скрытые']) {
+          total += meters * (prices.rooms.curtains['скрытые'].pricePerM || 0);
+        }
+      }
+    }
+    if (variant.extras && variant.extras !== '—' && prices.rooms.extras) {
+      if (prices.rooms.extras[variant.extras]) {
+        total += prices.rooms.extras[variant.extras].pricePerUnit || 0;
+      }
+    }
+  }
+  
+  // Монтаж (базовая + за м²)
+  if (prices.rooms.installation) {
+    total += (prices.rooms.installation.basePrice || 0);
+    total += area * (prices.rooms.installation.pricePerM2 || 0);
+  }
+  
+  return {
+    numeric: total > 0 ? total : 0,
+    formatted: total > 0 ? `${total.toLocaleString('ru-RU')} ₽` : "—"
+  };
+}
+
+// Функция расчета цены для варианта квартиры (возвращает объект с числом и строкой)
+function calculateApartmentPrice(variant, prices) {
+  if (!prices || !prices.apartments) return { numeric: 0, formatted: "—" };
+  
+  const area = extractNumber(variant.area);
+  let total = 0;
+  
+  // Новая структура с items
+  if (variant.items && Array.isArray(variant.items)) {
+    variant.items.forEach(item => {
+      if (!item.value || item.value === '—' || item.value === '') return;
+      
+      const unit = item.unit || 'шт';
+      const itemName = item.name.trim();
+      
+      // Определяем категорию и ключ для поиска цены
+      let category = 'extras';
+      let priceKey = itemName;
+      
+      if (itemName.toLowerCase().includes('полотно') || itemName.toLowerCase().includes('fabric')) {
+        category = 'fabric';
+        priceKey = item.value.trim();
+        if (prices.apartments.fabric && prices.apartments.fabric[priceKey]) {
+          total += area * (prices.apartments.fabric[priceKey].pricePerM2 || 0);
+        }
+      } else if (itemName.toLowerCase().includes('светильник') || itemName.toLowerCase().includes('light')) {
+        category = 'lights';
+        const match = item.value.match(/\d+x\s+(.+)/);
+        priceKey = match ? match[1].trim() : item.value.trim();
+        if (match && prices.apartments.lights && prices.apartments.lights[priceKey]) {
+          total += parseInt(match[1]) * (prices.apartments.lights[priceKey].pricePerUnit || 0);
+        }
+      } else if (itemName.toLowerCase().includes('гардин') || itemName.toLowerCase().includes('curtain')) {
+        category = 'curtains';
+        if (item.value.includes('на потолок')) priceKey = 'на потолок';
+        else if (item.value.includes('скрыт') || item.value.includes('Скрыт')) priceKey = 'скрытые';
+        else priceKey = itemName;
+        
+        const curtainsMatch = item.value.match(/(\d+)x/);
+        const count = curtainsMatch ? parseInt(curtainsMatch[1]) : 1;
+        const meters = count * 3; // Предполагаем, что каждая гардина примерно 3 метра
+        if (meters > 0 && prices.apartments.curtains && prices.apartments.curtains[priceKey]) {
+          total += meters * (prices.apartments.curtains[priceKey].pricePerM || 0);
+        }
+      }
+    });
+  } else {
+    // Обратная совместимость со старой структурой
+    if (variant.fabric && variant.fabric !== '—' && prices.apartments.fabric && prices.apartments.fabric[variant.fabric]) {
+      total += area * (prices.apartments.fabric[variant.fabric].pricePerM2 || 0);
+    }
+    if (variant.lights && variant.lights !== '—') {
+      const lightsMatch = variant.lights.match(/(\d+)x\s+(.+)/);
+      if (lightsMatch) {
+        const count = parseInt(lightsMatch[1]);
+        const lightType = lightsMatch[2].trim();
+        if (prices.apartments.lights && prices.apartments.lights[lightType]) {
+          total += count * (prices.apartments.lights[lightType].pricePerUnit || 0);
+        }
+      }
+    }
+    if (variant.curtains && variant.curtains !== '—') {
+      const curtainsMatch = variant.curtains.match(/(\d+)x\s+(.+)/);
+      if (curtainsMatch) {
+        const count = parseInt(curtainsMatch[1]);
+        const curtainType = curtainsMatch[2].trim();
+        const meters = count * 3;
+        if (curtainType === 'на потолок' && prices.apartments.curtains && prices.apartments.curtains['на потолок']) {
+          total += meters * (prices.apartments.curtains['на потолок'].pricePerM || 0);
+        } else if (curtainType === 'скрытые' && prices.apartments.curtains && prices.apartments.curtains['скрытые']) {
+          total += meters * (prices.apartments.curtains['скрытые'].pricePerM || 0);
+        }
+      }
+    }
+  }
+  
+  // Монтаж (базовая + за м²)
+  if (prices.apartments.installation) {
+    total += (prices.apartments.installation.basePrice || 0);
+    total += area * (prices.apartments.installation.pricePerM2 || 0);
+  }
+  
+  return {
+    numeric: total > 0 ? total : 0,
+    formatted: total > 0 ? `${total.toLocaleString('ru-RU')} ₽` : "—"
+  };
+}
+
+// Функция загрузки продуктов с сервера
+async function loadProducts() {
+  try {
+    const res = await fetch('/api/products');
+    const data = await res.json();
+    if (data.status === 'success' && data.products) {
+      productsData = data.products;
+      return true;
+    }
+    return false;
+  } catch (err) {
+    console.error('Ошибка загрузки продуктов:', err);
+    return false;
+  }
+}
+
 // Инициализация корзины
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
+  // Загружаем цены и продукты с сервера
+  const [pricesLoaded, productsLoaded] = await Promise.all([loadPrices(), loadProducts()]);
+  
+  if (!productsLoaded) {
+    console.warn("Не удалось загрузить продукты с сервера, используются данные по умолчанию");
+  }
+  
   // Обновляем бейдж при загрузке
   Cart.updateBadge();
 
@@ -1033,45 +1267,79 @@ document.addEventListener("DOMContentLoaded", () => {
   const renderVariantDetails = (variant) => {
     const details = [];
     
-    // Полотно
-    if (variant.fabric && variant.fabric !== '—') {
-      const fabricInfo = getFabricInfo(variant.fabric);
-      if (fabricInfo) {
-        details.push(`<div class="variant-detail-item"><strong>Полотно:</strong> <span class="fabric-name-clickable" onclick="showFabricModal('${fabricInfo.name}', '${variant.fabric}', \`${fabricInfo.description}\`)" title="Нажмите, чтобы узнать больше">${variant.fabric}</span></div>`);
-      } else {
-        details.push(`<div class="variant-detail-item"><strong>Полотно:</strong> ${variant.fabric}</div>`);
-      }
-    }
-    
-    // Светильники
-    if (variant.lights && variant.lights !== '—') {
-      const formattedLights = formatQuantity(variant.lights);
-      const lightInfo = getLightInfo(variant.lights);
-      if (lightInfo.image) {
-        // Разделяем текст на части: название светильника и количество
-        // Формат: "GX53 - 4шт" или "IN HOME RLP VC - 6шт"
-        const parts = formattedLights.split(' - ');
-        if (parts.length === 2) {
-          const lightName = parts[0].trim();
-          const quantity = parts[1].trim();
-          details.push(`<div class="variant-detail-item"><strong>Светильники:</strong> <span class="lights-text"><span class="light-name-clickable" onclick="showLightModal('${lightInfo.image}', '${lightInfo.name}', '${lightInfo.fallback || ''}')" title="Нажмите, чтобы посмотреть изображение">${lightName}</span> - ${quantity}</span></div>`);
-        } else {
-          details.push(`<div class="variant-detail-item"><strong>Светильники:</strong> <span class="lights-text light-name-clickable" onclick="showLightModal('${lightInfo.image}', '${lightInfo.name}', '${lightInfo.fallback || ''}')" title="Нажмите, чтобы посмотреть изображение">${formattedLights}</span></div>`);
+    // Новая структура с items
+    if (variant.items && Array.isArray(variant.items)) {
+      variant.items.forEach(item => {
+        if (!item.value || item.value === '—' || item.value === '') return;
+        
+        const itemName = item.name.trim();
+        const itemValue = item.value.trim();
+        
+        // Полотно
+        if (itemName.toLowerCase().includes('полотно') || itemName.toLowerCase().includes('fabric')) {
+          const fabricInfo = getFabricInfo(itemValue);
+          if (fabricInfo) {
+            details.push(`<div class="variant-detail-item"><strong>${itemName}:</strong> <span class="fabric-name-clickable" onclick="showFabricModal('${fabricInfo.name}', '${itemValue}', \`${fabricInfo.description}\`)" title="Нажмите, чтобы узнать больше">${itemValue}</span></div>`);
+          } else {
+            details.push(`<div class="variant-detail-item"><strong>${itemName}:</strong> ${itemValue}</div>`);
+          }
         }
-      } else {
-        details.push(`<div class="variant-detail-item"><strong>Светильники:</strong> ${formattedLights}</div>`);
+        // Светильники
+        else if (itemName.toLowerCase().includes('светильник') || itemName.toLowerCase().includes('light')) {
+          const formattedLights = formatQuantity(itemValue);
+          const lightInfo = getLightInfo(itemValue);
+          if (lightInfo.image) {
+            const parts = formattedLights.split(' - ');
+            if (parts.length === 2) {
+              const lightName = parts[0].trim();
+              const quantity = parts[1].trim();
+              details.push(`<div class="variant-detail-item"><strong>${itemName}:</strong> <span class="lights-text"><span class="light-name-clickable" onclick="showLightModal('${lightInfo.image}', '${lightInfo.name}', '${lightInfo.fallback || ''}')" title="Нажмите, чтобы посмотреть изображение">${lightName}</span> - ${quantity}</span></div>`);
+            } else {
+              details.push(`<div class="variant-detail-item"><strong>${itemName}:</strong> <span class="lights-text light-name-clickable" onclick="showLightModal('${lightInfo.image}', '${lightInfo.name}', '${lightInfo.fallback || ''}')" title="Нажмите, чтобы посмотреть изображение">${formattedLights}</span></div>`);
+            }
+          } else {
+            details.push(`<div class="variant-detail-item"><strong>${itemName}:</strong> ${formattedLights}</div>`);
+          }
+        }
+        // Гардины и остальное
+        else {
+          const formattedValue = itemName.toLowerCase().includes('гардин') ? formatQuantity(itemValue) : itemValue;
+          details.push(`<div class="variant-detail-item"><strong>${itemName}:</strong> ${formattedValue}</div>`);
+        }
+      });
+    } else {
+      // Обратная совместимость со старой структурой
+      if (variant.fabric && variant.fabric !== '—') {
+        const fabricInfo = getFabricInfo(variant.fabric);
+        if (fabricInfo) {
+          details.push(`<div class="variant-detail-item"><strong>Полотно:</strong> <span class="fabric-name-clickable" onclick="showFabricModal('${fabricInfo.name}', '${variant.fabric}', \`${fabricInfo.description}\`)" title="Нажмите, чтобы узнать больше">${variant.fabric}</span></div>`);
+        } else {
+          details.push(`<div class="variant-detail-item"><strong>Полотно:</strong> ${variant.fabric}</div>`);
+        }
       }
-    }
-    
-    // Гардина
-    if (variant.curtains && variant.curtains !== '—') {
-      const formattedCurtains = formatQuantity(variant.curtains);
-      details.push(`<div class="variant-detail-item"><strong>Гардина:</strong> ${formattedCurtains}</div>`);
-    }
-    
-    // Дополнительно
-    if (variant.extras && variant.extras !== '—') {
-      details.push(`<div class="variant-detail-item"><strong>Дополнительно:</strong> ${variant.extras}</div>`);
+      if (variant.lights && variant.lights !== '—') {
+        const formattedLights = formatQuantity(variant.lights);
+        const lightInfo = getLightInfo(variant.lights);
+        if (lightInfo.image) {
+          const parts = formattedLights.split(' - ');
+          if (parts.length === 2) {
+            const lightName = parts[0].trim();
+            const quantity = parts[1].trim();
+            details.push(`<div class="variant-detail-item"><strong>Светильники:</strong> <span class="lights-text"><span class="light-name-clickable" onclick="showLightModal('${lightInfo.image}', '${lightInfo.name}', '${lightInfo.fallback || ''}')" title="Нажмите, чтобы посмотреть изображение">${lightName}</span> - ${quantity}</span></div>`);
+          } else {
+            details.push(`<div class="variant-detail-item"><strong>Светильники:</strong> <span class="lights-text light-name-clickable" onclick="showLightModal('${lightInfo.image}', '${lightInfo.name}', '${lightInfo.fallback || ''}')" title="Нажмите, чтобы посмотреть изображение">${formattedLights}</span></div>`);
+          }
+        } else {
+          details.push(`<div class="variant-detail-item"><strong>Светильники:</strong> ${formattedLights}</div>`);
+        }
+      }
+      if (variant.curtains && variant.curtains !== '—') {
+        const formattedCurtains = formatQuantity(variant.curtains);
+        details.push(`<div class="variant-detail-item"><strong>Гардина:</strong> ${formattedCurtains}</div>`);
+      }
+      if (variant.extras && variant.extras !== '—') {
+        details.push(`<div class="variant-detail-item"><strong>Дополнительно:</strong> ${variant.extras}</div>`);
+      }
     }
     
     return details.length > 0 ? details.join('') : '';
@@ -1080,7 +1348,12 @@ document.addEventListener("DOMContentLoaded", () => {
   // Рендерим карточки комнат (полные карточки без аккордеона внутри)
   const roomsGrid = document.getElementById('roomsGrid');
   if (roomsGrid) {
-    roomsGrid.innerHTML = productsData.rooms.map(room => `
+    roomsGrid.innerHTML = productsData.rooms.map(room => {
+      // Рассчитываем цены
+      const basicPrice = calculateRoomPrice(room.basic, room.area, pricesData);
+      const comfortPrice = calculateRoomPrice(room.comfort, room.area, pricesData);
+      
+      return `
       <div class="product-card room-card">
         <div class="product-header">
           <h3 class="product-title">${room.title}</h3>
@@ -1094,7 +1367,7 @@ document.addEventListener("DOMContentLoaded", () => {
               <div class="variant-details">
                 ${renderVariantDetails(room.basic)}
               </div>
-              <div class="variant-price">${room.basic.price}</div>
+              <div class="variant-price">${basicPrice.formatted}</div>
               <button class="add-to-cart-btn" onclick="addRoomToCart(${room.id}, 'basic')">
                 <i class="fa fa-shopping-cart"></i> Добавить в корзину
               </button>
@@ -1106,7 +1379,7 @@ document.addEventListener("DOMContentLoaded", () => {
               <div class="variant-details">
                 ${renderVariantDetails(room.comfort)}
               </div>
-              <div class="variant-price">${room.comfort.price}</div>
+              <div class="variant-price">${comfortPrice.formatted}</div>
               <button class="add-to-cart-btn btn-comfort" onclick="addRoomToCart(${room.id}, 'comfort')">
                 <i class="fa fa-shopping-cart"></i> Добавить в корзину
               </button>
@@ -1114,15 +1387,49 @@ document.addEventListener("DOMContentLoaded", () => {
           </div>
         </div>
       </div>
-    `).join('');
+    `;
+    }).join('');
   }
+
+  // Функция для получения значения позиции из варианта
+  const getVariantItemValue = (variant, itemName) => {
+    if (variant.items && Array.isArray(variant.items)) {
+      const item = variant.items.find(i => i.name && i.name.toLowerCase().includes(itemName.toLowerCase()));
+      return item ? item.value : null;
+    }
+    // Обратная совместимость
+    if (itemName.includes('полотно') || itemName.includes('fabric')) return variant.fabric;
+    if (itemName.includes('светильник') || itemName.includes('light')) return variant.lights;
+    if (itemName.includes('гардин') || itemName.includes('curtain')) return variant.curtains;
+    return null;
+  };
 
   // Рендерим карточки квартир
   const apartmentsGrid = document.getElementById('apartmentsGrid');
   if (apartmentsGrid) {
     apartmentsGrid.innerHTML = productsData.apartments.map(apartment => {
       // Определяем, какие строки нужно показывать (убираем пустые)
-      const hasCurtains = apartment.variants.some(v => v.curtains && v.curtains !== '—');
+      const hasCurtains = apartment.variants.some(v => {
+        const curtainsValue = getVariantItemValue(v, 'гардин');
+        return curtainsValue && curtainsValue !== '—';
+      });
+      
+      // Собираем все уникальные позиции из всех вариантов
+      const allItemNames = new Set();
+      apartment.variants.forEach(v => {
+        if (v.items && Array.isArray(v.items)) {
+          v.items.forEach(item => {
+            if (item.name && item.value && item.value !== '—') {
+              allItemNames.add(item.name);
+            }
+          });
+        } else {
+          // Обратная совместимость
+          if (v.fabric && v.fabric !== '—') allItemNames.add('Полотно');
+          if (v.lights && v.lights !== '—') allItemNames.add('Светильники');
+          if (v.curtains && v.curtains !== '—') allItemNames.add('Гардины');
+        }
+      });
       
       return `
       <div class="product-card apartment-card">
@@ -1146,71 +1453,85 @@ document.addEventListener("DOMContentLoaded", () => {
                 ${apartment.variants.filter(v => v.type === 'basic').map(v => `<td>${v.area}</td>`).join('')}
                 ${apartment.variants.filter(v => v.type === 'comfort').map(v => `<td>${v.area}</td>`).join('')}
               </tr>
+              ${Array.from(allItemNames).map(itemName => {
+                if (itemName === 'Гардины' && !hasCurtains) return '';
+                
+                const isFabric = itemName.toLowerCase().includes('полотно') || itemName.toLowerCase().includes('fabric');
+                const isLights = itemName.toLowerCase().includes('светильник') || itemName.toLowerCase().includes('light');
+                const isCurtains = itemName.toLowerCase().includes('гардин') || itemName.toLowerCase().includes('curtain');
+                
+                return `
               <tr>
-                <td><strong>Полотно</strong></td>
+                <td><strong>${itemName}</strong></td>
                 ${apartment.variants.filter(v => v.type === 'basic').map(v => {
-                  const fabricInfo = getFabricInfo(v.fabric);
-                  if (fabricInfo) {
-                    return `<td><span class="fabric-name-clickable" onclick="showFabricModal('${fabricInfo.name}', '${v.fabric}', \`${fabricInfo.description}\`)" title="Нажмите, чтобы узнать больше">${v.fabric}</span></td>`;
-                  } else {
-                    return `<td>${v.fabric}</td>`;
-                  }
-                }).join('')}
-                ${apartment.variants.filter(v => v.type === 'comfort').map(v => {
-                  const fabricInfo = getFabricInfo(v.fabric);
-                  if (fabricInfo) {
-                    return `<td><span class="fabric-name-clickable" onclick="showFabricModal('${fabricInfo.name}', '${v.fabric}', \`${fabricInfo.description}\`)" title="Нажмите, чтобы узнать больше">${v.fabric}</span></td>`;
-                  } else {
-                    return `<td>${v.fabric}</td>`;
-                  }
-                }).join('')}
-              </tr>
-              <tr>
-                <td><strong>Светильники</strong></td>
-                ${apartment.variants.filter(v => v.type === 'basic').map(v => {
-                  const formattedLights = formatQuantity(v.lights);
-                  const lightInfo = getLightInfo(v.lights);
-                  if (lightInfo.image) {
-                    const parts = formattedLights.split(' - ');
-                    if (parts.length === 2) {
-                      const lightName = parts[0].trim();
-                      const quantity = parts[1].trim();
-                      return `<td class="lights-cell"><span class="lights-text"><span class="light-name-clickable" onclick="showLightModal('${lightInfo.image}', '${lightInfo.name}', '${lightInfo.fallback || ''}')" title="Нажмите, чтобы посмотреть изображение">${lightName}</span> - ${quantity}</span></td>`;
-                    } else {
+                  const value = getVariantItemValue(v, itemName);
+                  if (!value || value === '—') return '<td>—</td>';
+                  
+                  if (isFabric) {
+                    const fabricInfo = getFabricInfo(value);
+                    if (fabricInfo) {
+                      return `<td><span class="fabric-name-clickable" onclick="showFabricModal('${fabricInfo.name}', '${value}', \`${fabricInfo.description}\`)" title="Нажмите, чтобы узнать больше">${value}</span></td>`;
+                    }
+                    return `<td>${value}</td>`;
+                  } else if (isLights) {
+                    const formattedLights = formatQuantity(value);
+                    const lightInfo = getLightInfo(value);
+                    if (lightInfo.image) {
+                      const parts = formattedLights.split(' - ');
+                      if (parts.length === 2) {
+                        const lightName = parts[0].trim();
+                        const quantity = parts[1].trim();
+                        return `<td class="lights-cell"><span class="lights-text"><span class="light-name-clickable" onclick="showLightModal('${lightInfo.image}', '${lightInfo.name}', '${lightInfo.fallback || ''}')" title="Нажмите, чтобы посмотреть изображение">${lightName}</span> - ${quantity}</span></td>`;
+                      }
                       return `<td class="lights-cell"><span class="lights-text light-name-clickable" onclick="showLightModal('${lightInfo.image}', '${lightInfo.name}', '${lightInfo.fallback || ''}')" title="Нажмите, чтобы посмотреть изображение">${formattedLights}</span></td>`;
                     }
-                  } else {
                     return `<td class="lights-cell"><span class="lights-text">${formattedLights}</span></td>`;
+                  } else if (isCurtains) {
+                    return `<td>${formatQuantity(value)}</td>`;
                   }
+                  return `<td>${value}</td>`;
                 }).join('')}
                 ${apartment.variants.filter(v => v.type === 'comfort').map(v => {
-                  const formattedLights = formatQuantity(v.lights);
-                  const lightInfo = getLightInfo(v.lights);
-                  if (lightInfo.image) {
-                    const parts = formattedLights.split(' - ');
-                    if (parts.length === 2) {
-                      const lightName = parts[0].trim();
-                      const quantity = parts[1].trim();
-                      return `<td class="lights-cell"><span class="lights-text"><span class="light-name-clickable" onclick="showLightModal('${lightInfo.image}', '${lightInfo.name}', '${lightInfo.fallback || ''}')" title="Нажмите, чтобы посмотреть изображение">${lightName}</span> - ${quantity}</span></td>`;
-                    } else {
+                  const value = getVariantItemValue(v, itemName);
+                  if (!value || value === '—') return '<td>—</td>';
+                  
+                  if (isFabric) {
+                    const fabricInfo = getFabricInfo(value);
+                    if (fabricInfo) {
+                      return `<td><span class="fabric-name-clickable" onclick="showFabricModal('${fabricInfo.name}', '${value}', \`${fabricInfo.description}\`)" title="Нажмите, чтобы узнать больше">${value}</span></td>`;
+                    }
+                    return `<td>${value}</td>`;
+                  } else if (isLights) {
+                    const formattedLights = formatQuantity(value);
+                    const lightInfo = getLightInfo(value);
+                    if (lightInfo.image) {
+                      const parts = formattedLights.split(' - ');
+                      if (parts.length === 2) {
+                        const lightName = parts[0].trim();
+                        const quantity = parts[1].trim();
+                        return `<td class="lights-cell"><span class="lights-text"><span class="light-name-clickable" onclick="showLightModal('${lightInfo.image}', '${lightInfo.name}', '${lightInfo.fallback || ''}')" title="Нажмите, чтобы посмотреть изображение">${lightName}</span> - ${quantity}</span></td>`;
+                      }
                       return `<td class="lights-cell"><span class="lights-text light-name-clickable" onclick="showLightModal('${lightInfo.image}', '${lightInfo.name}', '${lightInfo.fallback || ''}')" title="Нажмите, чтобы посмотреть изображение">${formattedLights}</span></td>`;
                     }
-                  } else {
                     return `<td class="lights-cell"><span class="lights-text">${formattedLights}</span></td>`;
+                  } else if (isCurtains) {
+                    return `<td>${formatQuantity(value)}</td>`;
                   }
+                  return `<td>${value}</td>`;
                 }).join('')}
               </tr>
-              ${hasCurtains ? `
-              <tr>
-                <td><strong>Гардины</strong></td>
-                ${apartment.variants.filter(v => v.type === 'basic').map(v => `<td>${formatQuantity(v.curtains)}</td>`).join('')}
-                ${apartment.variants.filter(v => v.type === 'comfort').map(v => `<td>${formatQuantity(v.curtains)}</td>`).join('')}
-              </tr>
-              ` : ''}
+              `;
+              }).join('')}
               <tr>
                 <td><strong>Цена</strong></td>
-                ${apartment.variants.filter(v => v.type === 'basic').map(v => `<td class="price-cell">${v.price}</td>`).join('')}
-                ${apartment.variants.filter(v => v.type === 'comfort').map(v => `<td class="price-cell">${v.price}</td>`).join('')}
+                ${apartment.variants.filter(v => v.type === 'basic').map(v => {
+                  const calculatedPrice = calculateApartmentPrice(v, pricesData);
+                  return `<td class="price-cell">${calculatedPrice.formatted}</td>`;
+                }).join('')}
+                ${apartment.variants.filter(v => v.type === 'comfort').map(v => {
+                  const calculatedPrice = calculateApartmentPrice(v, pricesData);
+                  return `<td class="price-cell">${calculatedPrice.formatted}</td>`;
+                }).join('')}
               </tr>
               <tr>
                 <td><strong>Кнопка</strong></td>
@@ -1278,7 +1599,31 @@ document.addEventListener("DOMContentLoaded", () => {
       const cartItems = Cart.getItems();
       const itemsInfo = cartItems.map(item => `${item.title} (${item.price})`).join(', ');
 
-      const result = await sendRequest(name, phone, "Готовые решения", null, null, false, cartItems);
+      // Рассчитываем общую сумму корзины
+      let totalAmount = 0;
+      cartItems.forEach(item => {
+        // Используем числовое значение цены, если оно есть, иначе парсим строку
+        if (item.priceNumeric && item.priceNumeric > 0) {
+          totalAmount += item.priceNumeric;
+        } else if (item.price && item.price !== '—' && item.price !== '' && item.price !== null) {
+          try {
+            // Извлекаем число из строки типа "12 200 ₽" или "12200 ₽" (для обратной совместимости)
+            let priceStr = String(item.price)
+              .replace(/\s/g, '')           // Удаляем все пробелы
+              .replace(/₽/g, '')           // Удаляем символ рубля
+              .replace(/[^\d]/g, '');      // Оставляем только цифры
+            
+            const price = parseInt(priceStr, 10);
+            if (!isNaN(price) && price > 0) {
+              totalAmount += price;
+            }
+          } catch (e) {
+            console.error('Ошибка при обработке цены:', item.price, e);
+          }
+        }
+      });
+
+      const result = await sendRequest(name, phone, "Готовые решения", totalAmount > 0 ? totalAmount : null, null, false, cartItems);
 
       if (result.status === "success") {
         cartForm.reset();
@@ -1386,6 +1731,7 @@ window.addRoomToCart = function(roomId, variant) {
   const room = productsData.rooms.find(r => r.id === roomId);
   if (room) {
     const variantData = variant === 'basic' ? room.basic : room.comfort;
+    const calculatedPrice = calculateRoomPrice(variantData, room.area, pricesData);
     const cartItem = {
       id: `room-${roomId}-${variant}`,
       title: `${room.title} (${variant === 'basic' ? 'БАЗОВЫЙ' : 'КОМФОРТ'})`,
@@ -1394,7 +1740,8 @@ window.addRoomToCart = function(roomId, variant) {
       lights: variantData.lights,
       curtains: variantData.curtains,
       extras: variantData.extras || null,
-      price: variantData.price,
+      price: calculatedPrice.formatted,
+      priceNumeric: calculatedPrice.numeric,
       type: 'room',
       variant: variant
     };
@@ -1413,6 +1760,7 @@ window.addApartmentToCart = function(apartmentId, variantIndex) {
   const apartment = productsData.apartments.find(a => a.id === apartmentId);
   if (apartment && apartment.variants[variantIndex]) {
     const variant = apartment.variants[variantIndex];
+    const calculatedPrice = calculateApartmentPrice(variant, pricesData);
     const cartItem = {
       id: `apartment-${apartmentId}-${variantIndex}`,
       title: `${apartment.title} (${variant.type === 'basic' ? 'БАЗОВЫЙ' : 'КОМФОРТ'}, ${variant.area})`,
@@ -1420,7 +1768,8 @@ window.addApartmentToCart = function(apartmentId, variantIndex) {
       fabric: variant.fabric,
       lights: variant.lights,
       curtains: variant.curtains,
-      price: variant.price,
+      price: calculatedPrice.formatted,
+      priceNumeric: calculatedPrice.numeric,
       type: 'apartment',
       variant: variant.type
     };

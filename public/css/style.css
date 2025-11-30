@@ -326,9 +326,9 @@ body {
 .floating-cart-btn {
   position: fixed;
   bottom: 20px;
-  right: 90px;
-  width: 60px;
-  height: 60px;
+  right: 20px;
+  width: 50px;
+  height: 50px;
   background: var(--primary-color);
   border-radius: 50%;
   border: none;
@@ -337,11 +337,10 @@ body {
   align-items: center;
   justify-content: center;
   color: white;
-  font-size: 24px;
-  z-index: 1000;
+  font-size: 20px;
+  z-index: 998;
   box-shadow: 0 4px 12px rgba(47, 128, 237, 0.3);
   transition: all 0.3s ease;
-  position: relative;
 }
 
 .floating-cart-btn:hover {
@@ -1873,8 +1872,8 @@ footer .btn i {
     display: none !important;
   }
   
-  .floating-cart-btn {
-    display: flex;
+  .floating-cart-btn:not(.hidden) {
+    display: flex !important;
   }
 }
 
@@ -2014,12 +2013,16 @@ footer .btn i {
   user-select: none;
   position: relative;
   padding: 1.5rem;
-  transition: background-color 0.3s ease;
+  transition: all 0.3s ease;
   border-radius: 12px;
+  border: 2px solid transparent;
 }
 
 .section-accordion-header:hover {
   background: var(--background-light);
+  border-color: var(--primary-color);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(47, 128, 237, 0.15);
 }
 
 .section-accordion-header .products-section-title {
@@ -2048,12 +2051,53 @@ footer .btn i {
   right: 2rem;
   transform: translateY(-50%);
   font-size: var(--font-size-xl);
-  color: var(--text-muted);
-  transition: transform 0.3s ease;
+  color: var(--primary-color);
+  transition: all 0.3s ease;
+  animation: bounceArrow 2s ease-in-out infinite;
+}
+
+.section-accordion-header:hover .section-arrow {
+  color: var(--primary-hover);
+  transform: translateY(-50%) scale(1.2);
+  animation: none;
 }
 
 .section-arrow-open {
   transform: translateY(-50%) rotate(180deg);
+  animation: none;
+}
+
+.section-accordion-header:hover .section-arrow-open {
+  transform: translateY(-50%) rotate(180deg) scale(1.2);
+}
+
+/* Анимация "приглашения" для стрелки */
+@keyframes bounceArrow {
+  0%, 100% {
+    transform: translateY(-50%);
+  }
+  50% {
+    transform: translateY(-60%);
+  }
+}
+
+/* Анимация появления контента */
+.section-accordion-content {
+  overflow: hidden;
+  transition: max-height 0.4s ease, opacity 0.3s ease, padding 0.3s ease;
+  padding: 2rem 0 0;
+  animation: fadeInContent 0.4s ease;
+}
+
+@keyframes fadeInContent {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .section-accordion-content {
