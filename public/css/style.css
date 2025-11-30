@@ -39,7 +39,7 @@
 /* Оптимизация загрузки шрифтов */
 @font-face {
   font-family: "Montserrat";
-  font-display: swap; /* Показываем системный шрифт пока загружается Montserrat */
+  font-display: optional; /* Используем системный шрифт если Montserrat не загрузился быстро - для лучшего FCP */
 }
 
 body { 
