@@ -1390,7 +1390,7 @@ function renderRooms() {
           </div>
           ` : ''}
         </div>
-        <button onclick="deleteRoom(${room.id})" class="delete-btn" style="padding: 5px 10px; font-size: 12px; flex-shrink: 0;"><i class="fas fa-trash"></i></button>
+        <button onclick="deleteRoom(${room.id})" class="delete-btn" style="padding: 8px 12px; font-size: 14px; flex-shrink: 0; white-space: nowrap; min-width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; z-index: 10; position: relative;"><i class="fas fa-trash"></i></button>
       </div>
       
       <div class="room-variants-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; min-width: 0;">
@@ -1709,18 +1709,22 @@ window.addNewApartment = function() {
   renderApartments();
 };
 
-window.deleteRoom = function(roomId) {
+window.deleteRoom = async function(roomId) {
   if (!confirm("Вы уверены, что хотите удалить эту комнату?")) return;
   if (!currentProductsData || !currentProductsData.rooms) return;
   currentProductsData.rooms = currentProductsData.rooms.filter(r => r.id !== roomId);
   renderRooms();
+  // Автоматически сохраняем изменения на сервер
+  await saveProducts();
 };
 
-window.deleteApartment = function(apartmentId) {
+window.deleteApartment = async function(apartmentId) {
   if (!confirm("Вы уверены, что хотите удалить эту квартиру?")) return;
   if (!currentProductsData || !currentProductsData.apartments) return;
   currentProductsData.apartments = currentProductsData.apartments.filter(a => a.id !== apartmentId);
   renderApartments();
+  // Автоматически сохраняем изменения на сервер
+  await saveProducts();
 };
 
 
