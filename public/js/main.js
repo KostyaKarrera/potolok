@@ -1046,10 +1046,13 @@ function calculateRoomPrice(variant, areaStr, prices) {
         }
       } else if (itemName.toLowerCase().includes('светильник') || itemName.toLowerCase().includes('light')) {
         category = 'lights';
-        const match = item.value.match(/\d+x\s+(.+)/);
-        priceKey = match ? match[1].trim() : item.value.trim();
-        if (match && prices.rooms.lights && prices.rooms.lights[priceKey]) {
-          total += parseInt(match[1]) * (prices.rooms.lights[priceKey].pricePerUnit || 0);
+        const match = item.value.match(/(\d+)x\s+(.+)/);
+        if (match) {
+          const count = parseInt(match[1]);
+          priceKey = match[2].trim();
+          if (prices.rooms.lights && prices.rooms.lights[priceKey]) {
+            total += count * (prices.rooms.lights[priceKey].pricePerUnit || 0);
+          }
         }
       } else if (itemName.toLowerCase().includes('гардин') || itemName.toLowerCase().includes('curtain')) {
         category = 'curtains';
@@ -1142,10 +1145,13 @@ function calculateApartmentPrice(variant, prices) {
         }
       } else if (itemName.toLowerCase().includes('светильник') || itemName.toLowerCase().includes('light')) {
         category = 'lights';
-        const match = item.value.match(/\d+x\s+(.+)/);
-        priceKey = match ? match[1].trim() : item.value.trim();
-        if (match && prices.apartments.lights && prices.apartments.lights[priceKey]) {
-          total += parseInt(match[1]) * (prices.apartments.lights[priceKey].pricePerUnit || 0);
+        const match = item.value.match(/(\d+)x\s+(.+)/);
+        if (match) {
+          const count = parseInt(match[1]);
+          priceKey = match[2].trim();
+          if (prices.apartments.lights && prices.apartments.lights[priceKey]) {
+            total += count * (prices.apartments.lights[priceKey].pricePerUnit || 0);
+          }
         }
       } else if (itemName.toLowerCase().includes('гардин') || itemName.toLowerCase().includes('curtain')) {
         category = 'curtains';
@@ -1223,6 +1229,12 @@ async function loadProducts() {
 document.addEventListener("DOMContentLoaded", async () => {
   // Загружаем цены и продукты с сервера
   const [pricesLoaded, productsLoaded] = await Promise.all([loadPrices(), loadProducts()]);
+  
+  if (!pricesLoaded) {
+    console.error("Не удалось загрузить цены с сервера! Цены не будут отображаться.");
+  } else {
+    console.log("Цены успешно загружены:", pricesData);
+  }
   
   if (!productsLoaded) {
     console.warn("Не удалось загрузить продукты с сервера, используются данные по умолчанию");
