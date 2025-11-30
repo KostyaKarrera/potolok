@@ -113,7 +113,7 @@
     "@type": "ListItem",
     "position": 2,
     "name": "Готовые решения",
-    "item": "https://potolok-konkurent.ru/#ready-solutions"
+    "item": "https://potolok-konkurent.ru/ready-solutions.html"
   }, {
     "@type": "ListItem",
     "position": 3,
@@ -142,7 +142,7 @@
   <!-- Навигационное меню -->
   <nav class="main-nav" id="mainNav">
     <ul class="nav-menu" id="navMenu">
-      <li><a href="#ready-solutions" class="nav-link">Готовые решения</a></li>
+      <li><a href="/ready-solutions.html" class="nav-link">Готовые решения</a></li>
       <li><a href="#gallery" class="nav-link">Наши работы</a></li>
       <li><a href="#reviews" class="nav-link">Отзывы</a></li>
       <li><a href="#google-rating-section" class="nav-link">Контакты</a></li>
@@ -173,10 +173,10 @@
 <header>
   <h1>Натяжные потолки в Чувашии и Марий-Эл</h1>
   <p>Гарантия 10 лет. Бесплатный замер и консультация</p>
-  <button class="btn btn-solutions" id="solutionsBtn">
+  <a href="/ready-solutions.html" class="btn btn-solutions">
     <span class="btn-text-desktop">Готовые решения</span>
     <span class="btn-text-mobile">Готовые решения</span>
-  </button>
+  </a>
 </header>
 
 <!-- 🔹 Уникальный SEO-текст -->
@@ -218,71 +218,37 @@
 <!-- 🔹 Готовые решения (Бета) -->
 <section class="section" id="ready-solutions">
   <h2>Готовые решения <span class="beta-badge">Бета</span></h2>
-  <p style="text-align: center; color: var(--text-muted); margin-bottom: 30px;">
-    Выберите готовое решение для вашего потолка
-  </p>
-  
-  <!-- Комнаты -->
-  <div class="products-section">
-    <div class="section-accordion-header" onclick="toggleRoomsSection(this)">
-      <h3 class="products-section-title">Комнаты</h3>
-      <p class="products-section-subtitle">Пакеты «Под ключ»</p>
-      <i class="fa fa-chevron-down section-arrow"></i>
-    </div>
-    <div class="section-accordion-content section-content-collapsed">
-      <div class="products-grid" id="roomsGrid">
-        <!-- Карточки комнат будут добавлены через JavaScript -->
-      </div>
-    </div>
-  </div>
-  
-  <!-- Квартиры -->
-  <div class="products-section" style="margin-top: 4rem;">
-    <div class="section-accordion-header" onclick="toggleApartmentsSection(this)">
-      <h3 class="products-section-title">Квартиры</h3>
-      <p class="products-section-subtitle">Пакеты «Квартира под ключ»</p>
-      <i class="fa fa-chevron-down section-arrow"></i>
-    </div>
-    <div class="section-accordion-content section-content-collapsed">
-      <div class="products-grid" id="apartmentsGrid">
-        <!-- Карточки квартир будут добавлены через JavaScript -->
-      </div>
-    </div>
-  </div>
-  
-  <!-- Универсальный блок примечаний -->
-  <div class="products-notes">
-    <h3 class="products-notes-title">💡 Как это работает?</h3>
-    <ol class="products-notes-list">
-      <li><strong>Выберите решение</strong> — добавьте в корзину подходящий пакет для комнаты или всей квартиры.</li>
-      <li><strong>Оформите заявку</strong> — мы свяжемся с вами в течение 15 минут для уточнения деталей.</li>
-      <li><strong>Бесплатный замер</strong> — наш специалист приедет в удобное время для точного замера.</li>
-      <li><strong>Утверждаете стоимость</strong> — если планировка и материалы соответствуют пакету, цена не изменится!</li>
-    </ol>
-    
-    <div class="products-notes-info">
-      <div class="notes-info-block">
-        <h4>Что входит в стоимость пакета:</h4>
-        <ul>
-          <li>Полотно, все комплектующие и монтажные работы</li>
-          <li>Указанное количество светильников и гардин</li>
-          <li>Выезд и работа замерщика</li>
-        </ul>
-      </div>
-      
-      <div class="notes-info-block">
-        <h4>Что рассчитывается отдельно:</h4>
-        <ul>
-          <li>Монтаж в санузлах с керамогранитной плиткой</li>
-          <li>Обход труб и инженерных коммуникаций</li>
-          <li>Любые нестандартные работы и материалы</li>
-        </ul>
-      </div>
-    </div>
-    
-    <p class="products-notes-footer">
-      <strong>Окончательная стоимость утверждается после бесплатного замера.</strong>
+  <div style="max-width: 800px; margin: 0 auto;">
+    <p style="text-align: center; color: var(--text-muted); margin-bottom: 20px; font-size: 18px;">
+      <strong>Готовые пакеты под ключ с фиксированной ценой</strong>
     </p>
+    <p style="text-align: center; color: var(--text-dark); margin-bottom: 25px; line-height: 1.6;">
+      Выберите готовое решение для комнаты или всей квартиры. Мы подготовили пакеты "Базовый" и "Комфорт" 
+      с полным комплектом: полотно, светильники, гардины и монтаж. <strong>Фиксированная цена</strong> — 
+      если планировка соответствует пакету, стоимость не изменится после замера!
+    </p>
+    <div style="display: flex; justify-content: center; gap: 30px; margin-bottom: 30px; flex-wrap: wrap;">
+      <div style="text-align: center; flex: 1; min-width: 200px;">
+        <div style="font-size: 32px; margin-bottom: 10px;">💰</div>
+        <strong>Фиксированная цена</strong>
+        <p style="font-size: 14px; color: var(--text-muted); margin-top: 5px;">Без скрытых доплат</p>
+      </div>
+      <div style="text-align: center; flex: 1; min-width: 200px;">
+        <div style="font-size: 32px; margin-bottom: 10px;">📦</div>
+        <strong>Всё включено</strong>
+        <p style="font-size: 14px; color: var(--text-muted); margin-top: 5px;">Полотно, светильники, монтаж</p>
+      </div>
+      <div style="text-align: center; flex: 1; min-width: 200px;">
+        <div style="font-size: 32px; margin-bottom: 10px;">⚡</div>
+        <strong>Быстро и просто</strong>
+        <p style="font-size: 14px; color: var(--text-muted); margin-top: 5px;">Выбрал → Заказал → Готово</p>
+      </div>
+    </div>
+  </div>
+  <div style="text-align: center; margin-top: 30px;">
+    <a href="/ready-solutions.html" class="btn btn-accent" style="font-size: 18px; padding: 15px 30px;">
+      <i class="fa fa-shopping-bag"></i> Перейти к готовым решениям
+    </a>
   </div>
 </section>
 
@@ -672,9 +638,11 @@
 </div>
 
 <!-- Плавающая кнопка "Подарок" -->
+<!-- Закомментировано на основной странице
 <button class="floating-sale-btn" id="saleBtn" aria-label="Подарок">
   🎁 Подарок
 </button>
+-->
 
 <!-- Плавающая кнопка звонка -->
 <a href="tel:+79003304656" class="floating-call-btn" aria-label="Позвонить">
@@ -688,6 +656,7 @@
 </button>
 
 <!-- Модальное окно акции -->
+<!-- Закомментировано на основной странице
 <div id="saleModal" class="modal">
   <div class="modal-content sale-modal-content">
     <span class="close">&times;</span>
@@ -735,6 +704,7 @@
     </div>
   </div>
 </div>
+-->
 
 <!-- Модальное окно корзины -->
 <div id="cartModal" class="modal">
@@ -747,9 +717,9 @@
     <div id="cartEmpty" class="cart-empty" style="display: none;">
       <i class="fa fa-shopping-cart" style="font-size: 48px; color: var(--text-light); margin-bottom: 15px;"></i>
       <p>Ваша корзина пуста</p>
-      <button class="btn" onclick="hideModal('cartModal'); document.getElementById('ready-solutions').scrollIntoView({behavior: 'smooth'});">
+      <a href="/ready-solutions.html" class="btn" onclick="hideModal('cartModal');">
         Перейти к готовым решениям
-      </button>
+      </a>
     </div>
     <div id="cartFormContainer" class="cart-form-container" style="display: none;">
       <h3>Оставить заявку</h3>

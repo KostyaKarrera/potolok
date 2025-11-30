@@ -273,15 +273,13 @@ handleModalForm({
   type: "Заказ звонка"
 });
 
-// Кнопка "Подобрать готовое решение" - прокрутка к секции
+// Кнопка "Подобрать готовое решение" - теперь это ссылка, обработчик не нужен
+// Если кнопка все еще существует (для обратной совместимости), перенаправляем на новую страницу
 document.addEventListener("DOMContentLoaded", () => {
   const solutionsBtn = document.getElementById("solutionsBtn");
-  if (solutionsBtn) {
+  if (solutionsBtn && solutionsBtn.tagName === "BUTTON") {
     solutionsBtn.addEventListener("click", () => {
-      const readySolutions = document.getElementById("ready-solutions");
-      if (readySolutions) {
-        readySolutions.scrollIntoView({ behavior: "smooth", block: "start" });
-      }
+      window.location.href = "/ready-solutions.html";
     });
   }
 });
@@ -369,26 +367,54 @@ function getReviewsWord(count) {
 loadGoogleRating();
 
 
-//Отслеживаем клики для статистики
+//Отслеживаем клики для статистики (улучшенная версия с делегированием событий)
 document.addEventListener("DOMContentLoaded", () => {
-  const phoneLinks = document.querySelectorAll('a[href^="tel:"]');
-
-  phoneLinks.forEach(link => {
-    link.addEventListener("click", async () => {
-      const phone = link.getAttribute("href").replace("tel:", "");
+  // Используем делегирование событий для отслеживания всех кликов по телефону
+  // Это работает даже для динамически добавленных ссылок
+  document.addEventListener("click", async (e) => {
+    // Проверяем, является ли кликнутый элемент ссылкой на телефон
+    const phoneLink = e.target.closest('a[href^="tel:"]');
+    
+    if (phoneLink) {
+      const phone = phoneLink.getAttribute("href").replace("tel:", "");
 
       try {
-        await fetch("/api/phone-click", {
+        // Отправляем статистику асинхронно, не блокируя переход
+        fetch("/api/phone-click", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ phone })
+        }).then(() => {
+          console.log("✅ Клик по телефону отправлен:", phone);
+        }).catch((err) => {
+          console.error("❌ Ошибка отправки клика:", err);
         });
-        console.log("Клик по телефону отправлен:", phone);
       } catch (err) {
-        console.error("Ошибка отправки клика:", err);
+        console.error("❌ Ошибка отправки клика:", err);
+      }
+    }
+  });
+  
+  // Дополнительно: отслеживаем клики по кнопке телефона в шапке
+  const phoneBtn = document.getElementById("phoneBtn");
+  if (phoneBtn) {
+    phoneBtn.addEventListener("click", async () => {
+      const phone = "+79003304656"; // Основной номер телефона
+      try {
+        fetch("/api/phone-click", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ phone })
+        }).then(() => {
+          console.log("✅ Клик по кнопке телефона отправлен:", phone);
+        }).catch((err) => {
+          console.error("❌ Ошибка отправки клика:", err);
+        });
+      } catch (err) {
+        console.error("❌ Ошибка отправки клика:", err);
       }
     });
-  });
+  }
 });
 
 // ====== 9. Sticky Header при скролле ======
@@ -1238,6 +1264,15 @@ document.addEventListener("DOMContentLoaded", async () => {
   
   if (!productsLoaded) {
     console.warn("Не удалось загрузить продукты с сервера, используются данные по умолчанию");
+  } else {
+    console.log("Продукты успешно загружены:", productsData);
+    // Проверяем структуру данных
+    if (productsData.rooms && productsData.rooms.length > 0) {
+      const firstRoom = productsData.rooms[0];
+      console.log("Пример комнаты:", firstRoom);
+      console.log("Базовый вариант:", firstRoom.basic);
+      console.log("Есть items?", firstRoom.basic?.items);
+    }
   }
   
   // Обновляем бейдж при загрузке
@@ -1275,12 +1310,56 @@ document.addEventListener("DOMContentLoaded", async () => {
     return descriptions[fabricText] || null;
   };
 
+  // Вспомогательная функция для извлечения данных из варианта (поддержка старой и новой структуры)
+  const extractVariantData = (variant) => {
+    const data = { fabric: null, lights: null, curtains: null, extras: null };
+    
+    if (variant.items && Array.isArray(variant.items) && variant.items.length > 0) {
+      // Новая структура с items
+      variant.items.forEach(item => {
+        if (!item.value || item.value === '—' || item.value === '') return;
+        const itemName = item.name.trim().toLowerCase();
+        const itemValue = item.value.trim();
+        
+        if (itemName.includes('полотно') || itemName.includes('fabric')) {
+          data.fabric = itemValue;
+        } else if (itemName.includes('светильник') || itemName.includes('light')) {
+          data.lights = itemValue;
+        } else if (itemName.includes('гардин') || itemName.includes('curtain')) {
+          data.curtains = itemValue;
+        } else {
+          data.extras = itemValue;
+        }
+      });
+    } else {
+      // Старая структура
+      data.fabric = variant.fabric || null;
+      data.lights = variant.lights || null;
+      data.curtains = variant.curtains || null;
+      data.extras = variant.extras || null;
+    }
+    
+    return data;
+  };
+
   // Функция для рендеринга состава варианта (улучшенное описание)
   const renderVariantDetails = (variant) => {
+    if (!variant) {
+      console.warn("renderVariantDetails: variant is null or undefined");
+      return '<div class="variant-detail-item" style="color: #999;">Состав не указан</div>';
+    }
+    
     const details = [];
     
-    // Новая структура с items
-    if (variant.items && Array.isArray(variant.items)) {
+    // Новая структура с items (проверяем, что items не пустой и содержит валидные данные)
+    const hasValidItems = variant.items && Array.isArray(variant.items) && variant.items.length > 0 && 
+                          variant.items.some(item => item.value && item.value !== '—' && item.value !== '');
+    const hasOldStructure = (variant.fabric && variant.fabric !== '—') || 
+                            (variant.lights && variant.lights !== '—') || 
+                            (variant.curtains && variant.curtains !== '—') || 
+                            (variant.extras && variant.extras !== '—');
+    
+    if (hasValidItems) {
       variant.items.forEach(item => {
         if (!item.value || item.value === '—' || item.value === '') return;
         
@@ -1319,7 +1398,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           details.push(`<div class="variant-detail-item"><strong>${itemName}:</strong> ${formattedValue}</div>`);
         }
       });
-    } else {
+    } else if (hasOldStructure) {
       // Обратная совместимость со старой структурой
       if (variant.fabric && variant.fabric !== '—') {
         const fabricInfo = getFabricInfo(variant.fabric);
@@ -1352,9 +1431,12 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (variant.extras && variant.extras !== '—') {
         details.push(`<div class="variant-detail-item"><strong>Дополнительно:</strong> ${variant.extras}</div>`);
       }
+    } else {
+      // Если нет ни items, ни старой структуры
+      console.warn("renderVariantDetails: нет данных для отображения", variant);
     }
     
-    return details.length > 0 ? details.join('') : '';
+    return details.length > 0 ? details.join('') : '<div class="variant-detail-item" style="color: #999;">Состав не указан</div>';
   };
 
   // Рендерим карточки комнат (полные карточки без аккордеона внутри)
@@ -1405,14 +1487,38 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // Функция для получения значения позиции из варианта
   const getVariantItemValue = (variant, itemName) => {
-    if (variant.items && Array.isArray(variant.items)) {
+    // Проверяем новую структуру с items
+    const hasValidItems = variant.items && Array.isArray(variant.items) && variant.items.length > 0 && 
+                          variant.items.some(item => item.value && item.value !== '—' && item.value !== '');
+    
+    if (hasValidItems) {
       const item = variant.items.find(i => i.name && i.name.toLowerCase().includes(itemName.toLowerCase()));
-      return item ? item.value : null;
+      if (item && item.value && item.value !== '—' && item.value !== '') {
+        return item.value;
+      }
     }
-    // Обратная совместимость
-    if (itemName.includes('полотно') || itemName.includes('fabric')) return variant.fabric;
-    if (itemName.includes('светильник') || itemName.includes('light')) return variant.lights;
-    if (itemName.includes('гардин') || itemName.includes('curtain')) return variant.curtains;
+    
+    // Обратная совместимость - используем старую структуру, если items пустой или невалидный
+    const hasOldStructure = (variant.fabric && variant.fabric !== '—') || 
+                            (variant.lights && variant.lights !== '—') || 
+                            (variant.curtains && variant.curtains !== '—') || 
+                            (variant.extras && variant.extras !== '—');
+    
+    if (!hasValidItems && hasOldStructure) {
+      if (itemName.toLowerCase().includes('полотно') || itemName.toLowerCase().includes('fabric')) {
+        return variant.fabric && variant.fabric !== '—' ? variant.fabric : null;
+      }
+      if (itemName.toLowerCase().includes('светильник') || itemName.toLowerCase().includes('light')) {
+        return variant.lights && variant.lights !== '—' ? variant.lights : null;
+      }
+      if (itemName.toLowerCase().includes('гардин') || itemName.toLowerCase().includes('curtain')) {
+        return variant.curtains && variant.curtains !== '—' ? variant.curtains : null;
+      }
+      if (itemName.toLowerCase().includes('дополнительно') || itemName.toLowerCase().includes('extras')) {
+        return variant.extras && variant.extras !== '—' ? variant.extras : null;
+      }
+    }
+    
     return null;
   };
 
@@ -1429,17 +1535,30 @@ document.addEventListener("DOMContentLoaded", async () => {
       // Собираем все уникальные позиции из всех вариантов
       const allItemNames = new Set();
       apartment.variants.forEach(v => {
-        if (v.items && Array.isArray(v.items)) {
+        // Проверяем новую структуру с items
+        const hasValidItems = v.items && Array.isArray(v.items) && v.items.length > 0 && 
+                              v.items.some(item => item.value && item.value !== '—' && item.value !== '');
+        
+        if (hasValidItems) {
           v.items.forEach(item => {
-            if (item.name && item.value && item.value !== '—') {
+            if (item.name && item.value && item.value !== '—' && item.value !== '') {
               allItemNames.add(item.name);
             }
           });
-        } else {
-          // Обратная совместимость
+        }
+        
+        // Обратная совместимость - проверяем старую структуру, даже если items существует
+        const hasOldStructure = (v.fabric && v.fabric !== '—') || 
+                                (v.lights && v.lights !== '—') || 
+                                (v.curtains && v.curtains !== '—') || 
+                                (v.extras && v.extras !== '—');
+        
+        if (!hasValidItems && hasOldStructure) {
+          // Используем старую структуру, если items пустой или невалидный
           if (v.fabric && v.fabric !== '—') allItemNames.add('Полотно');
           if (v.lights && v.lights !== '—') allItemNames.add('Светильники');
           if (v.curtains && v.curtains !== '—') allItemNames.add('Гардины');
+          if (v.extras && v.extras !== '—') allItemNames.add('Дополнительно');
         }
       });
       
@@ -1744,14 +1863,34 @@ window.addRoomToCart = function(roomId, variant) {
   if (room) {
     const variantData = variant === 'basic' ? room.basic : room.comfort;
     const calculatedPrice = calculateRoomPrice(variantData, room.area, pricesData);
+    
+    // Извлекаем данные из варианта (поддержка старой и новой структуры)
+    let fabric = null, lights = null, curtains = null, extras = null;
+    if (variantData.items && Array.isArray(variantData.items) && variantData.items.length > 0) {
+      variantData.items.forEach(item => {
+        if (!item.value || item.value === '—' || item.value === '') return;
+        const itemName = item.name.trim().toLowerCase();
+        const itemValue = item.value.trim();
+        if (itemName.includes('полотно') || itemName.includes('fabric')) fabric = itemValue;
+        else if (itemName.includes('светильник') || itemName.includes('light')) lights = itemValue;
+        else if (itemName.includes('гардин') || itemName.includes('curtain')) curtains = itemValue;
+        else extras = itemValue;
+      });
+    } else {
+      fabric = variantData.fabric || null;
+      lights = variantData.lights || null;
+      curtains = variantData.curtains || null;
+      extras = variantData.extras || null;
+    }
+    
     const cartItem = {
       id: `room-${roomId}-${variant}`,
       title: `${room.title} (${variant === 'basic' ? 'БАЗОВЫЙ' : 'КОМФОРТ'})`,
       area: room.area,
-      fabric: variantData.fabric,
-      lights: variantData.lights,
-      curtains: variantData.curtains,
-      extras: variantData.extras || null,
+      fabric: fabric,
+      lights: lights,
+      curtains: curtains,
+      extras: extras,
       price: calculatedPrice.formatted,
       priceNumeric: calculatedPrice.numeric,
       type: 'room',
@@ -1773,13 +1912,34 @@ window.addApartmentToCart = function(apartmentId, variantIndex) {
   if (apartment && apartment.variants[variantIndex]) {
     const variant = apartment.variants[variantIndex];
     const calculatedPrice = calculateApartmentPrice(variant, pricesData);
+    
+    // Извлекаем данные из варианта (поддержка старой и новой структуры)
+    let fabric = null, lights = null, curtains = null, extras = null;
+    if (variant.items && Array.isArray(variant.items) && variant.items.length > 0) {
+      variant.items.forEach(item => {
+        if (!item.value || item.value === '—' || item.value === '') return;
+        const itemName = item.name.trim().toLowerCase();
+        const itemValue = item.value.trim();
+        if (itemName.includes('полотно') || itemName.includes('fabric')) fabric = itemValue;
+        else if (itemName.includes('светильник') || itemName.includes('light')) lights = itemValue;
+        else if (itemName.includes('гардин') || itemName.includes('curtain')) curtains = itemValue;
+        else extras = itemValue;
+      });
+    } else {
+      fabric = variant.fabric || null;
+      lights = variant.lights || null;
+      curtains = variant.curtains || null;
+      extras = variant.extras || null;
+    }
+    
     const cartItem = {
       id: `apartment-${apartmentId}-${variantIndex}`,
       title: `${apartment.title} (${variant.type === 'basic' ? 'БАЗОВЫЙ' : 'КОМФОРТ'}, ${variant.area})`,
       area: variant.area,
-      fabric: variant.fabric,
-      lights: variant.lights,
-      curtains: variant.curtains,
+      fabric: fabric,
+      lights: lights,
+      curtains: curtains,
+      extras: extras,
       price: calculatedPrice.formatted,
       priceNumeric: calculatedPrice.numeric,
       type: 'apartment',

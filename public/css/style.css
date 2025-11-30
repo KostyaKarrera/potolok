@@ -1309,9 +1309,7 @@ footer .btn i {
   }
   
   .phone-link {
-    width: 35px;
-    height: 35px;
-    font-size: 1rem;
+    display: none !important; /* Скрываем иконку телефона на мобильных, так как есть плавающая кнопка */
   }
   
   .btn-call {

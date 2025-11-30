@@ -39,25 +39,54 @@
 }
 </script>
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<!-- Локальные ресурсы вместо CDN -->
+<link rel="stylesheet" href="/css/font-awesome.css">
+
+<!-- Оптимизированные шрифты -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/inputmask@5.0.8/dist/inputmask.min.js"></script>
+<link rel="preload" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<noscript>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+</noscript>
 </head>
 
 <body>
 
 <!-- 🔹 Шапка -->
 <div class="topbar">
-  <div class="logo">КонкурентЪ</div>
+  <div class="logo">
+    <a href="/" class="logo-link">
+      <img src="/logo/logo.png" alt="КонкурентЪ - натяжные потолки" class="logo-img">
+    </a>
+  </div>
+  
+  <!-- Навигационное меню -->
+  <nav class="main-nav" id="mainNav">
+    <ul class="nav-menu" id="navMenu">
+      <li><a href="/ready-solutions.html" class="nav-link">Готовые решения</a></li>
+      <li><a href="#gallery" class="nav-link">Наши работы</a></li>
+      <li><a href="#reviews" class="nav-link">Отзывы</a></li>
+      <li><a href="#google-rating-section" class="nav-link">Контакты</a></li>
+    </ul>
+  </nav>
+  
   <div class="contacts">
-    <a href="tel:+79003304656"><i class="fa fa-phone"></i> +7 (900) 330-46-56</a>
-    <a href="https://t.me/deomidovich" target="_blank"><i class="fa-brands fa-telegram"></i></a>
-    <a href="https://wa.me/79871224873" target="_blank"><i class="fa-brands fa-whatsapp"></i></a>
-    <a href="https://vk.com/chebkonkurent21" target="_blank"><i class="fa-brands fa-vk"></i></a>
-    <!-- Кнопка "Стать партнером" удалена из шапки -->
-    <button class="btn" id="callBtn">Заказать звонок</button>
+    <button class="phone-link" id="phoneBtn" aria-label="Позвонить"><i class="fa fa-phone"></i></button>
+    <a href="https://t.me/deomidovich" target="_blank" aria-label="Telegram"><i class="fa-brands fa-telegram"></i></a>
+    <a href="https://wa.me/79871224873" target="_blank" aria-label="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
+    <a href="https://vk.com/chebkonkurent21" target="_blank" aria-label="VKontakte"><i class="fa-brands fa-vk"></i></a>
+    <button class="cart-icon-btn mobile-cart-btn" id="cartBtn" aria-label="Корзина">
+      <i class="fa fa-shopping-cart"></i>
+      <span class="cart-badge" id="cartBadge">0</span>
+    </button>
+    <button class="btn btn-call" id="callBtn">Заказать звонок</button>
+    <!-- Гамбургер-кнопка для мобильных -->
+    <button class="hamburger" id="hamburger" aria-label="Меню">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
   </div>
 </div>
 
@@ -65,7 +94,10 @@
 <header>
   <h1>Натяжные потолки в Чебоксарах</h1>
   <p>Гарантия 10 лет. Бесплатный замер и консультация</p>
-  <button class="btn" id="measureBtn">Вызвать специалиста</button>
+  <a href="/ready-solutions.html" class="btn btn-solutions">
+    <span class="btn-text-desktop">Готовые решения</span>
+    <span class="btn-text-mobile">Готовые решения</span>
+  </a>
 </header>
 
 <!-- 🔹 Уникальный SEO-текст -->
@@ -95,38 +127,115 @@
 </section>
 
 <!-- 🔹 Преимущества -->
-<section class="section">
+<section class="section" id="advantages">
 <h2>Наши преимущества</h2>
 <div class="features">
-  <div class="feature"><i class="fa fa-clock"></i><p>Установка за 1 день</p></div>
-  <div class="feature"><i class="fa fa-shield-alt"></i><p>Гарантия 10 лет</p></div>
-  <div class="feature"><i class="fa fa-smile"></i><p>Более 1000 довольных клиентов</p></div>
+  <div class="feature" data-feature="install" onclick="showFeatureModal('install', 'Установка за 1 день', 'Наша команда профессионалов выполняет монтаж натяжного потолка всего за один день. Мы приезжаем утром, выполняем все необходимые работы аккуратно и без пыли, и к вечеру вы уже можете наслаждаться новым потолком. Работаем быстро, качественно и с соблюдением всех технологий.')">
+    <i class="fa fa-clock"></i><p>Установка за 1 день</p>
+  </div>
+  <div class="feature" data-feature="warranty" onclick="showFeatureModal('warranty', 'Гарантия 10 лет', 'Мы предоставляем официальную гарантию 10 лет на все наши работы и материалы. Это означает, что вы можете быть уверены в качестве установленного потолка. В случае любых проблем мы оперативно их решим. Гарантия распространяется на полотно, монтажные работы и все комплектующие.')">
+    <i class="fa fa-shield-alt"></i><p>Гарантия 10 лет</p>
+  </div>
+  <div class="feature" data-feature="clients" onclick="showFeatureModal('clients', 'Более 1000 довольных клиентов', 'За годы работы мы установили натяжные потолки более чем для 1000 довольных клиентов в Чебоксарах, Новочебоксарске, Йошкар-Оле и других городах. Наш опыт и профессионализм подтверждаются многочисленными положительными отзывами и рекомендациями. Мы гордимся каждым выполненным проектом.')">
+    <i class="fa fa-smile"></i><p>Более 1000 довольных клиентов</p>
+  </div>
 </div>
 </section>
 
 <!-- 🔹 Галерея -->
-<section class="section">
-<h2>Наши работы в Чебоксарах</h2>
-<div class="gallery">
-  <img src="/jobs/IMG_0423.JPG" alt="Натяжной потолок в Чебоксарах">
-  <img src="/jobs/IMG_0436.JPG" alt="Пример натяжного потолка">
-  <img src="/jobs/IMG_0476.JPG" alt="Пример натяжного потолка">
-  <img src="/jobs/IMG_0477.JPG" alt="Пример натяжного потолка">
-  <img src="/jobs/IMG_0893.JPG" alt="Пример натяжного потолка">
-  <img src="/jobs/IMG_1166.JPG" alt="Пример натяжного потолка">
-  <img src="/jobs/IMG_1362.JPG" alt="Натяжной потолок в Чебоксарах">
-  <img src="/jobs/job1.jpg" alt="Пример натяжного потолка">
-  <img src="/jobs/job2.jpg" alt="Натяжные потолки в чебоксарах">
-  <img src="/jobs/job3.jpg" alt="Пример натяжного потолка">
-  <img src="/jobs/job4.jpg" alt="Пример натяжного потолка">
-  <img src="/jobs/job5.JPG" alt="Натяжные потолки в Чебоксарах">
-  <img src="/jobs/job6.jpg" alt="Пример натяжного потолка">
-  <img src="/jobs/job7.jpg" alt="Пример натяжного потолка">
-  <img src="/jobs/job8.jpg" alt="Натяжные потолки в Чебоксарах">
-  <img src="/jobs/job9.jpg" alt="Пример натяжного потолка">
-  <img src="/jobs/job10.jpg" alt="Пример натяжного потолка">
-  <img src="/jobs/job11.jpg" alt="Натяжные потолки в Чебоксарах">
-</div>
+<section class="section" id="gallery">
+  <h2>Наши работы в Чебоксарах</h2>
+  <div class="gallery">
+    <picture>
+      <source media="(min-width: 769px)" srcset="/jobs/IMG_0423.webp">
+      <img loading="lazy" src="/jobs/mobile/IMG_0423.webp" alt="Натяжной потолок в Чебоксарах">
+    </picture>
+    
+    <picture>
+      <source media="(min-width: 769px)" srcset="/jobs/IMG_0436.webp">
+      <img loading="lazy" src="/jobs/mobile/IMG_0436.webp" alt="Натяжной потолок — пример работы в Чебоксарах">
+    </picture>
+    
+    <picture>
+      <source media="(min-width: 769px)" srcset="/jobs/IMG_0476.webp">
+      <img loading="lazy" src="/jobs/mobile/IMG_0476.webp" alt="Натяжной потолок — пример работы в Чебоксарах">
+    </picture>
+    
+    <picture>
+      <source media="(min-width: 769px)" srcset="/jobs/IMG_0477.webp">
+      <img loading="lazy" src="/jobs/mobile/IMG_0477.webp" alt="Натяжной потолок — пример работы в Чебоксарах">
+    </picture>
+    
+    <picture>
+      <source media="(min-width: 769px)" srcset="/jobs/IMG_0893.webp">
+      <img loading="lazy" src="/jobs/mobile/IMG_0893.webp" alt="Натяжной потолок — пример работы в Чебоксарах">
+    </picture>
+    
+    <picture>
+      <source media="(min-width: 769px)" srcset="/jobs/IMG_1166.webp">
+      <img loading="lazy" src="/jobs/mobile/IMG_1166.webp" alt="Матовый натяжной потолок — работа КонкурентЪ">
+    </picture>
+    
+    <picture>
+      <source media="(min-width: 769px)" srcset="/jobs/IMG_1362.webp">
+      <img loading="lazy" src="/jobs/mobile/IMG_1362.webp" alt="Натяжной потолок в Чебоксарах">
+    </picture>
+    
+    <picture>
+      <source media="(min-width: 769px)" srcset="/jobs/job1.webp">
+      <img loading="lazy" src="/jobs/mobile/job1.webp" alt="Пример натяжного потолка">
+    </picture>
+    
+    <picture>
+      <source media="(min-width: 769px)" srcset="/jobs/job2.webp">
+      <img loading="lazy" src="/jobs/mobile/job2.webp" alt="Натяжные потолки в чебоксарах">
+    </picture>
+    
+    <picture>
+      <source media="(min-width: 769px)" srcset="/jobs/job3.webp">
+      <img loading="lazy" src="/jobs/mobile/job3.webp" alt="Пример натяжного потолка">
+    </picture>
+    
+    <picture>
+      <source media="(min-width: 769px)" srcset="/jobs/job4.webp">
+      <img loading="lazy" src="/jobs/mobile/job4.webp" alt="Пример натяжного потолка">
+    </picture>
+    
+    <picture>
+      <source media="(min-width: 769px)" srcset="/jobs/job5.webp">
+      <img loading="lazy" src="/jobs/mobile/job5.webp" alt="Натяжные потолки в Чебоксарах">
+    </picture>
+    
+    <picture>
+      <source media="(min-width: 769px)" srcset="/jobs/job6.webp">
+      <img loading="lazy" src="/jobs/mobile/job6.webp" alt="Пример натяжного потолка">
+    </picture>
+    
+    <picture>
+      <source media="(min-width: 769px)" srcset="/jobs/job7.webp">
+      <img loading="lazy" src="/jobs/mobile/job7.webp" alt="Пример натяжного потолка">
+    </picture>
+    
+    <picture>
+      <source media="(min-width: 769px)" srcset="/jobs/job8.webp">
+      <img loading="lazy" src="/jobs/mobile/job8.webp" alt="Натяжные потолки в Чебоксарах">
+    </picture>
+    
+    <picture>
+      <source media="(min-width: 769px)" srcset="/jobs/job9.webp">
+      <img loading="lazy" src="/jobs/mobile/job9.webp" alt="Пример натяжного потолка">
+    </picture>
+    
+    <picture>
+      <source media="(min-width: 769px)" srcset="/jobs/job10.webp">
+      <img loading="lazy" src="/jobs/mobile/job10.webp" alt="Пример натяжного потолка">
+    </picture>
+    
+    <picture>
+      <source media="(min-width: 769px)" srcset="/jobs/job11.webp">
+      <img loading="lazy" src="/jobs/mobile/job11.webp" alt="Натяжные потолки в Чебоксарах">
+    </picture>
+  </div>
 </section>
 
 <!-- 🔹 Блок отзывов с ровными карточками -->
@@ -134,28 +243,28 @@
   <h2>Отзывы наших клиентов</h2>
   <div class="reviews-gallery">
     <a href="https://www.avito.ru/cheboksary/predlozheniya_uslug/potolki_natyazhnye_3780559754?utm_campaign=native&utm_medium=item_page_android&utm_source=soc_sharing_seller#open-reviews-list" target="_blank">
-      <div class="review-card"><img src="/reviews/Frame 2.png" alt="Отзыв 1"></div>
+      <div class="review-card"><img src="/reviews/Frame 2.png" alt="Отзыв клиента о натяжных потолках в Чебоксарах"></div>
     </a>
     <a href="https://www.avito.ru/cheboksary/predlozheniya_uslug/potolki_natyazhnye_3780559754?utm_campaign=native&utm_medium=item_page_android&utm_source=soc_sharing_seller#open-reviews-list" target="_blank">
-      <div class="review-card"><img src="/reviews/Frame 3.png" alt="Отзыв 2"></div>
+      <div class="review-card"><img src="/reviews/Frame 3.png" alt="Отзыв о монтаже натяжного потолка в Чебоксарах"></div>
     </a>
     <a href="https://www.avito.ru/cheboksary/predlozheniya_uslug/potolki_natyazhnye_3780559754?utm_campaign=native&utm_medium=item_page_android&utm_source=soc_sharing_seller#open-reviews-list" target="_blank">
-      <div class="review-card"><img src="/reviews/Frame 4.png" alt="Отзыв 3"></div>
+      <div class="review-card"><img src="/reviews/Frame 4.png" alt="Положительный отзыв о работе КонкурентЪ"></div>
     </a>
     <a href="https://www.avito.ru/cheboksary/predlozheniya_uslug/potolki_natyazhnye_3780559754?utm_campaign=native&utm_medium=item_page_android&utm_source=soc_sharing_seller#open-reviews-list" target="_blank">
-      <div class="review-card"><img src="/reviews/Frame 5.png" alt="Отзыв 4"></div>
+      <div class="review-card"><img src="/reviews/Frame 5.png" alt="Отзыв клиента о натяжных потолках под ключ"></div>
     </a>
     <a href="https://www.avito.ru/cheboksary/predlozheniya_uslug/potolki_natyazhnye_3780559754?utm_campaign=native&utm_medium=item_page_android&utm_source=soc_sharing_seller#open-reviews-list" target="_blank">
-      <div class="review-card"><img src="/reviews/Frame 6.png" alt="Отзыв 5"></div>
+      <div class="review-card"><img src="/reviews/Frame 6.png" alt="Отзыв о качестве установки натяжного потолка"></div>
     </a>
     <a href="https://www.avito.ru/cheboksary/predlozheniya_uslug/potolki_natyazhnye_3780559754?utm_campaign=native&utm_medium=item_page_android&utm_source=soc_sharing_seller#open-reviews-list" target="_blank">
-      <div class="review-card"><img src="/reviews/Frame 7.png" alt="Отзыв 6"></div>
+      <div class="review-card"><img src="/reviews/Frame 7.png" alt="Отзыв о натяжных потолках в Чебоксарах"></div>
     </a>
   </div>
 </section>
 
 <!-- 🔹 Калькулятор -->
-<section class="section">
+<section class="section" id="calculator">
 <h2>Рассчитайте стоимость вашего потолка за 1 минуту</h2>
 <form id="calculator-form">
   <input type="number" placeholder="Площадь (м²)" min="1" required>
@@ -219,9 +328,10 @@
   </div>
 </div>
 
-<!-- 🔹 Google Карта + Рейтинг -->
+<!-- 🔹 Google Карта + Все платформы отзывов -->
 <section class="section" id="google-rating-section">
-  <h2>Мы на Google Картах</h2>
+  <h2>Мы на картах — отзывы, рейтинг и расположение</h2>
+  
   <div class="container google-rating-container">
     <!-- Левая колонка - Карта -->
     <div class="google-map">
@@ -230,30 +340,71 @@
         allowfullscreen 
         loading="lazy">
       </iframe>
+      <noscript>Офис компании КонкурентЪ — натяжные потолки. Мы находимся в Чебоксарах, смотрите расположение на карте.</noscript>
       <div class="map-info">
         <div id="company-name">КонкурентЪ Натяжные потолки</div>
         <div>Чебоксары</div>
-        <a href="https://www.google.com/maps/place/.../entry=ttu" target="_blank">Открыть в Картах</a>
+        <a href="https://www.google.com/maps/place/%D0%9A%D0%BE%D0%BD%D0%BA%D1%83%D1%80%D0%B5%D0%BD%D1%82%D0%AA+%D0%9D%D0%B0%D1%82%D1%8F%D0%B6%D0%BD%D1%8B%D0%B5+%D0%BF%D0%BE%D1%82%D0%BE%D0%BB%D0%BA%D0%B8/@56.0948966,47.2750137,17z/data=!3m1!4b1!4m6!3m5!1s0x415a37bf17ea7e61:0x71f7b86a8aff2989!8m2!3d56.0948966!4d47.2750137!16s%2Fg%2F11mf93njqq?entry=ttu&g_ep=EgoyMDI1MTExMi4wIKXMDSoASAFQAw%3D%3D" target="_blank">Открыть в Картах</a>
       </div>
     </div>
 
-    <!-- Правая колонка - Отзывы -->
-    <div class="google-reviews">
-      <div class="reviews-header">
-        <span class="reviews-icon">🔍</span>
-        <div>
-          <div class="reviews-title">Google Отзывы</div>
-          <div class="reviews-rating">
-            <span id="rating-stars">★★★★★</span>
-            <span id="rating-value">5.0</span>
-            <span id="reviews-count">(1 отзыв)</span>
+    <!-- Правая колонка - Все платформы отзывов -->
+    <div class="all-reviews-platforms">
+      <!-- Google -->
+      <div class="review-platform google-platform">
+        <div class="platform-header">
+          <div class="platform-logo">
+            <i class="fab fa-google"></i>
+            <span>Google</span>
+          </div>
+          <div class="platform-rating">
+            <span class="rating-stars" id="rating-stars">★★★★★</span>
+            <span class="rating-value" id="rating-value">5.0</span>
           </div>
         </div>
+        <div class="platform-info">
+          <span class="reviews-count" id="reviews-count">1 отзыв</span>
+          <p>Помогите другим клиентам узнать о качестве наших услуг</p>
+          <a href="https://share.google/vMb1uqP82k3akvipZ" 
+             target="_blank" class="review-btn google-btn">
+            ⭐ Оставить отзыв
+          </a>
+        </div>
       </div>
-      <p>Помогите другим клиентам узнать о качестве наших услуг</p>
-      <a href="https://search.google.com/local/writereview?placeid=..." target="_blank" class="reviews-btn">
-        ⭐ Оставить отзыв
-      </a>
+
+      <!-- Яндекс -->
+      <div class="review-platform yandex-platform">
+        <div class="platform-header">
+          <div class="platform-logo">
+            <i class="fab fa-yandex"></i>
+            <span>Яндекс</span>
+          </div>
+        </div>
+        <div class="platform-info">
+          <p>Оставьте отзыв на Яндекс Картах</p>
+          <a href="https://yandex.ru/maps/-/CLSzNY1Y" 
+             target="_blank" class="review-btn yandex-btn">
+            📝 Оставить отзыв
+          </a>
+        </div>
+      </div>
+
+      <!-- 2GIS -->
+      <div class="review-platform gis-platform">
+        <div class="platform-header">
+          <div class="platform-logo">
+            <i class="fas fa-map"></i>
+            <span>2GIS</span>
+          </div>
+        </div>
+        <div class="platform-info">
+          <p>Оставьте отзыв в 2GIS</p>
+          <a href="https://go.2gis.com/MrUyw" 
+             target="_blank" class="review-btn gis-btn">
+            🗺️ Оставить отзыв
+          </a>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -293,7 +444,7 @@
     </a>
   </div>
   
-  <p>© Потолки КонкурентЪ 2023. Все права защищены.</p>
+  <p>© Потолки КонкурентЪ 2025. Все права защищены.</p>
 </footer>
 
 <!-- 🔹 Лайтбокс -->
@@ -304,6 +455,99 @@
   <span class="lightbox-next">&#10095;</span>
 </div>
 
-<script src="/js/main.js"></script>
+<!-- Модальное окно для описания преимущества -->
+<div id="featureModal" class="modal">
+  <div class="modal-content feature-modal-content">
+    <span class="close" onclick="hideModal('featureModal')">&times;</span>
+    <div id="featureModalIcon" style="text-align: center; margin-bottom: 1rem; font-size: 3rem; color: var(--primary-color);"></div>
+    <h3 id="featureModalTitle" style="text-align: center; margin-bottom: 1rem;"></h3>
+    <p id="featureModalDescription" style="text-align: left; line-height: 1.6; color: var(--text-dark);"></p>
+  </div>
+</div>
+
+<!-- Модалка телефона -->
+<div id="phoneModal" class="modal">
+  <div class="modal-content phone-modal-content">
+    <span class="close">&times;</span>
+    <div class="phone-modal-header">
+      <i class="fa fa-phone"></i>
+      <h2>Свяжитесь с нами</h2>
+    </div>
+    <div class="phone-modal-body">
+      <a href="tel:+79003304656" class="phone-number-link">
+        <span class="phone-number">+7 (900) 330-46-56</span>
+      </a>
+      <p class="phone-description">Звоните в любое удобное время</p>
+      <div class="phone-actions">
+        <a href="tel:+79003304656" class="btn btn-phone-call">
+          <i class="fa fa-phone"></i> Позвонить
+        </a>
+        <a href="https://wa.me/79871224873" target="_blank" class="btn whatsapp-btn">
+          <i class="fa-brands fa-whatsapp"></i> WhatsApp
+        </a>
+        <a href="https://t.me/deomidovich" target="_blank" class="btn telegram-btn">
+          <i class="fa-brands fa-telegram"></i> Telegram
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Плавающая кнопка "Подарок" -->
+<button class="floating-sale-btn" id="saleBtn" aria-label="Подарок">
+  🎁 Подарок
+</button>
+
+<!-- Модальное окно акции -->
+<div id="saleModal" class="modal">
+  <div class="modal-content sale-modal-content">
+    <span class="close">&times;</span>
+    <div class="sale-header">
+      <h2>🎉 Специальное предложение!</h2>
+      <div class="sale-badge">Подарок</div>
+    </div>
+    <div class="sale-body">
+      <p class="sale-main-text">
+        При заказе натяжного потолка через наш сайт вы получите <strong>6 светильников в подарок</strong>!
+      </p>
+      <div class="sale-benefits">
+        <div class="sale-benefit">
+          <i class="fa fa-gift"></i>
+          <span>6 светильников бесплатно</span>
+        </div>
+        <div class="sale-benefit">
+          <i class="fa fa-check-circle"></i>
+          <span>Действует при заказе через сайт</span>
+        </div>
+        <div class="sale-benefit">
+          <i class="fa fa-clock"></i>
+          <span>Ограниченное предложение</span>
+        </div>
+      </div>
+      <p class="sale-info-text">
+        Оставьте заявку или свяжитесь с нами, чтобы узнать подробности акции
+      </p>
+    </div>
+    <div class="sale-actions">
+      <button class="btn btn-accent" id="saleOrderBtn">
+        <i class="fa fa-clipboard-list"></i> Оставить заявку
+      </button>
+      <div class="sale-messengers">
+        <a href="https://t.me/deomidovich" target="_blank" class="sale-messenger-btn telegram-btn">
+          <i class="fa-brands fa-telegram"></i> Telegram
+        </a>
+        <a href="https://wa.me/79871224873" target="_blank" class="sale-messenger-btn whatsapp-btn">
+          <i class="fa-brands fa-whatsapp"></i> WhatsApp
+        </a>
+        <a href="tel:+79003304656" class="sale-messenger-btn call-btn">
+          <i class="fa fa-phone"></i> Позвонить
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="/js/inputmask.min.js" defer></script>
+<script src="/js/main.js" defer></script>
 </body>
 </html>
