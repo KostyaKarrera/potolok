@@ -148,28 +148,44 @@ body {
 .hamburger {
   display: none;
   flex-direction: column;
-  justify-content: space-around;
-  width: 24px;
-  height: 24px;
+  justify-content: center;
+  align-items: center;
+  width: 30px;
+  height: 30px;
   background: transparent;
   border: none;
   cursor: pointer;
   padding: 0;
   z-index: 1001;
   position: relative;
+  overflow: visible;
 }
 
 .hamburger span {
-  width: 100%;
+  width: 24px;
   height: 2px;
   background: var(--text-dark);
   border-radius: 2px;
   transition: all 0.3s ease;
   transform-origin: center;
+  position: absolute;
+}
+
+.hamburger span:nth-child(1) {
+  top: 8px;
+}
+
+.hamburger span:nth-child(2) {
+  top: 14px;
+}
+
+.hamburger span:nth-child(3) {
+  top: 20px;
 }
 
 .hamburger.active span:nth-child(1) {
-  transform: rotate(45deg) translate(8px, 8px);
+  top: 14px;
+  transform: rotate(45deg);
 }
 
 .hamburger.active span:nth-child(2) {
@@ -177,7 +193,8 @@ body {
 }
 
 .hamburger.active span:nth-child(3) {
-  transform: rotate(-45deg) translate(8px, -8px);
+  top: 14px;
+  transform: rotate(-45deg);
 }
 
 .contacts {
@@ -396,8 +413,8 @@ body {
   }
   
   .hamburger {
-    width: 24px;
-    height: 24px;
+    width: 30px;
+    height: 30px;
   }
 }
 
@@ -1299,6 +1316,8 @@ footer .btn i {
     display: flex;
     order: 2;
     margin-left: 15px;
+    width: 30px;
+    height: 30px;
   }
   
   .contacts{
