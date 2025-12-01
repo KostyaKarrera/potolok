@@ -1285,9 +1285,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Определяем тип светильника
     // Используем WebP с fallback на PNG для совместимости
     if (lightsText.includes('GX53')) {
-      return { image: 'ligth/gx53.webp', name: 'GX53', fallback: 'ligth/gx53.png' };
+      // ВАЖНО: используем абсолютные пути, чтобы они работали и на /ready-solutions/
+      return { image: '/ligth/gx53.webp', name: 'GX53', fallback: '/ligth/gx53.png' };
     } else if (lightsText.includes('IN HOME RLP VC') || lightsText.includes('RLP VC')) {
-      return { image: 'ligth/rlp-vc.webp', name: 'IN HOME RLP VC', fallback: 'ligth/rlp-vc.png' };
+      return { image: '/ligth/rlp-vc.webp', name: 'IN HOME RLP VC', fallback: '/ligth/rlp-vc.png' };
     }
     return { image: null, name: null };
   };
