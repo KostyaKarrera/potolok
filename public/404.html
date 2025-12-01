@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Страница не найдена — КонкурентЪ</title>
+  <meta name="robots" content="noindex,follow">
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/font-awesome.css">
+  <style>
+    body {
+      margin: 0;
+      font-family: "Montserrat",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+      background: #f8f9fa;
+      color: #1C1C1C;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    .topbar {
+      position: static;
+      width: 100%;
+      background: #ffffff;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 5%;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      z-index: 10;
+    }
+    .logo-link {
+      display: flex;
+      align-items: center;
+      text-decoration: none;
+    }
+    .logo-img {
+      height: 32px;
+      width: auto;
+      object-fit: contain;
+      display: block;
+    }
+    .logo-text {
+      margin-left: 10px;
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: #2F80ED;
+    }
+    .page-404 {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+    }
+    .page-404__card {
+      max-width: 480px;
+      width: 100%;
+      background: #ffffff;
+      border-radius: 16px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.04);
+      padding: 32px 24px 28px;
+      text-align: center;
+    }
+    .page-404__code {
+      font-size: 4rem;
+      font-weight: 800;
+      letter-spacing: 4px;
+      color: #2F80ED;
+      margin-bottom: 8px;
+    }
+    .page-404__title {
+      font-size: 1.4rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+    .page-404__text {
+      font-size: 0.98rem;
+      line-height: 1.6;
+      color: #555;
+      margin-bottom: 24px;
+    }
+    .page-404__actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      margin-bottom: 12px;
+    }
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 20px;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      background: linear-gradient(135deg,#2F80ED,#1e5fb8);
+      color: #fff;
+      font-weight: 600;
+      font-size: 0.98rem;
+      text-decoration: none;
+      gap: 8px;
+    }
+    .btn-outline {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 18px;
+      border-radius: 999px;
+      border: 1px solid #d0d7e2;
+      cursor: pointer;
+      background: #ffffff;
+      color: #2F80ED;
+      font-weight: 500;
+      font-size: 0.95rem;
+      text-decoration: none;
+      gap: 8px;
+    }
+    .page-404__cities {
+      font-size: 0.9rem;
+      color: #777;
+    }
+    .page-404__cities a {
+      color: #2F80ED;
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .page-404__cities a:hover {
+      text-decoration: underline;
+    }
+    .footer-404 {
+      padding: 16px 5%;
+      font-size: 0.8rem;
+      text-align: center;
+      color: #888;
+    }
+    @media (max-width: 480px) {
+      .page-404__card {
+        padding: 24px 18px 22px;
+      }
+      .page-404__code {
+        font-size: 3.3rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <a href="/" class="logo-link" aria-label="На главную КонкурентЪ">
+      <img src="/logo/logo.png" alt="КонкурентЪ — натяжные потолки" class="logo-img">
+    </a>
+  </div>
+
+  <main class="page-404">
+    <section class="page-404__card" aria-labelledby="not-found-title">
+      <div class="page-404__code">404</div>
+      <h1 id="not-found-title" class="page-404__title">Страница не найдена</h1>
+      <p class="page-404__text">
+        Возможно, страница была удалена, переехала по другому адресу или вы ошиблись при вводе ссылки.
+        Вы можете вернуться на главную или выбрать ваш город.
+      </p>
+      <div class="page-404__actions">
+        <a href="/" class="btn-primary">
+          <i class="fa fa-home"></i>
+          На главную
+        </a>
+        <a href="/cheboksary/" class="btn-outline">
+          <i class="fa fa-map-marker"></i>
+          Чебоксары
+        </a>
+        <a href="/novocheboksarsk/" class="btn-outline">
+          <i class="fa fa-map-marker"></i>
+          Новочебоксарск
+        </a>
+        <a href="/yoshkar-ola/" class="btn-outline">
+          <i class="fa fa-map-marker"></i>
+          Йошкар‑Ола
+        </a>
+      </div>
+      <p class="page-404__cities">
+        Если вы пришли по ссылке из поиска или объявления — просто выберите нужный город или перейдите на
+        <a href="/">главную страницу</a>.
+      </p>
+    </section>
+  </main>
+
+  <footer class="footer-404">
+    © Потолки КонкурентЪ. Натяжные потолки в Чебоксарах, Новочебоксарске и Йошкар‑Оле.
+  </footer>
+</body>
+</html>
+
+

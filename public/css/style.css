@@ -616,6 +616,13 @@ header p {
   color: var(--text-muted);
 }
 
+/* Списки внутри текстовых блоков секций выравниваем по тому же контейнеру */
+.section ul {
+  max-width: 65ch;
+  margin: 0 auto 1.5rem auto;
+  padding-left: 1.25rem;
+}
+
 /* 🔹 Преимущества */
 .features { 
   display:grid; 

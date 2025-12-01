@@ -789,19 +789,22 @@ app.get("/api/ref/:promo/qrcode", async (req, res) => {
 app.get("/sitemap.xml", (req, res) => res.sendFile(path.join(__dirname, "public", "sitemap.xml")));
 app.get("/robots.txt", (req, res) => res.sendFile(path.join(__dirname, "public", "robots.txt")));
 
-// === Фронтенд маршруты ===
+// === Фронтенд маршруты и 404 ===
 app.get(/^\/(?!api).*/, (req, res) => {
   const requestedPath = path.join(__dirname, "public", req.path);
   let filePath = requestedPath;
+
+  // Если запрошен каталог — ищем index.html внутри
   if (fs.existsSync(requestedPath) && fs.lstatSync(requestedPath).isDirectory()) {
     filePath = path.join(requestedPath, "index.html");
   }
 
   if (fs.existsSync(filePath)) {
-    res.sendFile(filePath);
-  } else {
-    res.sendFile(path.join(__dirname, "public", "index.html"));
+    return res.sendFile(filePath);
   }
+
+  // Отдаём кастомную страницу 404 с корректным HTTP‑статусом
+  return res.status(404).sendFile(path.join(__dirname, "public", "404.html"));
 });
 // === Google рейтинг ===
 app.get("/api/google-rating", async (req, res) => {
