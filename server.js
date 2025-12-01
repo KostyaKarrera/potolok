@@ -788,6 +788,8 @@ app.get("/api/ref/:promo/qrcode", async (req, res) => {
 // === Sitemap и Robots ===
 app.get("/sitemap.xml", (req, res) => res.sendFile(path.join(__dirname, "public", "sitemap.xml")));
 app.get("/robots.txt", (req, res) => res.sendFile(path.join(__dirname, "public", "robots.txt")));
+// Старый URL страницы готовых решений — редиректим на красивый путь без .html
+app.get("/ready-solutions.html", (req, res) => res.redirect(301, "/ready-solutions/"));
 
 // === Фронтенд маршруты и 404 ===
 app.get(/^\/(?!api).*/, (req, res) => {

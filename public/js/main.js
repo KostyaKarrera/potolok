@@ -279,7 +279,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const solutionsBtn = document.getElementById("solutionsBtn");
   if (solutionsBtn && solutionsBtn.tagName === "BUTTON") {
     solutionsBtn.addEventListener("click", () => {
-      window.location.href = "/ready-solutions.html";
+      window.location.href = "/ready-solutions/";
     });
   }
 });
