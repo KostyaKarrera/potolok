@@ -623,6 +623,15 @@ header p {
   padding-left: 1.25rem;
 }
 
+/* На мобильных убираем анимации секций, чтобы не задерживать первый показ контента */
+@media (max-width: 768px) {
+  .section {
+    opacity: 1;
+    transform: none;
+    animation: none;
+  }
+}
+
 /* 🔹 Преимущества */
 .features { 
   display:grid; 
