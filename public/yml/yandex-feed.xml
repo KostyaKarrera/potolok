@@ -37,7 +37,7 @@
 
         <!-- ЧЕБОКСАРЫ -->
         <offer id="executor-cheboksary">
-            <name>КонкурентЪ Чебоксары</name>
+            <name>КонкурентЪ</name>
             <url>https://potolok-konkurent.ru/cheboksary/</url>
             <price>650</price>
             <currencyId>RUR</currencyId>
@@ -64,7 +64,7 @@
 
         <!-- НОВОЧЕБОКСАРСК -->
         <offer id="executor-novocheboksarsk">
-            <name>КонкурентЪ Новочебоксарск</name>
+            <name>КонкурентЪ</name>
             <url>https://potolok-konkurent.ru/novocheboksarsk/</url>
             <price>650</price>
             <currencyId>RUR</currencyId>
@@ -86,7 +86,7 @@
 
         <!-- ЙОШКАР-ОЛА -->
         <offer id="executor-yoshkar-ola">
-            <name>КонкурентЪ Йошкар-Ола</name>
+            <name>КонкурентЪ</name>
             <url>https://potolok-konkurent.ru/yoshkar-ola/</url>
             <price>890</price>
             <currencyId>RUR</currencyId>
