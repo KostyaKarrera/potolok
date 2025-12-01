@@ -6,8 +6,7 @@ Disallow: /partners/
 Disallow: /api/
 Disallow: /uploads/
 
-# Карта сайта
+# Карта сайта для поисковых роботов
 Sitemap: https://potolok-konkurent.ru/sitemap.xml
 
-# Яндекс Маркет фид
-Sitemap: https://potolok-konkurent.ru/yml/yandex-feed.xml
+# YML-фид для Яндекс Услуг/Маркет не является Sitemap и подключается отдельно через интерфейс Яндекса
