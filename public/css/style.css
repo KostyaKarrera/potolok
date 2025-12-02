@@ -216,23 +216,31 @@ body {
   justify-content: center;
   width: 40px;
   height: 40px;
-  background: var(--background-light);
+  background: #27AE60; /* Как плавающая зелёная кнопка звонка */
   border-radius: 50%;
   border: none;
   cursor: pointer;
-  color: var(--text-dark);
+  color: white;
   font-size: 1.2rem;
   transition: all 0.3s ease;
   text-decoration: none;
+  box-shadow: 0 4px 10px rgba(39, 174, 96, 0.3);
 }
 
 .phone-link:hover {
-  background: var(--primary-color);
+  background: #219653;
   color: white;
-  transform: scale(1.1);
+  transform: scale(1.05);
+  box-shadow: 0 6px 14px rgba(39, 174, 96, 0.4);
 }
 
 .phone-text {
+  display: none;
+}
+
+/* По умолчанию скрываем иконку корзины в шапке.
+   Она будет показываться только когда в корзине есть товары (через Cart.updateBadge() в main.js) */
+#cartBtn {
   display: none;
 }
 
