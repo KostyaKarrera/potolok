@@ -1132,12 +1132,6 @@ function calculateRoomPrice(variant, areaStr, prices) {
     }
   }
   
-  // Монтаж (базовая + за м²)
-  if (prices.rooms.installation) {
-    total += (prices.rooms.installation.basePrice || 0);
-    total += area * (prices.rooms.installation.pricePerM2 || 0);
-  }
-  
   return {
     numeric: total > 0 ? total : 0,
     formatted: total > 0 ? `${total.toLocaleString('ru-RU')} ₽` : "—"
@@ -1221,12 +1215,6 @@ function calculateApartmentPrice(variant, prices) {
         }
       }
     }
-  }
-  
-  // Монтаж (базовая + за м²)
-  if (prices.apartments.installation) {
-    total += (prices.apartments.installation.basePrice || 0);
-    total += area * (prices.apartments.installation.pricePerM2 || 0);
   }
   
   return {
@@ -2003,6 +1991,12 @@ window.addApartmentToCart = function(apartmentId, variantIndex) {
 // Функция удаления из корзины
 window.removeFromCart = function(productId) {
   Cart.removeItem(productId);
+
+  // Если есть логика конструктора, синхронизируем расчёт
+  if (typeof window.removeConstructorRoomById === 'function') {
+    window.removeConstructorRoomById(productId);
+  }
+
   renderCart();
   showToast("Товар удалён из корзины", "info");
 };

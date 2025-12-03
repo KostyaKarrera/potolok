@@ -895,7 +895,7 @@ app.get("/api/admin/prices", requireAdmin, async (req, res) => {
   try {
     const pricesPath = path.join(__dirname, "data", "prices.json");
     if (!fs.existsSync(pricesPath)) {
-      // Создаем файл с дефолтными ценами, если его нет
+      // Создаем файл с дефолтными ценами, если его нет (без номенклатуры монтажа)
       const defaultPrices = {
         rooms: {
           fabric: {
@@ -910,7 +910,6 @@ app.get("/api/admin/prices", requireAdmin, async (req, res) => {
             "на потолок": { pricePerM: 500, unit: "м" },
             скрытые: { pricePerM: 800, unit: "м" }
           },
-          installation: { basePrice: 2000, pricePerM2: 300, unit: "м²" },
           extras: {
             "Вент. решетка": { pricePerUnit: 500, unit: "шт" }
           }
@@ -927,8 +926,7 @@ app.get("/api/admin/prices", requireAdmin, async (req, res) => {
           curtains: {
             "на потолок": { pricePerM: 450, unit: "м" },
             скрытые: { pricePerM: 750, unit: "м" }
-          },
-          installation: { basePrice: 3000, pricePerM2: 280, unit: "м²" }
+          }
         }
       };
       fs.writeFileSync(pricesPath, JSON.stringify(defaultPrices, null, 2), "utf8");
@@ -959,14 +957,12 @@ function loadOrInitPrices() {
         fabric: {},
         lights: {},
         curtains: {},
-        installation: { basePrice: 0, pricePerM2: 0, unit: "м²" },
         extras: {}
       },
       apartments: {
         fabric: {},
         lights: {},
-        curtains: {},
-        installation: { basePrice: 0, pricePerM2: 0, unit: "м²" }
+        curtains: {}
       }
     };
     fs.writeFileSync(pricesPath, JSON.stringify(defaultPrices, null, 2), "utf8");
@@ -1017,12 +1013,12 @@ app.post("/api/admin/prices/item", requireAdmin, async (req, res) => {
     }
 
     const normalizedSection = section === "apartments" ? "apartments" : "rooms";
-    const allowedCategories = ["fabric", "lights", "curtains", "extras", "installation"];
+    const allowedCategories = ["fabric", "lights", "curtains", "extras"];
 
     if (!allowedCategories.includes(category)) {
       return res.status(400).json({
         status: "error",
-        message: "Некорректная категория. Допустимые значения: fabric, lights, curtains, extras, installation"
+        message: "Некорректная категория. Допустимые значения: fabric, lights, curtains, extras"
       });
     }
 
@@ -1049,11 +1045,7 @@ app.post("/api/admin/prices/item", requireAdmin, async (req, res) => {
     }
 
     if (!prices[normalizedSection][category]) {
-      // Для installation структура отдельная, остальное — словари номенклатуры
-      prices[normalizedSection][category] =
-        category === "installation"
-          ? { basePrice: 0, pricePerM2: 0, unit: "м²" }
-          : {};
+      prices[normalizedSection][category] = {};
     }
 
     // Определяем, какое поле цены использовать в зависимости от unit/категории
@@ -1066,18 +1058,6 @@ app.post("/api/admin/prices/item", requireAdmin, async (req, res) => {
     } else if (category === "curtains") {
       priceField = "pricePerM";
       finalUnit = unit || "м";
-    } else if (category === "installation") {
-      // Для installation обновляем общие параметры секции, key игнорируем
-      const target = prices[normalizedSection][category];
-      target.basePrice = numericPrice;
-      target.unit = unit || target.unit || "м²";
-
-      fs.writeFileSync(pricesPath, JSON.stringify(prices, null, 2), "utf8");
-      return res.json({
-        status: "success",
-        message: "Настройки монтажа успешно обновлены",
-        prices
-      });
     }
 
     // Добавляем/обновляем запись номенклатуры

@@ -1073,31 +1073,6 @@ function renderPricesSection(sectionType, sectionPrices) {
     html += `</div></div>`;
   }
   
-  // Монтаж
-  if (sectionPrices.installation) {
-    html += `
-      <div style="margin-bottom: 25px;">
-        <h4 style="margin-bottom: 15px; font-size: 16px;">Монтаж</h4>
-        <div style="display: grid; gap: 10px;">
-          <div style="display: flex; align-items: center; gap: 10px;">
-            <label style="flex: 1; font-size: 14px;">Базовая стоимость:</label>
-            <input type="number" id="${sectionType}-install-base" min="0" step="1" 
-                   value="${sectionPrices.installation.basePrice || 0}" 
-                   style="width: 120px; padding: 8px; border: 2px solid #ddd; border-radius: 6px;">
-            <span style="font-size: 14px; color: #666;">₽</span>
-          </div>
-          <div style="display: flex; align-items: center; gap: 10px;">
-            <label style="flex: 1; font-size: 14px;">За м²:</label>
-            <input type="number" id="${sectionType}-install-m2" min="0" step="1" 
-                   value="${sectionPrices.installation.pricePerM2 || 0}" 
-                   style="width: 120px; padding: 8px; border: 2px solid #ddd; border-radius: 6px;">
-            <span style="font-size: 14px; color: #666;">₽/м²</span>
-          </div>
-        </div>
-      </div>
-    `;
-  }
-  
   // Дополнительно (только для комнат)
   if (sectionType === 'rooms' && sectionPrices.extras) {
     html += `
@@ -1172,14 +1147,6 @@ async function savePrices() {
         });
       }
       
-      // Монтаж
-      if (prices.rooms.installation) {
-        const baseInput = document.getElementById("rooms-install-base");
-        const m2Input = document.getElementById("rooms-install-m2");
-        if (baseInput) prices.rooms.installation.basePrice = parseInt(baseInput.value) || 0;
-        if (m2Input) prices.rooms.installation.pricePerM2 = parseInt(m2Input.value) || 0;
-      }
-      
       // Дополнительно
       if (prices.rooms.extras) {
         const extrasInputs = document.querySelectorAll(`[id^="rooms-extras-"]`);
@@ -1227,13 +1194,6 @@ async function savePrices() {
         });
       }
       
-      // Монтаж
-      if (prices.apartments.installation) {
-        const baseInput = document.getElementById("apartments-install-base");
-        const m2Input = document.getElementById("apartments-install-m2");
-        if (baseInput) prices.apartments.installation.basePrice = parseInt(baseInput.value) || 0;
-        if (m2Input) prices.apartments.installation.pricePerM2 = parseInt(m2Input.value) || 0;
-      }
     }
     
     const res = await fetch(`${API}/prices`, {
