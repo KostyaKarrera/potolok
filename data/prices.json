@@ -8,6 +8,10 @@
       "BAUF 205": {
         "pricePerM2": 650,
         "unit": "м²"
+      },
+      "MSD Premium": {
+        "pricePerM2": 500,
+        "unit": "м²"
       }
     },
     "lights": {
@@ -28,6 +32,10 @@
       "скрытые": {
         "pricePerM": 800,
         "unit": "м"
+      },
+      "Гардины": {
+        "pricePerM": 0,
+        "unit": "м"
       }
     },
     "installation": {
@@ -38,6 +46,10 @@
     "extras": {
       "Вент. решетка": {
         "pricePerUnit": 500,
+        "unit": "шт"
+      },
+      "Дополнительно": {
+        "pricePerUnit": 0,
         "unit": "шт"
       }
     }
@@ -80,4 +92,3 @@
     }
   }
 }
-

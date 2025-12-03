@@ -1235,6 +1235,50 @@ function calculateApartmentPrice(variant, prices) {
   };
 }
 
+// =======================
+// Логика для конструктора
+// =======================
+
+/**
+ * Расчет стоимости гардин по общему метражу для конструктора.
+ * section: 'rooms' | 'apartments'
+ * type: 'на потолок' | 'скрытые' (или любая строка, содержащая эти слова)
+ * meters: число (общий метраж в метрах)
+ */
+function calculateCurtainsPriceForConstructor(section, type, meters, prices) {
+  const sourcePrices = prices || pricesData;
+  if (!sourcePrices || !sourcePrices[section] || !sourcePrices[section].curtains) {
+    return { numeric: 0, formatted: "—" };
+  }
+
+  const rawMeters = typeof meters === "string" ? meters.replace(",", ".") : meters;
+  const m = Number(rawMeters);
+  if (!Number.isFinite(m) || m <= 0) {
+    return { numeric: 0, formatted: "—" };
+  }
+
+  const rawType = (type || "").toString();
+  let priceKey = rawType.trim();
+
+  // Нормализуем ключи так же, как в готовых решениях
+  if (rawType.toLowerCase().includes("потолок")) {
+    priceKey = "на потолок";
+  } else if (rawType.toLowerCase().includes("скрыт")) {
+    priceKey = "скрытые";
+  }
+
+  const curtainPrice = sourcePrices[section].curtains[priceKey];
+  if (!curtainPrice || typeof curtainPrice.pricePerM !== "number") {
+    return { numeric: 0, formatted: "—" };
+  }
+
+  const total = m * curtainPrice.pricePerM;
+  return {
+    numeric: total,
+    formatted: `${total.toLocaleString("ru-RU")} ₽`
+  };
+}
+
 // Функция загрузки продуктов с сервера
 async function loadProducts() {
   try {
