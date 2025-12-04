@@ -88,6 +88,9 @@ let currentCalculation = {
   extras: {}
 };
 
+// Счётчик для генерации уникальных ID элементов конструктора
+let constructorItemCounter = 0;
+
 // Загрузка цен при инициализации конструктора
 document.addEventListener("DOMContentLoaded", async () => {
   // Ждём, пока main.js загрузит цены (глобальный pricesData)
@@ -588,7 +591,7 @@ function addConstructorToCart() {
   const totalText = totalNumeric > 0 ? `${totalNumeric.toLocaleString('ru-RU')} ₽` : "—";
   
   const cartItem = {
-    id: `constructor-${Date.now()}`,
+    id: `constructor-${Date.now()}-${++constructorItemCounter}`,
     title: `${typeName} (Конструктор)`,
     area: `${currentCalculation.area} м²`,
     fabric: fabricName,
