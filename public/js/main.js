@@ -178,93 +178,7 @@ function handleModalForm({ buttonId, modalId, formId, successId, type }) {
   });
 }
 
-// ====== 6. Калькулятор стоимости ======
-const calculatorForm = document.getElementById("calculator-form");
-const estimateModal = document.getElementById("estimateModal");
-const estimateText = document.getElementById("estimateText");
-const closeEstimate = estimateModal?.querySelector(".close");
-const estimateForm = document.getElementById("estimateForm");
-const successMessage = document.getElementById("successMessage");
-
-if (calculatorForm) {
-  calculatorForm.addEventListener("submit", e => {
-    e.preventDefault();
-
-    const area = Number(calculatorForm.querySelector('input[placeholder*="Площадь"]').value);
-    const lamps = Number(calculatorForm.querySelector('input[placeholder*="Светильники"]').value);
-    const chandeliers = Number(calculatorForm.querySelector('input[placeholder*="Люстры"]').value);
-
-    if (area < 1) {
-      showToast("Введите корректную площадь", "error");
-      return;
-    }
-
-    const price = area * 600 + lamps * 550 + chandeliers * 700;
-
-    showModal("estimateModal");
-    if (successMessage) {
-      successMessage.style.display = "none";
-      successMessage.style.visibility = "hidden";
-    }
-    estimateForm.style.display = "block";
-
-    animateNumber(estimateText, 0, price, 600);
-  });
-
-  if (closeEstimate) {
-    closeEstimate.addEventListener("click", () => hideModal("estimateModal"));
-  }
-  window.addEventListener("click", e => { if (e.target === estimateModal) hideModal("estimateModal"); });
-
-  estimateForm.addEventListener("submit", async e => {
-    e.preventDefault();
-    const name = estimateForm.querySelector('input[placeholder="Ваше имя"]').value.trim();
-    const phone = estimateForm.querySelector('input[placeholder="Ваш телефон"]').value.trim();
-    const promoEl = estimateForm.querySelector('input[placeholder="Промокод (если есть)"]');
-    const promo = promoEl ? promoEl.value.trim() || null : null;
-    const estimatedPrice = estimateText.textContent.match(/\d+/g)?.join("") || null;
-    if (!name || !phone) {
-      showToast("Заполните все обязательные поля", "error");
-      return;
-    }
-    
-    if (phone.length < 10) {
-      showToast("Введите корректный номер телефона", "error");
-      return;
-    }
-    
-    // Валидация промокода
-    if (promo) {
-      const validation = await validatePromo(promo);
-      if (!validation.valid) {
-        showToast(validation.message || "Неверный промокод", "error");
-        if (promoEl) {
-          promoEl.style.borderColor = "#e74c3c";
-          promoEl.focus();
-        }
-        return;
-      }
-    }
-
-    const result = await sendRequest(name, phone, "Калькулятор", estimatedPrice, promo);
-    if (result.status === "success") {
-      estimateForm.reset();
-      // Гарантируем, что success сообщение скрыто
-      if (successMessage) {
-        successMessage.style.display = "none";
-        successMessage.style.visibility = "hidden";
-      }
-      showToast("Заявка успешно отправлена!", "success");
-      setTimeout(() => {
-        hideModal("estimateModal");
-      }, 500);
-    } else {
-      showToast("Ошибка: " + result.message, "error");
-    }
-  });
-}
-
-// ====== 7. Модалки ======
+// ====== 6. Модалки ======
 handleModalForm({
   buttonId: "callBtn",
   modalId: "callModal",
@@ -1283,6 +1197,114 @@ async function loadProducts() {
   }
 }
 
+// Вспомогательная функция: извлечь числовую цену из строки "12 200 ₽"
+function extractPriceNumber(priceStr) {
+  if (!priceStr) return null;
+  try {
+    let s = String(priceStr)
+      .replace(/\s/g, '')
+      .replace(/₽/g, '')
+      .replace(/[^\d]/g, '');
+    const n = parseInt(s, 10);
+    return Number.isNaN(n) ? null : n;
+  } catch (e) {
+    console.error('Ошибка разбора цены для schema.org:', priceStr, e);
+    return null;
+  }
+}
+
+// Генерация schema.org ItemList для готовых решений
+function generateReadySolutionsSchema() {
+  try {
+    if (!productsData || !productsData.rooms || !productsData.apartments) return;
+
+    const url = "https://potolok-konkurent.ru/ready-solutions/";
+    const itemListElement = [];
+    let position = 1;
+
+    // Комнаты: basic / comfort
+    productsData.rooms.forEach(room => {
+      ["basic", "comfort"].forEach(variantKey => {
+        const variant = room[variantKey];
+        if (!variant) return;
+        const priceNumber = extractPriceNumber(variant.price);
+        if (!priceNumber) return;
+
+        const name =
+          `${room.title} — пакет ${variantKey === "basic" ? "Базовый" : "Комфорт"} (${room.area})`;
+        const description =
+          `Готовое решение натяжного потолка: ${room.title}, пакет ` +
+          `${variantKey === "basic" ? "Базовый" : "Комфорт"}, площадь ${room.area}.`;
+
+        itemListElement.push({
+          "@type": "Product",
+          position: position++,
+          name,
+          description,
+          category: "Комната",
+          offers: {
+            "@type": "Offer",
+            price: String(priceNumber),
+            priceCurrency: "RUB",
+            availability: "https://schema.org/InStock",
+            url
+          }
+        });
+      });
+    });
+
+    // Квартиры: все variants
+    productsData.apartments.forEach(apartment => {
+      apartment.variants.forEach(variant => {
+        const priceNumber = extractPriceNumber(variant.price);
+        if (!priceNumber) return;
+
+        const name =
+          `${apartment.title} — ${variant.type === "basic" ? "Базовый" : "Комфорт"} (${variant.area})`;
+        const description =
+          `Готовое решение натяжных потолков для ${apartment.title.toLowerCase()}: ` +
+          `пакет ${variant.type === "basic" ? "Базовый" : "Комфорт"}, площадь ${variant.area}.`;
+
+        itemListElement.push({
+          "@type": "Product",
+          position: position++,
+          name,
+          description,
+          category: "Квартира",
+          offers: {
+            "@type": "Offer",
+            price: String(priceNumber),
+            priceCurrency: "RUB",
+            availability: "https://schema.org/InStock",
+            url
+          }
+        });
+      });
+    });
+
+    if (!itemListElement.length) return;
+
+    const schema = {
+      "@context": "https://schema.org",
+      "@type": "ItemList",
+      name: "Готовые решения натяжных потолков",
+      url,
+      itemListElement
+    };
+
+    let script = document.getElementById("ready-solutions-products-schema");
+    if (!script) {
+      script = document.createElement("script");
+      script.type = "application/ld+json";
+      script.id = "ready-solutions-products-schema";
+      document.head.appendChild(script);
+    }
+    script.textContent = JSON.stringify(schema);
+  } catch (e) {
+    console.error("Ошибка генерации schema.org для готовых решений:", e);
+  }
+}
+
 // Инициализация корзины
 document.addEventListener("DOMContentLoaded", async () => {
   // Загружаем цены и продукты с сервера
@@ -1309,6 +1331,11 @@ document.addEventListener("DOMContentLoaded", async () => {
   
   // Обновляем бейдж при загрузке
   Cart.updateBadge();
+
+  // Генерация schema.org только на странице готовых решений
+  if (window.location.pathname.includes("/ready-solutions")) {
+    generateReadySolutionsSchema();
+  }
 
   // Функция для получения информации о светильнике (изображение и название)
   const getLightInfo = (lightsText) => {
@@ -2007,11 +2034,13 @@ function renderCart() {
   const cartItemsContainer = document.getElementById('cartItems');
   const cartEmpty = document.getElementById('cartEmpty');
   const cartFormContainer = document.getElementById('cartFormContainer');
+  const cartTotalContainer = document.getElementById('cartTotal');
 
   if (cartItems.length === 0) {
     if (cartItemsContainer) cartItemsContainer.style.display = "none";
     if (cartEmpty) cartEmpty.style.display = "block";
     if (cartFormContainer) cartFormContainer.style.display = "none";
+    if (cartTotalContainer) cartTotalContainer.style.display = "none";
   } else {
     if (cartEmpty) cartEmpty.style.display = "none";
     if (cartItemsContainer) {
@@ -2037,6 +2066,35 @@ function renderCart() {
         </div>
       `;
       }).join('');
+
+      // Подсчёт общей суммы
+      let totalAmount = 0;
+      cartItems.forEach(item => {
+        if (item.priceNumeric && item.priceNumeric > 0) {
+          totalAmount += item.priceNumeric;
+        } else if (item.price && item.price !== '—' && item.price !== '' && item.price !== null) {
+          try {
+            let priceStr = String(item.price)
+              .replace(/\s/g, '')
+              .replace(/₽/g, '')
+              .replace(/[^\d]/g, '');
+            const price = parseInt(priceStr, 10);
+            if (!isNaN(price) && price > 0) {
+              totalAmount += price;
+            }
+          } catch (e) {
+            console.error('Ошибка при обработке цены в корзине:', item.price, e);
+          }
+        }
+      });
+
+      if (cartTotalContainer) {
+        cartTotalContainer.style.display = "flex";
+        const totalValueEl = cartTotalContainer.querySelector('.cart-total-value');
+        if (totalValueEl) {
+          totalValueEl.textContent = totalAmount > 0 ? `${totalAmount.toLocaleString('ru-RU')} ₽` : '—';
+        }
+      }
     }
     if (cartFormContainer) cartFormContainer.style.display = "block";
   }
