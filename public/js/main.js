@@ -1138,33 +1138,55 @@ function generateReadySolutionsSchema() {
   }
 }
 
+// Ленивая загрузка данных - загружаем только когда нужно
+let pricesLoadPromise = null;
+let productsLoadPromise = null;
+
+// Функция для получения цен (с кэшированием промиса)
+async function ensurePricesLoaded() {
+  if (pricesData) return true; // Уже загружено
+  if (!pricesLoadPromise) {
+    pricesLoadPromise = loadPrices();
+  }
+  return await pricesLoadPromise;
+}
+
+// Функция для получения продуктов (с кэшированием промиса)
+async function ensureProductsLoaded() {
+  if (productsData) return true; // Уже загружено
+  if (!productsLoadPromise) {
+    productsLoadPromise = loadProducts();
+  }
+  return await productsLoadPromise;
+}
+
 // Инициализация корзины
-document.addEventListener("DOMContentLoaded", async () => {
-  // Загружаем цены и продукты с сервера
-  const [pricesLoaded, productsLoaded] = await Promise.all([loadPrices(), loadProducts()]);
-  
-  if (!pricesLoaded) {
-    console.error("Не удалось загрузить цены с сервера! Цены не будут отображаться.");
-  } else {
-    console.log("Цены успешно загружены:", pricesData);
-  }
-  
-  if (!productsLoaded) {
-    console.warn("Не удалось загрузить продукты с сервера, готовые решения временно недоступны");
-    productsData = { rooms: [], apartments: [] };
-  } else {
-    console.log("Продукты успешно загружены:", productsData);
-    // Проверяем структуру данных
-    if (productsData.rooms && productsData.rooms.length > 0) {
-      const firstRoom = productsData.rooms[0];
-      console.log("Пример комнаты:", firstRoom);
-      console.log("Базовый вариант:", firstRoom.basic);
-      console.log("Есть items?", firstRoom.basic?.items);
-    }
-  }
-  
+document.addEventListener("DOMContentLoaded", () => {
   // Обновляем бейдж при загрузке
   Cart.updateBadge();
+  
+  // Загружаем данные асинхронно после рендеринга (не блокируем загрузку страницы)
+  // Используем requestIdleCallback для браузеров, которые его поддерживают
+  const loadData = () => {
+    const path = window.location.pathname;
+    const needsPrices = path.includes('/constructor') || path.includes('/ready-solutions');
+    const needsProducts = path.includes('/ready-solutions');
+    
+    if (needsPrices) {
+      pricesLoadPromise = loadPrices();
+    }
+    if (needsProducts) {
+      productsLoadPromise = loadProducts();
+    }
+  };
+  
+  // Откладываем загрузку данных, чтобы не блокировать рендеринг
+  if ('requestIdleCallback' in window) {
+    requestIdleCallback(loadData, { timeout: 2000 });
+  } else {
+    // Fallback для старых браузеров - загружаем через небольшую задержку
+    setTimeout(loadData, 100);
+  }
 
   // Генерация schema.org только на странице готовых решений
   if (window.location.pathname.includes("/ready-solutions")) {
