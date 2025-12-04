@@ -28,16 +28,19 @@
       "скрытые": {
         "pricePerM": 800,
         "unit": "м"
+      },
+      "Гардины": {
+        "pricePerM": 0,
+        "unit": "м"
       }
-    },
-    "installation": {
-      "basePrice": 2000,
-      "pricePerM2": 300,
-      "unit": "м²"
     },
     "extras": {
       "Вент. решетка": {
         "pricePerUnit": 500,
+        "unit": "шт"
+      },
+      "Дополнительно": {
+        "pricePerUnit": 0,
         "unit": "шт"
       }
     }
@@ -72,12 +75,6 @@
         "pricePerM": 750,
         "unit": "м"
       }
-    },
-    "installation": {
-      "basePrice": 3000,
-      "pricePerM2": 280,
-      "unit": "м²"
     }
   }
 }
-

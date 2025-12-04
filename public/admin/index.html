@@ -173,6 +173,54 @@
           <div id="rooms-prices-container">
             <!-- Динамически заполняется через JavaScript -->
           </div>
+
+          <!-- Форма добавления номенклатуры для комнат -->
+          <div style="margin-top: 25px; padding-top: 20px; border-top: 1px solid #eee;">
+            <h4 style="margin-bottom: 10px; font-size: 15px;">Добавить позицию номенклатуры (только для комнат)</h4>
+            <form id="rooms-add-item-form" style="display: grid; gap: 10px; font-size: 14px;">
+              <div style="display: grid; grid-template-columns: 1.2fr 1.5fr; gap: 10px;">
+                <label>
+                  <span style="display:block;margin-bottom:4px;">Категория</span>
+                  <select name="category" required style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:6px;">
+                    <option value="fabric">Полотно (м²)</option>
+                    <option value="lights">Светильники (шт)</option>
+                    <option value="curtains">Гардины (м)</option>
+                    <option value="extras">Дополнительно (шт)</option>
+                  </select>
+                </label>
+                <label>
+                  <span style="display:block;margin-bottom:4px;">Название позиции</span>
+                  <input name="key" type="text" placeholder="Например, MSD Premium" required
+                         style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:6px;">
+                </label>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr;gap:10px;">
+                <label>
+                  <span style="display:block;margin-bottom:4px;">Подкатегория (для Дополнительно)</span>
+                  <input name="subCategory" type="text" placeholder="Например, Профили, Подсветка"
+                         style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:6px;">
+                </label>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                <label>
+                  <span style="display:block;margin-bottom:4px;">Единица</span>
+                  <select name="unit" style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:6px;">
+                    <option value="шт">шт</option>
+                    <option value="м">м</option>
+                    <option value="м²">м²</option>
+                  </select>
+                </label>
+                <label>
+                  <span style="display:block;margin-bottom:4px;">Цена</span>
+                  <input name="price" type="number" min="0" step="1" required placeholder="0"
+                         style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:6px;">
+                </label>
+              </div>
+              <button type="submit" class="save-btn" style="align-self:flex-start;padding:8px 14px;font-size:13px;">
+                ➕ Добавить в цены (комнаты)
+              </button>
+            </form>
+          </div>
         </div>
         
         <!-- Квартиры -->
@@ -180,6 +228,53 @@
           <h3 style="margin-bottom: 20px; color: var(--primary-color);">🏢 Квартиры</h3>
           <div id="apartments-prices-container">
             <!-- Динамически заполняется через JavaScript -->
+          </div>
+
+          <!-- Форма добавления номенклатуры для квартир -->
+          <div style="margin-top: 25px; padding-top: 20px; border-top: 1px solid #eee;">
+            <h4 style="margin-bottom: 10px; font-size: 15px;">Добавить позицию номенклатуры (только для квартир)</h4>
+            <form id="apartments-add-item-form" style="display: grid; gap: 10px; font-size: 14px;">
+              <div style="display: grid; grid-template-columns: 1.2fr 1.5fr; gap: 10px;">
+                <label>
+                  <span style="display:block;margin-bottom:4px;">Категория</span>
+                  <select name="category" required style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:6px;">
+                    <option value="fabric">Полотно (м²)</option>
+                    <option value="lights">Светильники (шт)</option>
+                    <option value="curtains">Гардины (м)</option>
+                  </select>
+                </label>
+                <label>
+                  <span style="display:block;margin-bottom:4px;">Название позиции</span>
+                  <input name="key" type="text" placeholder="Например, MSD Premium" required
+                         style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:6px;">
+                </label>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr;gap:10px;">
+                <label>
+                  <span style="display:block;margin-bottom:4px;">Подкатегория (для Дополнительно)</span>
+                  <input name="subCategory" type="text" placeholder="Например, Профили, Подсветка"
+                         style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:6px;">
+                </label>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                <label>
+                  <span style="display:block;margin-bottom:4px;">Единица</span>
+                  <select name="unit" style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:6px;">
+                    <option value="шт">шт</option>
+                    <option value="м">м</option>
+                    <option value="м²">м²</option>
+                  </select>
+                </label>
+                <label>
+                  <span style="display:block;margin-bottom:4px;">Цена</span>
+                  <input name="price" type="number" min="0" step="1" required placeholder="0"
+                         style="width:100%;padding:6px 8px;border:1px solid #ddd;border-radius:6px;">
+                </label>
+              </div>
+              <button type="submit" class="save-btn" style="align-self:flex-start;padding:8px 14px;font-size:13px;">
+                ➕ Добавить в цены (квартиры)
+              </button>
+            </form>
           </div>
         </div>
       </div>
@@ -201,8 +296,7 @@
           Цены рассчитываются автоматически на основе указанных единиц измерения:<br>
           • Полотно: площадь × цена за м²<br>
           • Светильники: количество × цена за шт<br>
-          • Гардины: метраж × цена за м<br>
-          • Монтаж: базовая стоимость + (площадь × цена за м²)
+          • Гардины: метраж × цена за м
         </p>
       </div>
     </div>
@@ -223,30 +317,40 @@
         </button>
       </div>
       
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 30px; min-width: 0;">
+      <div style="margin-top: 30px;">
         <!-- Комнаты -->
-        <div style="min-width: 0;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
-            <h3 style="color: var(--primary-color); margin: 0;">🏠 Комнаты</h3>
-            <button onclick="addNewRoom()" class="save-btn" style="background: #34a853; padding: 8px 16px; font-size: 14px; white-space: nowrap;">
+        <div style="min-width: 0; margin-bottom: 30px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 10px;">
+            <div style="display:flex; align-items:center; gap:8px; cursor:pointer;" onclick="toggleProductsSection('rooms')">
+              <h3 style="color: var(--primary-color); margin: 0;">🏠 Комнаты</h3>
+              <span id="rooms-toggle-label" style="font-size: 13px; color: #666;">Показать</span>
+            </div>
+            <button onclick="event.stopPropagation(); addNewRoom();" class="save-btn" style="background: #34a853; padding: 8px 16px; font-size: 14px; white-space: nowrap;">
               ➕ Добавить комнату
             </button>
           </div>
-          <div id="rooms-list" style="display: grid; gap: 15px; min-width: 0;">
-            <!-- Список комнат будет добавлен через JavaScript -->
+          <div id="rooms-section" style="display: none; margin-top: 5px;">
+            <div id="rooms-list" style="display: grid; gap: 15px; min-width: 0;">
+              <!-- Список комнат будет добавлен через JavaScript -->
+            </div>
           </div>
         </div>
         
         <!-- Квартиры -->
         <div style="min-width: 0;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
-            <h3 style="color: var(--primary-color); margin: 0;">🏢 Квартиры</h3>
-            <button onclick="addNewApartment()" class="save-btn" style="background: #34a853; padding: 8px 16px; font-size: 14px; white-space: nowrap;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 10px;">
+            <div style="display:flex; align-items:center; gap:8px; cursor:pointer;" onclick="toggleProductsSection('apartments')">
+              <h3 style="color: var(--primary-color); margin: 0;">🏢 Квартиры</h3>
+              <span id="apartments-toggle-label" style="font-size: 13px; color: #666;">Показать</span>
+            </div>
+            <button onclick="event.stopPropagation(); addNewApartment();" class="save-btn" style="background: #34a853; padding: 8px 16px; font-size: 14px; white-space: nowrap;">
               ➕ Добавить квартиру
             </button>
           </div>
-          <div id="apartments-list" style="display: grid; gap: 15px; min-width: 0;">
-            <!-- Список квартир будет добавлен через JavaScript -->
+          <div id="apartments-section" style="display: none; margin-top: 5px;">
+            <div id="apartments-list" style="display: grid; gap: 15px; min-width: 0;">
+              <!-- Список квартир будет добавлен через JavaScript -->
+            </div>
           </div>
         </div>
       </div>

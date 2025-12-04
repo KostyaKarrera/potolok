@@ -1073,31 +1073,6 @@ function renderPricesSection(sectionType, sectionPrices) {
     html += `</div></div>`;
   }
   
-  // Монтаж
-  if (sectionPrices.installation) {
-    html += `
-      <div style="margin-bottom: 25px;">
-        <h4 style="margin-bottom: 15px; font-size: 16px;">Монтаж</h4>
-        <div style="display: grid; gap: 10px;">
-          <div style="display: flex; align-items: center; gap: 10px;">
-            <label style="flex: 1; font-size: 14px;">Базовая стоимость:</label>
-            <input type="number" id="${sectionType}-install-base" min="0" step="1" 
-                   value="${sectionPrices.installation.basePrice || 0}" 
-                   style="width: 120px; padding: 8px; border: 2px solid #ddd; border-radius: 6px;">
-            <span style="font-size: 14px; color: #666;">₽</span>
-          </div>
-          <div style="display: flex; align-items: center; gap: 10px;">
-            <label style="flex: 1; font-size: 14px;">За м²:</label>
-            <input type="number" id="${sectionType}-install-m2" min="0" step="1" 
-                   value="${sectionPrices.installation.pricePerM2 || 0}" 
-                   style="width: 120px; padding: 8px; border: 2px solid #ddd; border-radius: 6px;">
-            <span style="font-size: 14px; color: #666;">₽/м²</span>
-          </div>
-        </div>
-      </div>
-    `;
-  }
-  
   // Дополнительно (только для комнат)
   if (sectionType === 'rooms' && sectionPrices.extras) {
     html += `
@@ -1172,14 +1147,6 @@ async function savePrices() {
         });
       }
       
-      // Монтаж
-      if (prices.rooms.installation) {
-        const baseInput = document.getElementById("rooms-install-base");
-        const m2Input = document.getElementById("rooms-install-m2");
-        if (baseInput) prices.rooms.installation.basePrice = parseInt(baseInput.value) || 0;
-        if (m2Input) prices.rooms.installation.pricePerM2 = parseInt(m2Input.value) || 0;
-      }
-      
       // Дополнительно
       if (prices.rooms.extras) {
         const extrasInputs = document.querySelectorAll(`[id^="rooms-extras-"]`);
@@ -1227,13 +1194,6 @@ async function savePrices() {
         });
       }
       
-      // Монтаж
-      if (prices.apartments.installation) {
-        const baseInput = document.getElementById("apartments-install-base");
-        const m2Input = document.getElementById("apartments-install-m2");
-        if (baseInput) prices.apartments.installation.basePrice = parseInt(baseInput.value) || 0;
-        if (m2Input) prices.apartments.installation.pricePerM2 = parseInt(m2Input.value) || 0;
-      }
     }
     
     const res = await fetch(`${API}/prices`, {
@@ -1272,6 +1232,80 @@ async function savePrices() {
   }
 }
 
+// Добавление одной позиции номенклатуры через /api/admin/prices/item
+async function addPriceItem(section, formElement) {
+  const msgEl = document.getElementById("prices-form-msg");
+  if (!formElement) return;
+
+  const formData = new FormData(formElement);
+  const category = formData.get("category");
+  const key = (formData.get("key") || "").trim();
+  const unit = (formData.get("unit") || "").trim();
+  const priceRaw = formData.get("price");
+  const subCategory = (formData.get("subCategory") || "").trim();
+
+  if (!category || !key || !priceRaw) {
+    if (msgEl) {
+      msgEl.textContent = "Заполните все поля для добавления номенклатуры";
+      msgEl.style.color = "red";
+    }
+    return;
+  }
+
+  const price = parseInt(priceRaw, 10);
+  if (!Number.isFinite(price) || price < 0) {
+    if (msgEl) {
+      msgEl.textContent = "Цена должна быть неотрицательным числом";
+      msgEl.style.color = "red";
+    }
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API}/prices/item`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${adminToken}`
+      },
+      body: JSON.stringify({
+        section,
+        category,
+        key,
+        unit: unit || undefined,
+        price,
+        // Подкатегория используется только для extras, но передаём всегда — бэкенд сам решит
+        subCategory: subCategory || undefined
+      })
+    });
+
+    const data = await res.json();
+    if (data.status === "success") {
+      if (msgEl) {
+        msgEl.textContent = "Позиция успешно добавлена";
+        msgEl.style.color = "green";
+      }
+      showNotification("Номенклатура добавлена в цены", "success");
+      formElement.reset();
+      // Перерисовываем цены, чтобы новая позиция появилась в списке
+      await loadPrices();
+    } else {
+      if (msgEl) {
+        msgEl.textContent = "Ошибка: " + (data.message || "Не удалось добавить позицию");
+        msgEl.style.color = "red";
+      }
+      showNotification("Ошибка добавления номенклатуры", "error");
+    }
+  } catch (err) {
+    console.error("Ошибка добавления номенклатуры:", err);
+    if (msgEl) {
+      msgEl.textContent = "Ошибка добавления номенклатуры";
+      msgEl.style.color = "red";
+    }
+    showNotification("Ошибка добавления номенклатуры", "error");
+  }
+}
+
 // Глобальные функции для кнопок
 window.loadCurrentRating = loadCurrentRating;
 window.updateGoogleRating = updateGoogleRating;
@@ -1283,6 +1317,26 @@ window.closeEditContractModal = closeEditContractModal;
 window.removeContractPhoto = removeContractPhoto;
 window.loadPrices = loadPrices;
 window.savePrices = savePrices;
+window.addPriceItem = addPriceItem;
+
+// Навешиваем обработчики на формы добавления номенклатуры во вкладке "Цены"
+document.addEventListener("DOMContentLoaded", () => {
+  const roomsForm = document.getElementById("rooms-add-item-form");
+  if (roomsForm) {
+    roomsForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      await addPriceItem("rooms", roomsForm);
+    });
+  }
+
+  const apartmentsForm = document.getElementById("apartments-add-item-form");
+  if (apartmentsForm) {
+    apartmentsForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      await addPriceItem("apartments", apartmentsForm);
+    });
+  }
+});
 
 // === Управление продуктами ===
 let currentProductsData = null;
@@ -1297,6 +1351,17 @@ async function loadProducts() {
     if (data.status === "success" && data.products) {
       currentProductsData = data.products;
       renderProducts();
+      
+      // Автоматически открываем раздел "Комнаты" при первой загрузке
+      // Используем реальные элементы из разметки: контейнер rooms-section и подпись rooms-toggle-label
+      const roomsSection = document.getElementById("rooms-section");
+      if (roomsSection) {
+        const isHidden = window.getComputedStyle(roomsSection).display === "none";
+        if (isHidden && typeof window.toggleProductsSection === "function") {
+          window.toggleProductsSection("rooms");
+        }
+      }
+      
       const msgEl = document.getElementById("products-form-msg");
       if (msgEl) {
         msgEl.textContent = "Продукты загружены";
@@ -1483,7 +1548,7 @@ function renderVariantEditor(productId, variantType, variant, productType) {
 
 function renderVariantItem(variantId, itemIndex, item, productType) {
   return `
-    <div class="variant-item-row" style="display: grid; grid-template-columns: minmax(100px, 1.5fr) minmax(120px, 2.5fr) minmax(60px, 0.8fr) auto; gap: 8px; align-items: center; padding: 8px; background: #f9f9f9; border-radius: 6px; border: 1px solid #e0e0e0;">
+    <div class="variant-item-row" style="display: grid; grid-template-columns: minmax(80px, 1fr) minmax(100px, 1.5fr) minmax(50px, 0.7fr) 36px; gap: 6px; align-items: center; padding: 8px; background: #f9f9f9; border-radius: 6px; border: 1px solid #e0e0e0; min-width: 0; overflow: visible;">
       <input type="text" value="${item.name || ''}" placeholder="Название" 
              onchange="updateVariantItem('${variantId}', ${itemIndex}, 'name', this.value, '${productType}')"
              style="padding: 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px; min-width: 0; width: 100%; box-sizing: border-box;">
@@ -1496,7 +1561,7 @@ function renderVariantItem(variantId, itemIndex, item, productType) {
         <option value="м" ${item.unit === 'м' ? 'selected' : ''}>м</option>
         <option value="м²" ${item.unit === 'м²' ? 'selected' : ''}>м²</option>
       </select>
-      <button onclick="removeVariantItem('${variantId}', ${itemIndex}, '${productType}')" class="delete-btn" style="padding: 4px 8px; font-size: 11px; flex-shrink: 0;"><i class="fas fa-trash"></i></button>
+      <button onclick="removeVariantItem('${variantId}', ${itemIndex}, '${productType}')" class="delete-btn" style="padding: 6px; font-size: 12px; min-width: 36px; width: 36px; height: 36px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; box-sizing: border-box;"><i class="fas fa-trash"></i></button>
     </div>
   `;
 }
@@ -1735,6 +1800,26 @@ window.deleteApartmentVariant = function(apartmentId, variantIndex) {
   if (apartment && apartment.variants[variantIndex]) {
     apartment.variants.splice(variantIndex, 1);
     renderApartments();
+  }
+};
+
+// Переключение отображения разделов "Комнаты" и "Квартиры" во вкладке "Продукты"
+window.toggleProductsSection = function(section) {
+  const container = document.getElementById(section + "-section");
+  const label = document.getElementById(section + "-toggle-label");
+
+  if (!container) return;
+
+  // Используем вычисленный стиль, чтобы корректно работать даже если inline-стиля нет
+  const computedDisplay = window.getComputedStyle(container).display;
+  const isOpen = computedDisplay !== "none";
+
+  if (isOpen) {
+    container.style.display = "none";
+    if (label) label.textContent = "Показать";
+  } else {
+    container.style.display = "block";
+    if (label) label.textContent = "Скрыть";
   }
 };
 

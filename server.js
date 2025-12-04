@@ -895,40 +895,38 @@ app.get("/api/admin/prices", requireAdmin, async (req, res) => {
   try {
     const pricesPath = path.join(__dirname, "data", "prices.json");
     if (!fs.existsSync(pricesPath)) {
-      // Создаем файл с дефолтными ценами, если его нет
+      // Создаем файл с дефолтными ценами, если его нет (без номенклатуры монтажа)
       const defaultPrices = {
-        "rooms": {
-          "fabric": {
-            "MSD Standard": { "pricePerM2": 450, "unit": "м²" },
-            "BAUF 205": { "pricePerM2": 650, "unit": "м²" }
+        rooms: {
+          fabric: {
+            "MSD Standard": { pricePerM2: 450, unit: "м²" },
+            "BAUF 205": { pricePerM2: 650, unit: "м²" }
           },
-          "lights": {
-            "GX53": { "pricePerUnit": 800, "unit": "шт" },
-            "IN HOME RLP VC": { "pricePerUnit": 1200, "unit": "шт" }
+          lights: {
+            GX53: { pricePerUnit: 800, unit: "шт" },
+            "IN HOME RLP VC": { pricePerUnit: 1200, unit: "шт" }
           },
-          "curtains": {
-            "на потолок": { "pricePerM": 500, "unit": "м" },
-            "скрытые": { "pricePerM": 800, "unit": "м" }
+          curtains: {
+            "на потолок": { pricePerM: 500, unit: "м" },
+            скрытые: { pricePerM: 800, unit: "м" }
           },
-          "installation": { "basePrice": 2000, "pricePerM2": 300, "unit": "м²" },
-          "extras": {
-            "Вент. решетка": { "pricePerUnit": 500, "unit": "шт" }
+          extras: {
+            "Вент. решетка": { pricePerUnit: 500, unit: "шт" }
           }
         },
-        "apartments": {
-          "fabric": {
-            "MSD Standard": { "pricePerM2": 420, "unit": "м²" },
-            "BAUF 205": { "pricePerM2": 600, "unit": "м²" }
+        apartments: {
+          fabric: {
+            "MSD Standard": { pricePerM2: 420, unit: "м²" },
+            "BAUF 205": { pricePerM2: 600, unit: "м²" }
           },
-          "lights": {
-            "GX53": { "pricePerUnit": 750, "unit": "шт" },
-            "IN HOME RLP VC": { "pricePerUnit": 1100, "unit": "шт" }
+          lights: {
+            GX53: { pricePerUnit: 750, unit: "шт" },
+            "IN HOME RLP VC": { pricePerUnit: 1100, unit: "шт" }
           },
-          "curtains": {
-            "на потолок": { "pricePerM": 450, "unit": "м" },
-            "скрытые": { "pricePerM": 750, "unit": "м" }
-          },
-          "installation": { "basePrice": 3000, "pricePerM2": 280, "unit": "м²" }
+          curtains: {
+            "на потолок": { pricePerM: 450, unit: "м" },
+            скрытые: { pricePerM: 750, unit: "м" }
+          }
         }
       };
       fs.writeFileSync(pricesPath, JSON.stringify(defaultPrices, null, 2), "utf8");
@@ -943,6 +941,38 @@ app.get("/api/admin/prices", requireAdmin, async (req, res) => {
     res.status(500).json({ status: "error", message: "Ошибка сервера" });
   }
 });
+
+// Вспомогательная функция: загрузка и (при необходимости) инициализация файла цен
+function loadOrInitPrices() {
+  const pricesPath = path.join(__dirname, "data", "prices.json");
+  const pricesDir = path.dirname(pricesPath);
+
+  if (!fs.existsSync(pricesDir)) {
+    fs.mkdirSync(pricesDir, { recursive: true });
+  }
+
+  if (!fs.existsSync(pricesPath)) {
+    const defaultPrices = {
+      rooms: {
+        fabric: {},
+        lights: {},
+        curtains: {},
+        extras: {}
+      },
+      apartments: {
+        fabric: {},
+        lights: {},
+        curtains: {}
+      }
+    };
+    fs.writeFileSync(pricesPath, JSON.stringify(defaultPrices, null, 2), "utf8");
+    return { prices: defaultPrices, pricesPath };
+  }
+
+  const raw = fs.readFileSync(pricesPath, "utf8");
+  const prices = JSON.parse(raw);
+  return { prices, pricesPath };
+}
 
 // === Админка: обновить цены ===
 app.post("/api/admin/prices", requireAdmin, async (req, res) => {
@@ -964,6 +994,94 @@ app.post("/api/admin/prices", requireAdmin, async (req, res) => {
     res.json({ status: "success", message: "Цены обновлены" });
   } catch (err) {
     console.error("Ошибка обновления цен:", err);
+    res.status(500).json({ status: "error", message: "Ошибка сервера" });
+  }
+});
+
+// === Админка: добавить/обновить одну позицию номенклатуры в ценах ===
+// Позволяет из админки вручную добавлять новую номенклатуру во вкладке "Цены"
+// Поддерживает подкатегории для extras (subCategory), чтобы группировать доп. позиции
+app.post("/api/admin/prices/item", requireAdmin, async (req, res) => {
+  try {
+    const { section, category, key, unit, price, subCategory } = req.body;
+
+    if (!section || !category || !key) {
+      return res.status(400).json({
+        status: "error",
+        message: "Не указаны обязательные поля: section, category, key"
+      });
+    }
+
+    const normalizedSection = section === "apartments" ? "apartments" : "rooms";
+    const allowedCategories = ["fabric", "lights", "curtains", "extras"];
+
+    if (!allowedCategories.includes(category)) {
+      return res.status(400).json({
+        status: "error",
+        message: "Некорректная категория. Допустимые значения: fabric, lights, curtains, extras"
+      });
+    }
+
+    const numericPrice = typeof price === "number" ? price : parseInt(price, 10);
+    if (!Number.isFinite(numericPrice) || numericPrice < 0) {
+      return res.status(400).json({
+        status: "error",
+        message: "Цена должна быть неотрицательным числом"
+      });
+    }
+
+    const safeKey = String(key).trim();
+    if (!safeKey) {
+      return res.status(400).json({
+        status: "error",
+        message: "Название номенклатуры (key) не может быть пустым"
+      });
+    }
+
+    const { prices, pricesPath } = loadOrInitPrices();
+
+    if (!prices[normalizedSection]) {
+      prices[normalizedSection] = {};
+    }
+
+    if (!prices[normalizedSection][category]) {
+      prices[normalizedSection][category] = {};
+    }
+
+    // Определяем, какое поле цены использовать в зависимости от unit/категории
+    let priceField = "pricePerUnit";
+    let finalUnit = unit || "шт";
+
+    if (category === "fabric") {
+      priceField = "pricePerM2";
+      finalUnit = unit || "м²";
+    } else if (category === "curtains") {
+      priceField = "pricePerM";
+      finalUnit = unit || "м";
+    }
+
+    // Добавляем/обновляем запись номенклатуры
+    const itemPayload = {
+      [priceField]: numericPrice,
+      unit: finalUnit
+    };
+
+    // Для extras поддерживаем подкатегорию, чтобы можно было группировать номенклатуру
+    if (category === "extras" && typeof subCategory === "string" && subCategory.trim()) {
+      itemPayload.subCategory = subCategory.trim();
+    }
+
+    prices[normalizedSection][category][safeKey] = itemPayload;
+
+    fs.writeFileSync(pricesPath, JSON.stringify(prices, null, 2), "utf8");
+
+    return res.json({
+      status: "success",
+      message: "Номенклатура успешно сохранена",
+      prices
+    });
+  } catch (err) {
+    console.error("Ошибка добавления номенклатуры в цены:", err);
     res.status(500).json({ status: "error", message: "Ошибка сервера" });
   }
 });

@@ -9,13 +9,47 @@
         "fabric": "MSD Standard",
         "lights": "4x GX53",
         "curtains": "На потолок, до 3 м",
-        "extras": null
+        "extras": null,
+        "items": [
+          {
+            "name": "Полотно",
+            "value": "MSD Standard",
+            "unit": "м²"
+          },
+          {
+            "name": "Светильники",
+            "value": "4x GX53",
+            "unit": "шт"
+          },
+          {
+            "name": "Гардины",
+            "value": "На потолок, до 3 м",
+            "unit": "м"
+          }
+        ]
       },
       "comfort": {
         "fabric": "BAUF 205",
         "lights": "6x IN HOME RLP VC",
         "curtains": "Скрытая, до 3 м",
-        "extras": null
+        "extras": null,
+        "items": [
+          {
+            "name": "Полотно",
+            "value": "BAUF 205",
+            "unit": "м²"
+          },
+          {
+            "name": "Светильники",
+            "value": "6x IN HOME RLP VC",
+            "unit": "шт"
+          },
+          {
+            "name": "Гардины",
+            "value": "Скрытая, до 3 м",
+            "unit": "м"
+          }
+        ]
       }
     },
     {
@@ -27,13 +61,47 @@
         "fabric": "MSD Standard",
         "lights": "6x GX53",
         "curtains": "На потолок, до 3 м",
-        "extras": null
+        "extras": null,
+        "items": [
+          {
+            "name": "Полотно",
+            "value": "MSD Standard",
+            "unit": "м²"
+          },
+          {
+            "name": "Светильники",
+            "value": "6x GX53",
+            "unit": "шт"
+          },
+          {
+            "name": "Гардины",
+            "value": "На потолок, до 3 м",
+            "unit": "м"
+          }
+        ]
       },
       "comfort": {
         "fabric": "BAUF 205",
         "lights": "8x IN HOME RLP VC",
         "curtains": "Скрытая, до 3 м",
-        "extras": null
+        "extras": null,
+        "items": [
+          {
+            "name": "Полотно",
+            "value": "BAUF 205",
+            "unit": "м²"
+          },
+          {
+            "name": "Светильники",
+            "value": "8x IN HOME RLP VC",
+            "unit": "шт"
+          },
+          {
+            "name": "Гардины",
+            "value": "Скрытая, до 3 м",
+            "unit": "м"
+          }
+        ]
       }
     },
     {
@@ -45,49 +113,47 @@
         "fabric": "MSD Standard",
         "lights": "6x GX53",
         "curtains": "На потолок, до 3 м",
-        "extras": null
+        "extras": null,
+        "items": [
+          {
+            "name": "Полотно",
+            "value": "MSD Standard",
+            "unit": "м²"
+          },
+          {
+            "name": "Светильники",
+            "value": "6x GX53",
+            "unit": "шт"
+          },
+          {
+            "name": "Гардины",
+            "value": "На потолок, до 3 м",
+            "unit": "м"
+          }
+        ]
       },
       "comfort": {
         "fabric": "BAUF 205",
         "lights": "6x IN HOME RLP VC",
         "curtains": "Скрытая, до 3 м",
-        "extras": null
-      }
-    },
-    {
-      "id": 4,
-      "title": "Прихожая",
-      "area": "до 8 м²",
-      "note": null,
-      "basic": {
-        "fabric": "MSD Standard",
-        "lights": "4x GX53",
-        "curtains": "—",
-        "extras": null
-      },
-      "comfort": {
-        "fabric": "BAUF 205",
-        "lights": "4x IN HOME RLP VC",
-        "curtains": "—",
-        "extras": null
-      }
-    },
-    {
-      "id": 5,
-      "title": "Ванная + Санузел",
-      "area": "до 6 м²",
-      "note": "Монтаж на стены из керамогранита рассчитывается отдельно.",
-      "basic": {
-        "fabric": "MSD Standard",
-        "lights": "6x GX53",
-        "curtains": "—",
-        "extras": "—"
-      },
-      "comfort": {
-        "fabric": "BAUF 205",
-        "lights": "6x IN HOME RLP VC",
-        "curtains": "—",
-        "extras": "Вент. решетка"
+        "extras": null,
+        "items": [
+          {
+            "name": "Полотно",
+            "value": "BAUF 205",
+            "unit": "м²"
+          },
+          {
+            "name": "Светильники",
+            "value": "6x IN HOME RLP VC",
+            "unit": "шт"
+          },
+          {
+            "name": "Гардины",
+            "value": "Скрытая, до 3 м",
+            "unit": "м"
+          }
+        ]
       }
     }
   ],
@@ -103,28 +169,96 @@
           "area": "до 40 м²",
           "fabric": "MSD Standard",
           "lights": "21x GX53",
-          "curtains": "2x на потолок"
+          "curtains": "2x на потолок",
+          "items": [
+            {
+              "name": "Полотно",
+              "value": "MSD Standard",
+              "unit": "м²"
+            },
+            {
+              "name": "Светильники",
+              "value": "21x GX53",
+              "unit": "шт"
+            },
+            {
+              "name": "Гардины",
+              "value": "2x на потолок",
+              "unit": "м"
+            }
+          ]
         },
         {
           "type": "basic",
           "area": "до 50 м²",
           "fabric": "MSD Standard",
           "lights": "21x GX53",
-          "curtains": "2x на потолок"
+          "curtains": "2x на потолок",
+          "items": [
+            {
+              "name": "Полотно",
+              "value": "MSD Standard",
+              "unit": "м²"
+            },
+            {
+              "name": "Светильники",
+              "value": "21x GX53",
+              "unit": "шт"
+            },
+            {
+              "name": "Гардины",
+              "value": "2x на потолок",
+              "unit": "м"
+            }
+          ]
         },
         {
           "type": "comfort",
           "area": "до 40 м²",
           "fabric": "BAUF 205",
           "lights": "24x IN HOME RLP VC",
-          "curtains": "2x скрытые"
+          "curtains": "2x скрытые",
+          "items": [
+            {
+              "name": "Полотно",
+              "value": "BAUF 205",
+              "unit": "м²"
+            },
+            {
+              "name": "Светильники",
+              "value": "24x IN HOME RLP VC",
+              "unit": "шт"
+            },
+            {
+              "name": "Гардины",
+              "value": "2x скрытые",
+              "unit": "м"
+            }
+          ]
         },
         {
           "type": "comfort",
           "area": "до 50 м²",
           "fabric": "BAUF 205",
           "lights": "24x IN HOME RLP VC",
-          "curtains": "2x скрытые"
+          "curtains": "2x скрытые",
+          "items": [
+            {
+              "name": "Полотно",
+              "value": "BAUF 205",
+              "unit": "м²"
+            },
+            {
+              "name": "Светильники",
+              "value": "24x IN HOME RLP VC",
+              "unit": "шт"
+            },
+            {
+              "name": "Гардины",
+              "value": "2x скрытые",
+              "unit": "м"
+            }
+          ]
         }
       ]
     },
@@ -139,28 +273,96 @@
           "area": "до 55 м²",
           "fabric": "MSD Standard",
           "lights": "30x GX53",
-          "curtains": "3x на потолок"
+          "curtains": "3x на потолок",
+          "items": [
+            {
+              "name": "Полотно",
+              "value": "MSD Standard",
+              "unit": "м²"
+            },
+            {
+              "name": "Светильники",
+              "value": "30x GX53",
+              "unit": "шт"
+            },
+            {
+              "name": "Гардины",
+              "value": "3x на потолок",
+              "unit": "м"
+            }
+          ]
         },
         {
           "type": "basic",
           "area": "до 65 м²",
           "fabric": "MSD Standard",
           "lights": "30x GX53",
-          "curtains": "3x на потолок"
+          "curtains": "3x на потолок",
+          "items": [
+            {
+              "name": "Полотно",
+              "value": "MSD Standard",
+              "unit": "м²"
+            },
+            {
+              "name": "Светильники",
+              "value": "30x GX53",
+              "unit": "шт"
+            },
+            {
+              "name": "Гардины",
+              "value": "3x на потолок",
+              "unit": "м"
+            }
+          ]
         },
         {
           "type": "comfort",
           "area": "до 55 м²",
           "fabric": "BAUF 205",
           "lights": "34x IN HOME RLP VC",
-          "curtains": "3x скрытые"
+          "curtains": "3x скрытые",
+          "items": [
+            {
+              "name": "Полотно",
+              "value": "BAUF 205",
+              "unit": "м²"
+            },
+            {
+              "name": "Светильники",
+              "value": "34x IN HOME RLP VC",
+              "unit": "шт"
+            },
+            {
+              "name": "Гардины",
+              "value": "3x скрытые",
+              "unit": "м"
+            }
+          ]
         },
         {
           "type": "comfort",
           "area": "до 65 м²",
           "fabric": "BAUF 205",
           "lights": "34x IN HOME RLP VC",
-          "curtains": "3x скрытые"
+          "curtains": "3x скрытые",
+          "items": [
+            {
+              "name": "Полотно",
+              "value": "BAUF 205",
+              "unit": "м²"
+            },
+            {
+              "name": "Светильники",
+              "value": "34x IN HOME RLP VC",
+              "unit": "шт"
+            },
+            {
+              "name": "Гардины",
+              "value": "3x скрытые",
+              "unit": "м"
+            }
+          ]
         }
       ]
     },
@@ -175,31 +377,98 @@
           "area": "до 70 м²",
           "fabric": "MSD Standard",
           "lights": "42x GX53",
-          "curtains": "4x на потолок"
+          "curtains": "4x на потолок",
+          "items": [
+            {
+              "name": "Полотно",
+              "value": "MSD Standard",
+              "unit": "м²"
+            },
+            {
+              "name": "Светильники",
+              "value": "42x GX53",
+              "unit": "шт"
+            },
+            {
+              "name": "Гардины",
+              "value": "4x на потолок",
+              "unit": "м"
+            }
+          ]
         },
         {
           "type": "basic",
           "area": "до 80 м²",
           "fabric": "MSD Standard",
           "lights": "42x GX53",
-          "curtains": "4x на потолок"
+          "curtains": "4x на потолок",
+          "items": [
+            {
+              "name": "Полотно",
+              "value": "MSD Standard",
+              "unit": "м²"
+            },
+            {
+              "name": "Светильники",
+              "value": "42x GX53",
+              "unit": "шт"
+            },
+            {
+              "name": "Гардины",
+              "value": "4x на потолок",
+              "unit": "м"
+            }
+          ]
         },
         {
           "type": "comfort",
           "area": "до 70 м²",
           "fabric": "BAUF 205",
           "lights": "46x IN HOME RLP VC",
-          "curtains": "4x скрытые"
+          "curtains": "4x скрытые",
+          "items": [
+            {
+              "name": "Полотно",
+              "value": "BAUF 205",
+              "unit": "м²"
+            },
+            {
+              "name": "Светильники",
+              "value": "46x IN HOME RLP VC",
+              "unit": "шт"
+            },
+            {
+              "name": "Гардины",
+              "value": "4x скрытые",
+              "unit": "м"
+            }
+          ]
         },
         {
           "type": "comfort",
           "area": "до 80 м²",
           "fabric": "BAUF 205",
           "lights": "46x IN HOME RLP VC",
-          "curtains": "4x скрытые"
+          "curtains": "4x скрытые",
+          "items": [
+            {
+              "name": "Полотно",
+              "value": "BAUF 205",
+              "unit": "м²"
+            },
+            {
+              "name": "Светильники",
+              "value": "46x IN HOME RLP VC",
+              "unit": "шт"
+            },
+            {
+              "name": "Гардины",
+              "value": "4x скрытые",
+              "unit": "м"
+            }
+          ]
         }
       ]
     }
   ]
 }
-

@@ -157,6 +157,7 @@
   <nav class="main-nav" id="mainNav">
     <ul class="nav-menu" id="navMenu">
       <li><a href="/ready-solutions/" class="nav-link">Готовые решения</a></li>
+      <li><a href="/constructor/" class="nav-link">Конструктор</a></li>
       <li><a href="#gallery" class="nav-link">Наши работы</a></li>
       <li><a href="#reviews" class="nav-link">Отзывы</a></li>
       <li><a href="/about/" class="nav-link">О компании</a></li>
@@ -367,9 +368,12 @@
       </div>
     </div>
   </div>
-  <div style="text-align: center; margin-top: 30px;">
+  <div style="text-align: center; margin-top: 30px; display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
     <a href="/ready-solutions/" class="btn btn-accent" style="font-size: 18px; padding: 15px 30px;">
       <i class="fa fa-shopping-bag"></i> Перейти к готовым решениям
+    </a>
+    <a href="/constructor/" class="btn" style="font-size: 18px; padding: 15px 30px;">
+      <i class="fa fa-tools"></i> Конструктор потолка
     </a>
   </div>
 </section>
@@ -714,6 +718,10 @@
     <h2>Корзина <span class="beta-badge">Бета</span></h2>
     <div id="cartItems" class="cart-items">
       <!-- Товары будут добавлены через JavaScript -->
+    </div>
+    <div id="cartTotal" class="cart-total" style="display: none;">
+      <span class="cart-total-label">Итоговая сумма:&nbsp;</span>
+      <span class="cart-total-value">—</span>
     </div>
     <div id="cartEmpty" class="cart-empty" style="display: none;">
       <i class="fa fa-shopping-cart" style="font-size: 48px; color: var(--text-light); margin-bottom: 15px;"></i>
