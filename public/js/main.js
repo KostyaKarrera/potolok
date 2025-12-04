@@ -782,8 +782,9 @@ function calculateRoomPrice(variant, areaStr, prices) {
         }
       } else if (itemName.toLowerCase().includes('гардин') || itemName.toLowerCase().includes('curtain')) {
         category = 'curtains';
-        if (item.value.includes('на потолок')) priceKey = 'на потолок';
-        else if (item.value.includes('скрыт') || item.value.includes('Скрыт')) priceKey = 'скрытые';
+        const valueLower = item.value.toLowerCase();
+        if (valueLower.includes('на потолок') || valueLower.includes('потолок')) priceKey = 'на потолок';
+        else if (valueLower.includes('скрыт')) priceKey = 'скрытые';
         else priceKey = itemName;
         
         // Извлекаем метраж из разных форматов: "до 3 м", "3 м", "2x на потолок" (для квартир)
@@ -847,9 +848,10 @@ function calculateRoomPrice(variant, areaStr, prices) {
       }
       
       if (meters > 0) {
-        if (variant.curtains.includes('на потолок') && prices.rooms.curtains && prices.rooms.curtains['на потолок']) {
+        const curtainsLower = variant.curtains.toLowerCase();
+        if ((curtainsLower.includes('на потолок') || curtainsLower.includes('потолок')) && prices.rooms.curtains && prices.rooms.curtains['на потолок']) {
           total += meters * (prices.rooms.curtains['на потолок'].pricePerM || 0);
-        } else if ((variant.curtains.includes('Скрытая') || variant.curtains.includes('скрыт')) && prices.rooms.curtains && prices.rooms.curtains['скрытые']) {
+        } else if (curtainsLower.includes('скрыт') && prices.rooms.curtains && prices.rooms.curtains['скрытые']) {
           total += meters * (prices.rooms.curtains['скрытые'].pricePerM || 0);
         }
       }
@@ -904,8 +906,9 @@ function calculateApartmentPrice(variant, prices) {
         }
       } else if (itemName.toLowerCase().includes('гардин') || itemName.toLowerCase().includes('curtain')) {
         category = 'curtains';
-        if (item.value.includes('на потолок')) priceKey = 'на потолок';
-        else if (item.value.includes('скрыт') || item.value.includes('Скрыт')) priceKey = 'скрытые';
+        const valueLower = item.value.toLowerCase();
+        if (valueLower.includes('на потолок') || valueLower.includes('потолок')) priceKey = 'на потолок';
+        else if (valueLower.includes('скрыт')) priceKey = 'скрытые';
         else priceKey = itemName;
         
         // Извлекаем метраж из разных форматов: "2x на потолок", "до 3 м", "3 м"
