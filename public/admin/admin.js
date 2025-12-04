@@ -1353,11 +1353,13 @@ async function loadProducts() {
       renderProducts();
       
       // Автоматически открываем раздел "Комнаты" при первой загрузке
-      const roomsContent = document.getElementById("rooms-section-content");
-      const roomsArrow = document.getElementById("rooms-arrow");
-      if (roomsContent && roomsContent.style.display === 'none') {
-        roomsContent.style.display = 'block';
-        if (roomsArrow) roomsArrow.style.transform = 'rotate(180deg)';
+      // Используем реальные элементы из разметки: контейнер rooms-section и подпись rooms-toggle-label
+      const roomsSection = document.getElementById("rooms-section");
+      if (roomsSection) {
+        const isHidden = window.getComputedStyle(roomsSection).display === "none";
+        if (isHidden && typeof window.toggleProductsSection === "function") {
+          window.toggleProductsSection("rooms");
+        }
       }
       
       const msgEl = document.getElementById("products-form-msg");
