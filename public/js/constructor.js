@@ -397,8 +397,9 @@ function calculatePrice() {
 
     // Гардины
     if (calc.curtains && calc.curtains.type && calc.curtains.meters > 0) {
+      const sectionKey = calc.type || currentCalculation.type || 'rooms';
       const curtainsResult = calculateCurtainsPriceForConstructor(
-        "rooms",
+        sectionKey,
         calc.curtains.type,
         calc.curtains.meters,
         pricesData
@@ -533,7 +534,7 @@ function addConstructorToCart() {
       // Гардины
       if (currentCalculation.curtains && currentCalculation.curtains.type && currentCalculation.curtains.meters > 0) {
         const curtainsResult = calculateCurtainsPriceForConstructor(
-          "rooms",
+          currentCalculation.type || 'rooms',
           currentCalculation.curtains.type,
           currentCalculation.curtains.meters,
           pricesData
