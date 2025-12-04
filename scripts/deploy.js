@@ -23,7 +23,9 @@ const PUBLIC_DIR = path.join(__dirname, '../public');
 // HTML файлы для обновления
 const HTML_FILES = [
   'index.html',
-  'ready-solutions.html',
+  'ready-solutions/index.html',
+  'constructor/index.html',
+  'about/index.html',
   'cheboksary/index.html',
   'novocheboksarsk/index.html',
   'yoshkar-ola/index.html'
@@ -67,25 +69,22 @@ function updateHTMLFiles() {
       let content = fs.readFileSync(filePath, 'utf8');
       let changed = false;
       
-      // Заменяем ссылки на CSS
+      // Заменяем ссылки на CSS (включая preload)
       if (content.includes('/css/style.css') && !content.includes('/css/style.min.css')) {
+        // Заменяем все вхождения /css/style.css на /css/style.min.css
         content = content.replace(
-          /href=["']\/css\/style\.css["']/g,
-          'href="/css/style.min.css"'
-        );
-        // Также обновляем preload
-        content = content.replace(
-          /href=["']\/css\/style\.css["']/g,
-          'href="/css/style.min.css"'
+          /\/css\/style\.css/g,
+          '/css/style.min.css'
         );
         changed = true;
       }
       
       // Заменяем ссылки на JS
       if (content.includes('/js/main.js') && !content.includes('/js/main.min.js')) {
+        // Заменяем все вхождения /js/main.js на /js/main.min.js
         content = content.replace(
-          /src=["']\/js\/main\.js["']/g,
-          'src="/js/main.min.js"'
+          /\/js\/main\.js/g,
+          '/js/main.min.js'
         );
         changed = true;
       }
