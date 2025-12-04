@@ -104,6 +104,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   initializeConstructor();
   setupEventListeners();
+  initConstructorHelpIcons();
 });
 
 // Инициализация конструктора
@@ -216,6 +217,32 @@ function updateExtrasForType(type) {
     });
     
     extrasContainer.appendChild(groupDiv);
+  });
+}
+
+// Инициализация иконок-подсказок (вопросиков) — показываем только если реально есть контент
+function initConstructorHelpIcons() {
+  const icons = document.querySelectorAll('.info-icon[data-help-target]');
+  if (!icons.length) return;
+
+  icons.forEach((icon) => {
+    const targetId = icon.getAttribute('data-help-target');
+    if (!targetId) return;
+
+    const modal = document.getElementById(targetId);
+    // Считаем, что контент есть, если в модалке есть текст или блоки с примерами
+    const hasContent = modal && modal.querySelector('.examples-list, p, ul');
+
+    if (!hasContent) {
+      icon.style.display = 'none';
+      return;
+    }
+
+    icon.addEventListener('click', () => {
+      if (typeof showModal === 'function') {
+        showModal(targetId);
+      }
+    });
   });
 }
 

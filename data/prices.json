@@ -8,10 +8,6 @@
       "BAUF 205": {
         "pricePerM2": 650,
         "unit": "м²"
-      },
-      "MSD Premium": {
-        "pricePerM2": 500,
-        "unit": "м²"
       }
     },
     "lights": {

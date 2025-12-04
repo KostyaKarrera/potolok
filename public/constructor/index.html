@@ -107,7 +107,7 @@
             <label class="form-label">
               <span class="label-text">
                 Тип помещения
-                <button type="button" class="info-icon" aria-label="Что такое тип помещения" onclick="showModal('typeHelpModal')">?</button>
+                <button type="button" class="info-icon" aria-label="Что такое тип помещения" data-help-target="typeHelpModal">?</button>
               </span>
               <select id="constructorType" name="type" required class="form-select">
                 <option value="rooms">Комната</option>
@@ -129,7 +129,10 @@
         <!-- Полотно -->
         <div class="form-group">
           <label class="form-label">
-            <span class="label-text">Полотно</span>
+            <span class="label-text">
+              Полотно
+              <button type="button" class="info-icon" aria-label="Примеры полотен" data-help-target="fabricExamplesModal">?</button>
+            </span>
             <select id="constructorFabric" name="fabric" required class="form-select">
               <option value="">Выберите полотно</option>
             </select>
@@ -139,7 +142,10 @@
         <!-- Светильники -->
         <div class="form-group">
           <label class="form-label">
-            <span class="label-text">Светильники</span>
+            <span class="label-text">
+              Светильники
+              <button type="button" class="info-icon" aria-label="Примеры светильников" data-help-target="lightExamplesModal">?</button>
+            </span>
             <div class="lights-input-group">
               <select id="constructorLightType" name="lightType" class="form-select">
                 <option value="">Выберите тип</option>
@@ -253,6 +259,61 @@
       <strong>Квартира</strong> — когда вас интересует ориентировочная стоимость потолков сразу во всей квартире
       по одному типу решения.
     </p>
+  </div>
+</div>
+
+<!-- Модальное окно с примерами полотен -->
+<div id="fabricExamplesModal" class="modal">
+  <div class="modal-content examples-modal-content">
+    <span class="close" onclick="hideModal('fabricExamplesModal')">&times;</span>
+    <h3 style="margin-top: 0; margin-bottom: 1rem; text-align: center;">Примеры полотен</h3>
+    <p style="font-size: 0.9rem; color: var(--text-muted); margin-top: 0; margin-bottom: 1.25rem; text-align: center;">
+      Ниже несколько популярных вариантов. Выберите похожий тип в выпадающем списке «Полотно».
+    </p>
+    <div class="examples-list">
+      <div class="example-card">
+        <h4 class="example-title">MSD Standard, белый матовый</h4>
+        <p class="example-subtitle">Оптимальный вариант для большинства комнат</p>
+        <ul class="example-features">
+          <li>Спокойный матовый потолок без бликов</li>
+          <li>Хорошо смотрится на кухне, в спальне и гостиной</li>
+          <li>Помогает визуально «успокоить» интерьер</li>
+        </ul>
+      </div>
+      <div class="example-card">
+        <h4 class="example-title">BAUF 205, белый матовый</h4>
+        <p class="example-subtitle">Премиальный вариант с более плотным полотном</p>
+        <ul class="example-features">
+          <li>Ровная поверхность, меньше провисаний на большой площади</li>
+          <li>Хороший выбор для залов и студий</li>
+          <li>Чуть более «дорогой» внешний вид</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Модальное окно с примерами светильников -->
+<div id="lightExamplesModal" class="modal">
+  <div class="modal-content examples-modal-content">
+    <span class="close" onclick="hideModal('lightExamplesModal')">&times;</span>
+    <h3 style="margin-top: 0; margin-bottom: 1rem; text-align: center;">Примеры светильников</h3>
+    <p style="font-size: 0.9rem; color: var(--text-muted); margin-top: 0; margin-bottom: 1.25rem; text-align: center;">
+      При выборе типа светильника в конструкторе ориентируйтесь на эти примеры.
+    </p>
+    <div class="examples-list">
+      <div class="example-card">
+        <h4 class="example-title">GX53</h4>
+        <p class="example-subtitle">Встраиваемый точечный светильник</p>
+        <img src="/ligth/gx53.webp" alt="Светильник GX53" class="example-image">
+      </div>
+      <div class="example-card">
+        <h4 class="example-title">IN HOME RLP VC</h4>
+        <p class="example-subtitle">Дизайнерский светильник</p>
+        <img src="/ligth/rlp-vc.webp" alt="Светильник IN HOME RLP VC" class="example-image">
+        <ul class="example-features">
+      </div>
+    </div>
   </div>
 </div>
 

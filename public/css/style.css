@@ -3115,6 +3115,57 @@ footer .btn i {
   max-width: 480px;
 }
 
+.examples-modal-content {
+  max-width: 520px;
+  text-align: left;
+}
+
+.examples-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.example-card {
+  padding: 0.9rem 1rem;
+  border-radius: 10px;
+  background: var(--background-light);
+  border: 1px solid var(--border-color);
+}
+
+.example-title {
+  margin: 0 0 0.25rem;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--text-dark);
+}
+
+.example-subtitle {
+  margin: 0 0 0.5rem;
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+}
+
+.example-features {
+  margin: 0;
+  padding-left: 1.1rem;
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.example-features li + li {
+  margin-top: 0.25rem;
+}
+
+.example-image {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  margin: 0.5rem 0 0.75rem;
+}
+
 .result-title {
   font-size: var(--font-size-xl);
   font-weight: 700;
@@ -3153,6 +3204,23 @@ footer .btn i {
   font-weight: 600;
   color: var(--text-dark);
   margin-bottom: 0.5rem;
+}
+
+.examples-link {
+  border: none;
+  background: none;
+  padding: 0;
+  margin: 0;
+  font-size: var(--font-size-xs);
+  color: var(--primary-color);
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-underline-offset: 2px;
+}
+
+.examples-link:hover {
+  color: var(--primary-hover);
 }
 
 .info-icon {
@@ -3321,11 +3389,11 @@ footer .btn i {
 @media (max-width: 768px) {
   /* Уменьшаем padding формы на мобильной версии */
   .constructor-form {
-    padding: 0.75rem 0.75rem 1rem;
+    padding: 0.5rem 0.5rem 0.75rem;
   }
 
   .result-card {
-    padding: 1.5rem;
+    padding: 1.1rem 1.25rem;
   }
 
   /* Скрываем правый блок "Расчет стоимости" на мобильной версии */
@@ -3335,7 +3403,16 @@ footer .btn i {
 
   .constructor-form .form-row-2 {
     grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  /* Компактнее отступы между группами полей на мобиле */
+  .constructor-form #constructorForm {
     gap: 1rem;
+  }
+
+  .constructor-form .form-group {
+    margin-bottom: 0.25rem;
   }
   
   .lights-input-group,
@@ -3348,10 +3425,16 @@ footer .btn i {
   /* Единый размер для всех полей на мобильной версии */
   .constructor-form .form-input,
   .constructor-form .form-select {
-    min-height: 48px;
-    padding: 0.75rem;
-    font-size: var(--font-size-base);
+    min-height: 42px;
+    padding: 0.6rem 0.7rem;
+    font-size: 0.95rem;
     box-sizing: border-box;
+  }
+
+  /* Лейблы полей немного меньше и компактнее */
+  .constructor-form .label-text {
+    font-size: 0.8rem;
+    margin-bottom: 0.35rem;
   }
   
   /* На мобильной версии все поля одинаковой ширины */
@@ -3376,13 +3459,13 @@ footer .btn i {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 1rem;
-    font-size: var(--font-size-lg);
+    font-size: var(--font-size-base);
     font-weight: 700;
     color: var(--text-dark);
   }
 
   .mobile-total-price {
-    font-size: var(--font-size-xl);
+    font-size: var(--font-size-lg);
     color: var(--primary-color);
   }
 
@@ -3394,8 +3477,8 @@ footer .btn i {
 
   .btn-small {
     flex: 1;
-    padding: 0.625rem 1rem;
-    font-size: var(--font-size-sm);
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8rem;
     font-weight: 600;
     white-space: nowrap;
   }
@@ -3403,11 +3486,20 @@ footer .btn i {
   .btn-small i {
     margin-right: 0.25rem;
   }
+
+  .examples-modal-content {
+    max-width: 95%;
+    padding: 1.5rem;
+  }
+
+  .example-card {
+    padding: 0.75rem 0.9rem;
+  }
 }
 
 @media (max-width: 480px) {
   .result-title {
-    font-size: var(--font-size-lg);
+    font-size: var(--font-size-base);
   }
 
   .calculation-item {
