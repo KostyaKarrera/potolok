@@ -786,8 +786,24 @@ function calculateRoomPrice(variant, areaStr, prices) {
         else if (item.value.includes('скрыт') || item.value.includes('Скрыт')) priceKey = 'скрытые';
         else priceKey = itemName;
         
-        const metersMatch = item.value.match(/до\s+(\d+)\s+м/) || item.value.match(/(\d+)x/);
-        const meters = metersMatch ? parseInt(metersMatch[1]) : (unit === 'м' ? 1 : 0);
+        // Извлекаем метраж из разных форматов: "до 3 м", "3 м", "2x на потолок" (для квартир)
+        let meters = 0;
+        const metersMatch1 = item.value.match(/до\s+(\d+)\s*м/i); // "до 3 м" или "до 3м"
+        const metersMatch2 = item.value.match(/(\d+)\s*м(?!²)/i); // "3 м" (но не "м²")
+        const countMatch = item.value.match(/(\d+)x/); // "2x на потолок"
+        
+        if (metersMatch1) {
+          meters = parseInt(metersMatch1[1]);
+        } else if (metersMatch2) {
+          meters = parseInt(metersMatch2[1]);
+        } else if (countMatch) {
+          // Для формата "2x на потолок" умножаем количество на средний метраж (3 м на гардину)
+          meters = parseInt(countMatch[1]) * 3;
+        } else if (unit === 'м') {
+          // Если unit указан как "м", но метраж не найден, используем значение по умолчанию
+          meters = 3;
+        }
+        
         if (meters > 0 && prices.rooms.curtains && prices.rooms.curtains[priceKey]) {
           total += meters * (prices.rooms.curtains[priceKey].pricePerM || 0);
         }
@@ -815,12 +831,25 @@ function calculateRoomPrice(variant, areaStr, prices) {
       }
     }
     if (variant.curtains && variant.curtains !== '—') {
-      const curtainsMatch = variant.curtains.match(/до\s+(\d+)\s+м/);
-      if (curtainsMatch) {
-        const meters = parseInt(curtainsMatch[1]);
+      // Извлекаем метраж из разных форматов: "до 3 м", "3 м", "2x на потолок"
+      let meters = 0;
+      const metersMatch1 = variant.curtains.match(/до\s+(\d+)\s*м/i); // "до 3 м" или "до 3м"
+      const metersMatch2 = variant.curtains.match(/(\d+)\s*м(?!²)/i); // "3 м" (но не "м²")
+      const countMatch = variant.curtains.match(/(\d+)x/); // "2x на потолок"
+      
+      if (metersMatch1) {
+        meters = parseInt(metersMatch1[1]);
+      } else if (metersMatch2) {
+        meters = parseInt(metersMatch2[1]);
+      } else if (countMatch) {
+        // Для формата "2x на потолок" умножаем количество на средний метраж (3 м на гардину)
+        meters = parseInt(countMatch[1]) * 3;
+      }
+      
+      if (meters > 0) {
         if (variant.curtains.includes('на потолок') && prices.rooms.curtains && prices.rooms.curtains['на потолок']) {
           total += meters * (prices.rooms.curtains['на потолок'].pricePerM || 0);
-        } else if (variant.curtains.includes('Скрытая') && prices.rooms.curtains && prices.rooms.curtains['скрытые']) {
+        } else if ((variant.curtains.includes('Скрытая') || variant.curtains.includes('скрыт')) && prices.rooms.curtains && prices.rooms.curtains['скрытые']) {
           total += meters * (prices.rooms.curtains['скрытые'].pricePerM || 0);
         }
       }
@@ -879,9 +908,24 @@ function calculateApartmentPrice(variant, prices) {
         else if (item.value.includes('скрыт') || item.value.includes('Скрыт')) priceKey = 'скрытые';
         else priceKey = itemName;
         
-        const curtainsMatch = item.value.match(/(\d+)x/);
-        const count = curtainsMatch ? parseInt(curtainsMatch[1]) : 1;
-        const meters = count * 3; // Предполагаем, что каждая гардина примерно 3 метра
+        // Извлекаем метраж из разных форматов: "2x на потолок", "до 3 м", "3 м"
+        let meters = 0;
+        const countMatch = item.value.match(/(\d+)x/); // "2x на потолок"
+        const metersMatch1 = item.value.match(/до\s+(\d+)\s*м/i); // "до 3 м" или "до 3м"
+        const metersMatch2 = item.value.match(/(\d+)\s*м(?!²)/i); // "3 м" (но не "м²")
+        
+        if (countMatch) {
+          // Для формата "2x на потолок" умножаем количество на средний метраж (3 м на гардину)
+          meters = parseInt(countMatch[1]) * 3;
+        } else if (metersMatch1) {
+          meters = parseInt(metersMatch1[1]);
+        } else if (metersMatch2) {
+          meters = parseInt(metersMatch2[1]);
+        } else if (unit === 'м') {
+          // Если unit указан как "м", но метраж не найден, используем значение по умолчанию
+          meters = 3;
+        }
+        
         if (meters > 0 && prices.apartments.curtains && prices.apartments.curtains[priceKey]) {
           total += meters * (prices.apartments.curtains[priceKey].pricePerM || 0);
         }

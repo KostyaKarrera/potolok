@@ -1,7 +1,43 @@
 node_modules
+
+# Секреты и конфиги окружения
 .env
-.DS_Store
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Локальная база данных
 database.db
+*.sqlite
+
+# Системные файлы ОС
+.DS_Store
+Thumbs.db
+
+# IDE / инструменты разработки
+.vscode/
+.idea/
+.cursor/
+
+# Логи и временные файлы
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.tmp
+
+# Загружаемые файлы (контракты/медиа), не храним в git
+public/uploads/contracts/
+uploads/
+
+# Временные файлы и бэкапы в data
+data/*.bak
+data/*.backup
+data/*.tmp
+data/*~
 
 # Автоматически генерируемые файлы
 public/jobs/mobile/
