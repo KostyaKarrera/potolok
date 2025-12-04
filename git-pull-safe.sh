@@ -17,7 +17,7 @@ fi
 
 # Выполняем git pull
 echo "📥 Выполняем git pull..."
-git pull origin main
+git pull --no-rebase
 
 # После успешного pull hook автоматически запустится и обновит HTML файлы
 
