@@ -2,21 +2,21 @@
   "rooms": {
     "fabric": {
       "MSD Standard": {
-        "pricePerM2": 450,
+        "pricePerM2": 600,
         "unit": "м²"
       },
       "BAUF 205": {
-        "pricePerM2": 650,
+        "pricePerM2": 700,
         "unit": "м²"
       }
     },
     "lights": {
       "GX53": {
-        "pricePerUnit": 800,
+        "pricePerUnit": 550,
         "unit": "шт"
       },
       "IN HOME RLP VC": {
-        "pricePerUnit": 1200,
+        "pricePerUnit": 650,
         "unit": "шт"
       }
     },
@@ -26,7 +26,7 @@
         "unit": "м"
       },
       "скрытые": {
-        "pricePerM": 800,
+        "pricePerM": 1100,
         "unit": "м"
       },
       "Гардины": {
@@ -48,21 +48,21 @@
   "apartments": {
     "fabric": {
       "MSD Standard": {
-        "pricePerM2": 420,
+        "pricePerM2": 549,
         "unit": "м²"
       },
       "BAUF 205": {
-        "pricePerM2": 600,
+        "pricePerM2": 650,
         "unit": "м²"
       }
     },
     "lights": {
       "GX53": {
-        "pricePerUnit": 750,
+        "pricePerUnit": 500,
         "unit": "шт"
       },
       "IN HOME RLP VC": {
-        "pricePerUnit": 1100,
+        "pricePerUnit": 600,
         "unit": "шт"
       }
     },
@@ -72,7 +72,7 @@
         "unit": "м"
       },
       "скрытые": {
-        "pricePerM": 750,
+        "pricePerM": 1000,
         "unit": "м"
       }
     }
