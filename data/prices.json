@@ -2,7 +2,7 @@
   "rooms": {
     "fabric": {
       "MSD Standard": {
-        "pricePerM2": 600,
+        "pricePerM2": 450,
         "unit": "м²"
       },
       "BAUF 205": {
@@ -12,11 +12,11 @@
     },
     "lights": {
       "GX53": {
-        "pricePerUnit": 550,
+        "pricePerUnit": 800,
         "unit": "шт"
       },
       "IN HOME RLP VC": {
-        "pricePerUnit": 650,
+        "pricePerUnit": 1200,
         "unit": "шт"
       }
     },
@@ -26,18 +26,13 @@
         "unit": "м"
       },
       "скрытые": {
-        "pricePerM": 1120,
+        "pricePerM": 800,
         "unit": "м"
       },
       "Гардины": {
-        "pricePerM": 200,
+        "pricePerM": 0,
         "unit": "м"
       }
-    },
-    "installation": {
-      "basePrice": 500,
-      "pricePerM2": 0,
-      "unit": "м²"
     },
     "extras": {
       "Вент. решетка": {
@@ -53,7 +48,7 @@
   "apartments": {
     "fabric": {
       "MSD Standard": {
-        "pricePerM2": 500,
+        "pricePerM2": 420,
         "unit": "м²"
       },
       "BAUF 205": {
@@ -63,28 +58,23 @@
     },
     "lights": {
       "GX53": {
-        "pricePerUnit": 500,
+        "pricePerUnit": 750,
         "unit": "шт"
       },
       "IN HOME RLP VC": {
-        "pricePerUnit": 600,
+        "pricePerUnit": 1100,
         "unit": "шт"
       }
     },
     "curtains": {
       "на потолок": {
-        "pricePerM": 550,
+        "pricePerM": 450,
         "unit": "м"
       },
       "скрытые": {
-        "pricePerM": 1050,
+        "pricePerM": 750,
         "unit": "м"
       }
-    },
-    "installation": {
-      "basePrice": 0,
-      "pricePerM2": 0,
-      "unit": "м²"
     }
   }
 }

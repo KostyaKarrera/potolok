@@ -2337,16 +2337,9 @@ footer .btn i {
 .products-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 2rem;
-  margin-top: 2rem;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
   align-items: start;
-}
-
-/* Для очень больших экранов (мониторы 1920px+) - можно показать 3 карточки */
-@media (min-width: 1920px) {
-  .products-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
 }
 
 .product-card {
@@ -2365,26 +2358,26 @@ footer .btn i {
 }
 
 .product-header {
-  padding: 1.5rem 1.5rem 1rem;
+  padding: 1rem 1.25rem 0.75rem;
   border-bottom: 1px solid var(--border-color);
   flex-shrink: 0;
 }
 
 .product-title {
-  font-size: var(--font-size-lg);
+  font-size: calc(var(--font-size-lg) * 0.95);
   font-weight: 700;
   color: var(--text-dark);
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.35rem;
 }
 
 .product-area {
-  font-size: var(--font-size-sm);
+  font-size: calc(var(--font-size-sm) * 0.95);
   color: var(--text-muted);
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.35rem;
 }
 
 .product-note {
-  font-size: var(--font-size-xs);
+  font-size: calc(var(--font-size-xs) * 0.95);
   color: var(--accent-color);
   font-style: italic;
   margin-top: 0.5rem;
@@ -2396,30 +2389,32 @@ footer .btn i {
 /* Карточки комнат */
 .room-card .product-variants {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0;
+  grid-template-columns: 1fr;
+  gap: 0.9rem;
   align-items: stretch;
 }
 
 .product-variant {
-  padding: 1.25rem;
-  border-right: 1px solid var(--border-color);
+  padding: 0.85rem 1.1rem;
   display: flex;
   flex-direction: column;
-  min-height: 100%;
 }
 
-.product-variant:last-child {
-  border-right: none;
+.room-card .product-variant {
+  border-bottom: 1px solid var(--border-color);
+}
+
+.room-card .product-variant:last-child {
+  border-bottom: none;
 }
 
 .variant-header {
-  font-size: var(--font-size-sm);
+  font-size: calc(var(--font-size-sm) * 0.9);
   font-weight: 700;
   text-transform: uppercase;
   color: var(--text-dark);
-  margin-bottom: 1rem;
-  padding-bottom: 0.5rem;
+  margin-bottom: 0.65rem;
+  padding-bottom: 0.4rem;
   border-bottom: 2px solid var(--primary-color);
   flex-shrink: 0;
 }
@@ -2499,10 +2494,6 @@ footer .btn i {
   padding: 1.25rem;
   margin-top: 0;
   transition: max-height 0.3s ease, opacity 0.3s ease, padding 0.3s ease, margin 0.3s ease;
-}
-
-.variant-details {
-  margin-bottom: 1rem;
 }
 
 .variant-detail-item {
@@ -2608,8 +2599,12 @@ footer .btn i {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 0.65rem;
+  gap: 0.5rem;
   justify-content: space-between;
+}
+
+.variant-details {
+  margin-bottom: 0.65rem;
 }
 
 .variant-row {
@@ -2618,9 +2613,13 @@ footer .btn i {
   align-items: flex-start;
   font-size: var(--font-size-sm);
   color: var(--text-muted);
-  line-height: 1.5;
-  flex-shrink: 0;
+  line-height: 1.4;
   gap: 0.5rem;
+  margin-bottom: 0.4rem;
+}
+
+.variant-row:last-child {
+  margin-bottom: 0;
 }
 
 .variant-row span {
@@ -2638,22 +2637,21 @@ footer .btn i {
 }
 
 .variant-price {
-  font-size: var(--font-size-xl);
+  font-size: calc(var(--font-size-xl) * 0.9);
   font-weight: 700;
   color: var(--primary-color);
-  margin: 1rem 0;
+  margin: 0.65rem 0;
   text-align: center;
-  flex-shrink: 0;
 }
 
 .add-to-cart-btn {
   width: 100%;
-  padding: 10px 12px;
+  padding: 7px 10px;
   background: var(--primary-color);
   color: white;
   border: none;
   border-radius: 8px;
-  font-size: var(--font-size-sm);
+  font-size: calc(var(--font-size-sm) * 0.9);
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -2661,7 +2659,6 @@ footer .btn i {
   align-items: center;
   justify-content: center;
   gap: 6px;
-  flex-shrink: 0;
   white-space: nowrap;
 }
 
@@ -2911,6 +2908,21 @@ footer .btn i {
     gap: 1.5rem;
   }
   
+  /* На узких десктопах и планшетах варианты комнаты кладём в столбик,
+     чтобы содержимое не сжималось в две очень узкие колонки */
+  .room-card .product-variants {
+    grid-template-columns: 1fr;
+  }
+
+  .room-card .product-variant {
+    border-right: none;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .room-card .product-variant:last-child {
+    border-bottom: none;
+  }
+  
   .product-variant {
     padding: 1rem;
   }
@@ -3054,5 +3066,460 @@ footer .btn i {
   .variants-table th,
   .variants-table td {
     padding: 0.4rem;
+  }
+}
+
+/* ==================== КОНСТРУКТОР ==================== */
+
+.constructor-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  align-items: start;
+}
+
+.constructor-form {
+  background: var(--background-white);
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.constructor-result {
+  position: sticky;
+  top: 100px;
+}
+
+.result-card {
+  background: var(--background-white);
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.btn.btn-secondary {
+  background: #f3f4f6;
+  color: var(--text-dark);
+  border: 1px solid var(--border-color);
+  padding: 8px 12px;
+  font-size: var(--font-size-sm);
+}
+
+.btn.btn-secondary:hover {
+  background: #e5e7eb;
+}
+
+.small-modal-content {
+  max-width: 480px;
+}
+
+.examples-modal-content {
+  max-width: 520px;
+  text-align: left;
+}
+
+.examples-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.example-card {
+  padding: 0.9rem 1rem;
+  border-radius: 10px;
+  background: var(--background-light);
+  border: 1px solid var(--border-color);
+}
+
+.example-title {
+  margin: 0 0 0.25rem;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--text-dark);
+}
+
+.example-subtitle {
+  margin: 0 0 0.5rem;
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+}
+
+.example-features {
+  margin: 0;
+  padding-left: 1.1rem;
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.example-features li + li {
+  margin-top: 0.25rem;
+}
+
+.example-image {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  margin: 0.5rem 0 0.75rem;
+}
+
+.result-title {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  color: var(--text-dark);
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.constructor-form #constructorForm {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.constructor-form .form-row-2 {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  gap: 1.5rem;
+  align-items: flex-start;
+}
+
+.constructor-form .form-group {
+  margin: 0;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.label-text {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--text-dark);
+  margin-bottom: 0.5rem;
+}
+
+.examples-link {
+  border: none;
+  background: none;
+  padding: 0;
+  margin: 0;
+  font-size: var(--font-size-xs);
+  color: var(--primary-color);
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-underline-offset: 2px;
+}
+
+.examples-link:hover {
+  color: var(--primary-hover);
+}
+
+.info-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1px solid var(--border-color);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  position: relative;
+  background: #fff;
+}
+
+.form-select,
+.form-input {
+  width: 100%;
+  max-width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-size: var(--font-size-base);
+  font-family: inherit;
+  background: var(--background-white);
+  color: var(--text-dark);
+  transition: border-color 0.3s ease;
+}
+
+.form-select:focus,
+.form-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(47, 128, 237, 0.1);
+}
+
+.lights-input-group,
+.curtains-input-group {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-end;
+}
+
+.lights-input-group .form-select,
+.curtains-input-group .form-select {
+  flex: 1;
+}
+
+/* Фиксированная ширина для числовых полей на десктопе */
+.lights-input-group .form-input {
+  width: 100px;
+  flex-shrink: 0;
+}
+
+.curtains-input-group .form-input {
+  width: 120px;
+  flex-shrink: 0;
+}
+
+.extras-group {
+  margin-bottom: 1rem;
+}
+
+.extras-group-title {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.25rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.extras-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  margin-bottom: 0.25rem;
+}
+
+.extras-checkbox-label:hover {
+  background: var(--background-light);
+}
+
+.extras-checkbox {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.calculation-details {
+  margin-bottom: 1rem;
+}
+
+.calculation-item {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  padding: 0.75rem 0;
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.calculation-item:last-of-type {
+  border-bottom: none;
+}
+
+.calculation-item span:first-child {
+  color: var(--text-dark);
+  flex: 0 0 120px;
+  text-align: left;
+}
+
+.calculation-item span:last-child {
+  flex: 1;
+  text-align: right;
+}
+
+.calculation-divider {
+  height: 2px;
+  background: var(--border-color);
+  margin: 1rem 0;
+}
+
+.calculation-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 0;
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  color: var(--text-dark);
+}
+
+.total-price {
+  font-size: var(--font-size-xl);
+  color: var(--primary-color);
+}
+
+/* Мобильный блок с итоговой суммой - скрыт на десктопе */
+.mobile-total-section {
+  display: none;
+}
+
+/* Адаптивность для конструктора */
+@media (max-width: 1024px) {
+  .constructor-container {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    padding: 0 1rem;
+  }
+  
+  .constructor-result {
+    position: static;
+    margin-top: 0.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  /* Уменьшаем padding формы на мобильной версии */
+  .constructor-form {
+    padding: 0.5rem 0.5rem 0.75rem;
+  }
+
+  .result-card {
+    padding: 1.1rem 1.25rem;
+  }
+
+  /* Скрываем правый блок "Расчет стоимости" на мобильной версии */
+  .constructor-result {
+    display: none;
+  }
+
+  .constructor-form .form-row-2 {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  /* Компактнее отступы между группами полей на мобиле */
+  .constructor-form #constructorForm {
+    gap: 1rem;
+  }
+
+  .constructor-form .form-group {
+    margin-bottom: 0.25rem;
+  }
+  
+  .lights-input-group,
+  .curtains-input-group {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+  
+  /* Единый размер для всех полей на мобильной версии */
+  .constructor-form .form-input,
+  .constructor-form .form-select {
+    min-height: 42px;
+    padding: 0.6rem 0.7rem;
+    font-size: 0.95rem;
+    box-sizing: border-box;
+  }
+
+  /* Лейблы полей немного меньше и компактнее */
+  .constructor-form .label-text {
+    font-size: 0.8rem;
+    margin-bottom: 0.35rem;
+  }
+  
+  /* На мобильной версии все поля одинаковой ширины */
+  .lights-input-group .form-input,
+  .curtains-input-group .form-input,
+  .lights-input-group .form-select,
+  .curtains-input-group .form-select {
+    width: 100% !important;
+    flex-shrink: 1;
+  }
+
+  /* Мобильный блок с итоговой суммой и кнопками - показываем на мобильной версии */
+  .mobile-total-section {
+    display: block;
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 2px solid var(--border-color);
+  }
+
+  .mobile-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    font-size: var(--font-size-base);
+    font-weight: 700;
+    color: var(--text-dark);
+  }
+
+  .mobile-total-price {
+    font-size: var(--font-size-lg);
+    color: var(--primary-color);
+  }
+
+  .mobile-buttons {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: space-between;
+  }
+
+  .btn-small {
+    flex: 1;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .btn-small i {
+    margin-right: 0.25rem;
+  }
+
+  .examples-modal-content {
+    max-width: 95%;
+    padding: 1.5rem;
+  }
+
+  .example-card {
+    padding: 0.75rem 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .result-title {
+    font-size: var(--font-size-base);
+  }
+
+  .calculation-item {
+    font-size: var(--font-size-xs);
+    padding: 0.5rem 0;
+  }
+
+  .calculation-item span:first-child {
+    flex: 0 0 90px;
+  }
+
+  .calculation-total {
+    font-size: var(--font-size-base);
+  }
+
+  .total-price {
+    font-size: var(--font-size-lg);
+  }
+
+  #constructor h2 {
+    font-size: var(--font-size-xl);
   }
 }
