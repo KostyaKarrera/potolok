@@ -805,6 +805,8 @@ header p {
   margin-right: auto;
   text-align: left;
   color: var(--text-muted);
+  letter-spacing: 0.01em; /* Улучшает читаемость Montserrat */
+  word-spacing: 0.05em; /* Небольшой отступ между словами */
 }
 
 /* Списки внутри текстовых блоков секций выравниваем по тому же контейнеру */
