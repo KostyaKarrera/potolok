@@ -4,8 +4,9 @@
  * Запускается на сервере после git pull
  * 
  * Выполняет:
- * 1. Минификацию CSS и JS
- * 2. Обновление HTML файлов для использования минифицированных версий
+ * 1. Генерацию кастомного Font Awesome CSS
+ * 2. Минификацию CSS и JS
+ * 3. Обновление HTML файлов для использования минифицированных версий
  */
 
 import fs from 'fs';
@@ -32,6 +33,22 @@ const HTML_FILES = [
 ];
 
 console.log('🚀 Начинаем автоматический деплой...\n');
+
+// Шаг 0: Генерация кастомного Font Awesome CSS
+async function generateCustomFA() {
+  console.log('🎨 Шаг 0: Генерация кастомного Font Awesome CSS...');
+  try {
+    const { stdout, stderr } = await execAsync('npm run generate-fa', {
+      cwd: path.join(__dirname, '..')
+    });
+    console.log(stdout);
+    if (stderr) console.error(stderr);
+    return true;
+  } catch (error) {
+    console.error('❌ Ошибка генерации Font Awesome:', error.message);
+    return false;
+  }
+}
 
 // Шаг 1: Минификация
 async function minifyFiles() {
@@ -115,6 +132,12 @@ async function main() {
     console.log('⚠️  Внимание: скрипт запущен не в production режиме');
     console.log('   Используйте: NODE_ENV=production node scripts/deploy.js');
     console.log('   или: node scripts/deploy.js --production\n');
+  }
+  
+  // Генерируем кастомный Font Awesome CSS
+  const faSuccess = await generateCustomFA();
+  if (!faSuccess) {
+    console.error('\n⚠️  Ошибка генерации Font Awesome. Продолжаем деплой...');
   }
   
   // Выполняем минификацию
