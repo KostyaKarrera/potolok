@@ -414,15 +414,49 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
-// ====== 9. Sticky Header при скролле ======
+// ====== 9. Объединенный обработчик scroll (оптимизация для избежания forced layout) ======
+let scrollTicking = false;
+let cachedScrollY = 0;
+const topbar = document.querySelector(".topbar");
+
+// Функции, которые нужно вызывать при скролле (будут определены ниже)
+let highlightNavCallback = null;
+let scrollTopBtnElement = null;
+
 window.addEventListener("scroll", () => {
-  const topbar = document.querySelector(".topbar");
-  if (window.scrollY > 50) {
-    topbar.classList.add("scrolled");
-  } else {
-    topbar.classList.remove("scrolled");
+  if (!scrollTicking) {
+    requestAnimationFrame(() => {
+      // Кэшируем scrollY один раз за кадр - это единственное чтение геометрического свойства
+      cachedScrollY = window.scrollY;
+      
+      // Sticky Header
+      if (topbar) {
+        if (cachedScrollY > 50) {
+          topbar.classList.add("scrolled");
+        } else {
+          topbar.classList.remove("scrolled");
+        }
+      }
+      
+      // Highlight Navigation (если функция определена)
+      if (highlightNavCallback) {
+        highlightNavCallback(cachedScrollY);
+      }
+      
+      // Scroll Top Button (если кнопка создана)
+      if (scrollTopBtnElement) {
+        if (cachedScrollY > 300) {
+          scrollTopBtnElement.classList.add("show");
+        } else {
+          scrollTopBtnElement.classList.remove("show");
+        }
+      }
+      
+      scrollTicking = false;
+    });
+    scrollTicking = true;
   }
-});
+}, { passive: true });
 
 // ====== 10. Smooth Scroll ======
 // Кэшируем высоту topbar для избежания принудительной компоновки
@@ -465,16 +499,18 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         mainNav.classList.remove("active");
       }
       
-      // Используем requestAnimationFrame для чтения геометрических свойств после изменения DOM
+      // Используем двойной requestAnimationFrame для гарантии завершения layout перед чтением
       requestAnimationFrame(() => {
-        // Используем getBoundingClientRect() + scrollY вместо offsetTop для избежания forced layout
-        const topbarHeight = getTopbarHeight();
-        const rect = target.getBoundingClientRect();
-        const targetPosition = rect.top + window.scrollY - topbarHeight;
-        
-        window.scrollTo({
-          top: targetPosition,
-          behavior: "smooth"
+        requestAnimationFrame(() => {
+          // Используем getBoundingClientRect() + scrollY вместо offsetTop для избежания forced layout
+          const topbarHeight = getTopbarHeight();
+          const rect = target.getBoundingClientRect();
+          const targetPosition = rect.top + window.scrollY - topbarHeight;
+          
+          window.scrollTo({
+            top: targetPosition,
+            behavior: "smooth"
+          });
         });
       });
     }
@@ -521,40 +557,44 @@ document.addEventListener("DOMContentLoaded", () => {
   let sectionPositions = [];
   function updateSectionPositions() {
     // Используем getBoundingClientRect() + scrollY вместо offsetTop для избежания forced layout
+    // Читаем все геометрические свойства в одном батче
     const scrollY = window.scrollY;
-    sectionPositions = Array.from(sections).map(section => {
-      const rect = section.getBoundingClientRect();
-      return {
-        id: section.getAttribute("id"),
-        top: rect.top + scrollY,
-        height: rect.height
-      };
-    });
+    const rects = Array.from(sections).map(section => section.getBoundingClientRect());
+    sectionPositions = Array.from(sections).map((section, index) => ({
+      id: section.getAttribute("id"),
+      top: rects[index].top + scrollY,
+      height: rects[index].height
+    }));
   }
   
   // Инициализируем позиции после полной загрузки DOM и стилей
+  // Используем двойной requestAnimationFrame для гарантии завершения layout
   if (document.readyState === 'complete') {
-    // Если страница уже загружена, используем requestAnimationFrame для безопасного чтения
-    requestAnimationFrame(updateSectionPositions);
-  } else {
-    // Если страница еще загружается, ждем полной загрузки
-    window.addEventListener('load', () => {
+    requestAnimationFrame(() => {
       requestAnimationFrame(updateSectionPositions);
+    });
+  } else {
+    window.addEventListener('load', () => {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(updateSectionPositions);
+      });
     });
   }
   
   // Обновляем позиции при изменении размера окна
+  // Используем двойной requestAnimationFrame для гарантии завершения layout
   let scrollResizeTimeout;
   window.addEventListener('resize', () => {
     clearTimeout(scrollResizeTimeout);
     scrollResizeTimeout = setTimeout(() => {
-      // Используем requestAnimationFrame для безопасного чтения после изменения размера
-      requestAnimationFrame(updateSectionPositions);
+      requestAnimationFrame(() => {
+        requestAnimationFrame(updateSectionPositions);
+      });
     }, 250);
   });
   
-  function highlightNav() {
-    const scrollPos = window.scrollY + 150;
+  function highlightNav(scrollY) {
+    const scrollPos = scrollY + 150;
     
     // Используем кэшированные позиции - они уже инициализированы при загрузке
     sectionPositions.forEach(({ id, top, height }) => {
@@ -569,17 +609,16 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
   
-  // Используем requestAnimationFrame для оптимизации scroll handler
-  let ticking = false;
-  window.addEventListener("scroll", () => {
-    if (!ticking) {
-      requestAnimationFrame(() => {
-        highlightNav();
-        ticking = false;
-      });
-      ticking = true;
+  // Регистрируем функцию для вызова из объединенного scroll handler
+  highlightNavCallback = highlightNav;
+  
+  // Вызываем сразу для начальной позиции (после инициализации позиций)
+  // Используем setTimeout для гарантии, что позиции уже инициализированы
+  setTimeout(() => {
+    if (sectionPositions.length > 0) {
+      highlightNav(window.scrollY);
     }
-  });
+  }, 100);
   
   highlightNav(); // Вызываем сразу для начальной позиции
   
@@ -715,13 +754,8 @@ scrollTopBtn.addEventListener("click", () => {
   window.scrollTo({ top: 0, behavior: "smooth" });
 });
 
-window.addEventListener("scroll", () => {
-  if (window.scrollY > 300) {
-    scrollTopBtn.classList.add("show");
-  } else {
-    scrollTopBtn.classList.remove("show");
-  }
-});
+// Регистрируем кнопку в объединенном scroll handler
+scrollTopBtnElement = scrollTopBtn;
 
 // ====== 15. Плавающая кнопка "Подарок" ======
 document.addEventListener("DOMContentLoaded", () => {
