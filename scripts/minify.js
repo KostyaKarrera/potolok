@@ -35,9 +35,22 @@ async function minifyCSS() {
         minifyFontValues: true,
         minifySelectors: true,
         reduceIdents: false, // Не минифицируем идентификаторы
-        zindex: false // Не оптимизируем z-index
+        zindex: false, // Не оптимизируем z-index
+        // Важно: не удаляем @font-face правила
+        discardUnused: false, // Не удаляем неиспользуемые правила (включая @font-face)
+        reduceIdents: false // Не минифицируем идентификаторы
       }]
     })]).process(css, { from: cssFile, to: outputFile });
+    
+    // Проверяем, что @font-face правила сохранились
+    const minifiedCSS = result.css;
+    const fontFaceCount = (minifiedCSS.match(/@font-face/g) || []).length;
+    if (fontFaceCount === 0) {
+      console.warn('⚠️  ВНИМАНИЕ: @font-face правила не найдены в минифицированном CSS!');
+      console.warn('   Проверьте, что они есть в исходном файле.');
+    } else {
+      console.log(`✅ Найдено @font-face правил в минифицированном CSS: ${fontFaceCount}`);
+    }
     
     fs.writeFileSync(outputFile, result.css);
     
