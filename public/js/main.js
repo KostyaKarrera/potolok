@@ -430,7 +430,8 @@ let cachedTopbarHeight = null;
 function getTopbarHeight() {
   if (cachedTopbarHeight === null) {
     const topbar = document.querySelector(".topbar");
-    cachedTopbarHeight = topbar ? topbar.offsetHeight : 80;
+    // Используем getBoundingClientRect() вместо offsetHeight для избежания forced layout
+    cachedTopbarHeight = topbar ? topbar.getBoundingClientRect().height : 80;
   }
   return cachedTopbarHeight;
 }
@@ -440,7 +441,11 @@ let resizeTimeout;
 window.addEventListener('resize', () => {
   clearTimeout(resizeTimeout);
   resizeTimeout = setTimeout(() => {
-    cachedTopbarHeight = null; // Сбрасываем кэш при изменении размера
+    // Используем requestAnimationFrame для безопасного чтения после изменения размера
+    requestAnimationFrame(() => {
+      const topbar = document.querySelector(".topbar");
+      cachedTopbarHeight = topbar ? topbar.getBoundingClientRect().height : 80;
+    });
   }, 250);
 });
 
@@ -452,11 +457,7 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     e.preventDefault();
     const target = document.querySelector(href);
     if (target) {
-      // Читаем геометрические свойства ДО изменения DOM, чтобы избежать forced layout
-      const topbarHeight = getTopbarHeight();
-      const targetPosition = target.offsetTop - topbarHeight;
-      
-      // Закрываем мобильное меню ПЕРЕД скроллом
+      // Закрываем мобильное меню ПЕРЕД чтением геометрических свойств
       const hamburger = document.getElementById("hamburger");
       const mainNav = document.getElementById("mainNav");
       if (hamburger && mainNav) {
@@ -464,8 +465,13 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         mainNav.classList.remove("active");
       }
       
-      // Используем requestAnimationFrame для плавного скролла
+      // Используем requestAnimationFrame для чтения геометрических свойств после изменения DOM
       requestAnimationFrame(() => {
+        // Используем getBoundingClientRect() + scrollY вместо offsetTop для избежания forced layout
+        const topbarHeight = getTopbarHeight();
+        const rect = target.getBoundingClientRect();
+        const targetPosition = rect.top + window.scrollY - topbarHeight;
+        
         window.scrollTo({
           top: targetPosition,
           behavior: "smooth"
@@ -514,23 +520,36 @@ document.addEventListener("DOMContentLoaded", () => {
   // Кэшируем позиции секций для избежания принудительной компоновки
   let sectionPositions = [];
   function updateSectionPositions() {
-    // Используем offsetTop/offsetHeight, но вызываем эту функцию только когда DOM стабилен
-    sectionPositions = Array.from(sections).map(section => ({
-      id: section.getAttribute("id"),
-      top: section.offsetTop,
-      height: section.offsetHeight
-    }));
+    // Используем getBoundingClientRect() + scrollY вместо offsetTop для избежания forced layout
+    const scrollY = window.scrollY;
+    sectionPositions = Array.from(sections).map(section => {
+      const rect = section.getBoundingClientRect();
+      return {
+        id: section.getAttribute("id"),
+        top: rect.top + scrollY,
+        height: rect.height
+      };
+    });
   }
   
-  // Инициализируем позиции сразу при загрузке, а не при первом скролле
-  updateSectionPositions();
+  // Инициализируем позиции после полной загрузки DOM и стилей
+  if (document.readyState === 'complete') {
+    // Если страница уже загружена, используем requestAnimationFrame для безопасного чтения
+    requestAnimationFrame(updateSectionPositions);
+  } else {
+    // Если страница еще загружается, ждем полной загрузки
+    window.addEventListener('load', () => {
+      requestAnimationFrame(updateSectionPositions);
+    });
+  }
   
   // Обновляем позиции при изменении размера окна
   let scrollResizeTimeout;
   window.addEventListener('resize', () => {
     clearTimeout(scrollResizeTimeout);
     scrollResizeTimeout = setTimeout(() => {
-      updateSectionPositions();
+      // Используем requestAnimationFrame для безопасного чтения после изменения размера
+      requestAnimationFrame(updateSectionPositions);
     }, 250);
   });
   
