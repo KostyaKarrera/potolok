@@ -26,6 +26,11 @@
 
 <!-- Preload критических ресурсов -->
 <link rel="preload" as="image" href="/header/header-optimized.webp" fetchpriority="high" imagesrcset="/header/header-optimized.webp" imagesizes="100vw">
+<!-- Preload шрифтов для быстрой загрузки -->
+<link rel="preload" as="font" href="/fonts/Montserrat-Regular.woff2" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" as="font" href="/fonts/Montserrat-Medium.woff2" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" as="font" href="/fonts/Montserrat-SemiBold.woff2" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" as="font" href="/fonts/Montserrat-Bold.woff2" type="font/woff2" crossorigin="anonymous">
 <!-- Font Awesome должен загружаться ПЕРЕД основным CSS, чтобы его стили не перезаписывались -->
 <link rel="stylesheet" href="/css/font-awesome-custom.css" media="print" onload="this.media='all'">
 <noscript><link rel="stylesheet" href="/css/font-awesome-custom.css"></noscript>

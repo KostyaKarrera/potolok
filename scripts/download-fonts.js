@@ -75,26 +75,45 @@ function downloadFile(url, filepath) {
 // Функция для получения URL шрифтов из CSS
 async function getFontUrls() {
   return new Promise((resolve, reject) => {
-    https.get(GOOGLE_FONTS_API, (res) => {
+    const options = {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+      }
+    };
+    
+    https.get(GOOGLE_FONTS_API, options, (res) => {
       let data = '';
       res.on('data', (chunk) => { data += chunk; });
       res.on('end', () => {
         // Парсим CSS и извлекаем URL шрифтов с весами
         const fontData = [];
-        const fontFaceRegex = /@font-face\s*\{[^}]*font-weight:\s*(\d+)[^}]*url\((https?:\/\/[^)]+\.woff2)\)[^}]*\}/g;
-        let match;
         
-        while ((match = fontFaceRegex.exec(data)) !== null) {
-          const weight = match[1];
-          const url = match[2];
-          fontData.push({ weight, url });
-        }
+        // Разбиваем CSS на отдельные @font-face блоки
+        const fontFaceBlocks = data.match(/@font-face\s*\{[^}]+\}/g) || [];
+        
+        fontFaceBlocks.forEach(block => {
+          // Извлекаем font-weight
+          const weightMatch = block.match(/font-weight:\s*(\d+)/);
+          const weight = weightMatch ? weightMatch[1] : null;
+          
+          // Извлекаем URL
+          const urlMatch = block.match(/url\((https?:\/\/[^)]+\.woff2)\)/);
+          const url = urlMatch ? urlMatch[1] : null;
+          
+          if (weight && url) {
+            fontData.push({ weight, url });
+          }
+        });
         
         // Если не нашли через regex, пробуем простой способ
         if (fontData.length === 0) {
           const urlRegex = /url\((https?:\/\/[^)]+\.woff2)\)/g;
+          let match;
+          let index = 0;
           while ((match = urlRegex.exec(data)) !== null) {
-            fontData.push({ weight: null, url: match[1] });
+            const weight = fontWeights[index] || null;
+            fontData.push({ weight, url: match[1] });
+            index++;
           }
         }
         
@@ -109,63 +128,51 @@ async function main() {
   console.log('🚀 Начинаем скачивание шрифтов Montserrat...\n');
   
   try {
-    // Получаем URL шрифтов
-    console.log('📡 Получаем информацию о шрифтах из Google Fonts API...');
-    let fontUrls = await getFontUrls();
+    // Всегда получаем URL для каждого веса отдельно из Google Fonts API
+    console.log('📡 Получаем правильные URL для каждого веса из Google Fonts API...\n');
     
-    // Если не получилось через API, используем прямые ссылки
-    if (fontUrls.length === 0) {
-      console.log('⚠️  Не удалось получить через API, используем прямые ссылки...\n');
-      fontUrls = Object.entries(DIRECT_FONT_URLS).map(([weight, url]) => ({
-        weight,
-        url
-      }));
-    }
+    const weightMap = {
+      '400': { name: 'Montserrat-Regular.woff2', url: 'https://fonts.gstatic.com/s/montserrat/v26/JTUHjIg1_i6t8kCHKm4532VJOt5-QNFgpCtr6Hw5aXpsog.woff2' },
+      '500': { name: 'Montserrat-Medium.woff2', url: 'https://fonts.gstatic.com/s/montserrat/v26/JTUHjIg1_i6t8kCHKm4532VJOt5-QNFgpCtr6Hw5aXpsog.woff2' },
+      '600': { name: 'Montserrat-SemiBold.woff2', url: 'https://fonts.gstatic.com/s/montserrat/v26/JTUHjIg1_i6t8kCHKm4532VJOt5-QNFgpCtr6Hw5aXpsog.woff2' },
+      '700': { name: 'Montserrat-Bold.woff2', url: 'https://fonts.gstatic.com/s/montserrat/v26/JTUHjIg1_i6t8kCHKm4532VJOt5-QNFgpCtr6Hw5aXpsog.woff2' }
+    };
     
-    if (fontUrls.length === 0) {
-      console.error('❌ Не удалось найти URL шрифтов');
-      process.exit(1);
-    }
-    
-    console.log(`✅ Найдено ${fontUrls.length} файлов шрифтов\n`);
-    
-    // Скачиваем каждый файл
-    for (let i = 0; i < fontUrls.length; i++) {
-      const fontInfo = fontUrls[i];
-      const url = fontInfo.url;
+    // Скачиваем каждый вес отдельно, получая правильный URL из Google Fonts API
+    for (const weight of fontWeights) {
+      const weightInfo = weightMap[weight.toString()];
+      if (!weightInfo) continue;
       
-      // Определяем имя файла на основе веса
-      let filename;
-      if (fontInfo.weight) {
-        const weightMap = {
-          '400': 'Montserrat-Regular.woff2',
-          '500': 'Montserrat-Medium.woff2',
-          '600': 'Montserrat-SemiBold.woff2',
-          '700': 'Montserrat-Bold.woff2'
-        };
-        filename = weightMap[fontInfo.weight] || `Montserrat-${fontInfo.weight}.woff2`;
-      } else {
-        // Если вес не определен, используем имя из URL
-        filename = path.basename(url.split('?')[0]);
-        // Пытаемся определить вес из имени файла
-        if (filename.includes('Regular') || filename.includes('400')) {
-          filename = 'Montserrat-Regular.woff2';
-        } else if (filename.includes('Medium') || filename.includes('500')) {
-          filename = 'Montserrat-Medium.woff2';
-        } else if (filename.includes('SemiBold') || filename.includes('600')) {
-          filename = 'Montserrat-SemiBold.woff2';
-        } else if (filename.includes('Bold') || filename.includes('700')) {
-          filename = 'Montserrat-Bold.woff2';
-        }
+      // Получаем URL для конкретного веса
+      const weightApiUrl = `https://fonts.googleapis.com/css2?family=Montserrat:wght@${weight}&display=swap`;
+      
+      try {
+        const weightCss = await new Promise((resolve, reject) => {
+          https.get(weightApiUrl, { headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' } }, (res) => {
+            let data = '';
+            res.on('data', (chunk) => { data += chunk; });
+            res.on('end', () => resolve(data));
+          }).on('error', reject);
+        });
+        
+        // Извлекаем URL из CSS
+        const urlMatch = weightCss.match(/url\((https?:\/\/[^)]+\.woff2)\)/);
+        const url = urlMatch ? urlMatch[1] : weightInfo.url;
+        
+        const filepath = path.join(FONTS_DIR, weightInfo.name);
+        
+        console.log(`📥 Скачиваем: ${weightInfo.name} (вес: ${weight})...`);
+        await downloadFile(url, filepath);
+        
+        const stats = fs.statSync(filepath);
+        console.log(`   ✅ Скачан: ${(stats.size / 1024).toFixed(2)} KB\n`);
+      } catch (err) {
+        console.log(`⚠️  Ошибка для веса ${weight} (${err.message}), используем fallback URL...`);
+        const filepath = path.join(FONTS_DIR, weightInfo.name);
+        await downloadFile(weightInfo.url, filepath);
+        const stats = fs.statSync(filepath);
+        console.log(`   ✅ Скачан: ${(stats.size / 1024).toFixed(2)} KB\n`);
       }
-      
-      const filepath = path.join(FONTS_DIR, filename);
-      
-      console.log(`📥 Скачиваем: ${filename} (вес: ${fontInfo.weight || 'неизвестен'})...`);
-      await downloadFile(url, filepath);
-      
-      const stats = fs.statSync(filepath);
-      console.log(`   ✅ Скачан: ${(stats.size / 1024).toFixed(2)} KB\n`);
     }
     
     console.log('✅ Все шрифты успешно скачаны!');
