@@ -3,44 +3,100 @@
 // + Реферальная система (запоминает ?ref=..., передаёт на сервер)
 // =================================================
 
-// ====== 1. Маска телефона (загружаем только если есть поля телефона) ======
+// ====== 1. Маска телефона (легкая реализация без внешних библиотек) ======
 document.addEventListener("DOMContentLoaded", () => {
   const telInputs = document.querySelectorAll('input[type="tel"]');
-  if (telInputs.length === 0) return; // Нет полей телефона - не загружаем Inputmask
+  if (telInputs.length === 0) return;
   
-  // Загружаем Inputmask только если есть поля телефона
-  if (typeof Inputmask === "undefined") {
-    // Если скрипт еще не загружен, ждем его загрузки
-    const checkInputmask = setInterval(() => {
-      if (typeof Inputmask !== "undefined") {
-        clearInterval(checkInputmask);
-        Inputmask({
-          mask: "+7 (999) 999-99-99",
-          showMaskOnHover: false,
-          clearIncomplete: true
-        }).mask(telInputs);
-      }
-    }, 100);
+  // Простая маска для российского телефона: +7 (999) 999-99-99
+  function applyPhoneMask(input) {
+    // Устанавливаем placeholder
+    if (!input.placeholder) {
+      input.placeholder = "+7 (___) ___-__-__";
+    }
     
-    // Таймаут на случай, если скрипт не загрузится
-    setTimeout(() => {
-      clearInterval(checkInputmask);
-      if (typeof Inputmask !== "undefined") {
-        Inputmask({
-          mask: "+7 (999) 999-99-99",
-          showMaskOnHover: false,
-          clearIncomplete: true
-        }).mask(telInputs);
+    // Обработка ввода
+    input.addEventListener('input', function(e) {
+      let value = this.value.replace(/\D/g, ''); // Удаляем все нецифровые символы
+      
+      // Если начинается не с 7, добавляем 7
+      if (value.length > 0 && value[0] !== '7') {
+        value = '7' + value;
       }
-    }, 3000);
-  } else {
-    // Скрипт уже загружен
-    Inputmask({
-      mask: "+7 (999) 999-99-99",
-      showMaskOnHover: false,
-      clearIncomplete: true
-    }).mask(telInputs);
+      
+      // Ограничиваем до 11 цифр (7 + 10)
+      if (value.length > 11) {
+        value = value.slice(0, 11);
+      }
+      
+      // Форматируем: +7 (999) 999-99-99
+      let formatted = '';
+      if (value.length > 0) {
+        formatted = '+7';
+        if (value.length > 1) {
+          formatted += ' (' + value.slice(1, 4);
+          if (value.length > 4) {
+            formatted += ') ' + value.slice(4, 7);
+            if (value.length > 7) {
+              formatted += '-' + value.slice(7, 9);
+              if (value.length > 9) {
+                formatted += '-' + value.slice(9, 11);
+              }
+            }
+          } else {
+            formatted += ')';
+          }
+        }
+      }
+      
+      this.value = formatted;
+    });
+    
+    // Обработка удаления (backspace)
+    input.addEventListener('keydown', function(e) {
+      if (e.key === 'Backspace' && this.value.length <= 4) {
+        this.value = '';
+        e.preventDefault();
+      }
+    });
+    
+    // Обработка вставки
+    input.addEventListener('paste', function(e) {
+      e.preventDefault();
+      const pasted = (e.clipboardData || window.clipboardData).getData('text');
+      const digits = pasted.replace(/\D/g, '');
+      if (digits.length > 0) {
+        let value = digits;
+        if (value[0] !== '7') {
+          value = '7' + value;
+        }
+        if (value.length > 11) {
+          value = value.slice(0, 11);
+        }
+        
+        // Форматируем
+        let formatted = '+7';
+        if (value.length > 1) {
+          formatted += ' (' + value.slice(1, 4);
+          if (value.length > 4) {
+            formatted += ') ' + value.slice(4, 7);
+            if (value.length > 7) {
+              formatted += '-' + value.slice(7, 9);
+              if (value.length > 9) {
+                formatted += '-' + value.slice(9, 11);
+              }
+            }
+          } else {
+            formatted += ')';
+          }
+        }
+        this.value = formatted;
+      }
+    });
   }
+  
+  // Применяем маску ко всем полям телефона
+  telInputs.forEach(applyPhoneMask);
 });
 
 // ====== 2. Реферальная система ======

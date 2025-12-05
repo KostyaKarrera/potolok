@@ -601,18 +601,7 @@
   </div>
 </div>
 
-<!-- Inputmask загружается только если есть поля телефона -->
-<script>
-  // Проверяем наличие полей телефона перед загрузкой Inputmask
-  document.addEventListener('DOMContentLoaded', function() {
-    if (document.querySelectorAll('input[type="tel"]').length > 0) {
-      const script = document.createElement('script');
-      script.src = '/js/inputmask.min.js';
-      script.defer = true;
-      document.head.appendChild(script);
-    }
-  });
-</script>
+<!-- Маска телефона реализована в main.js без внешних библиотек -->
 <script src="/js/main.min.js" defer></script>
 </body>
 </html>
