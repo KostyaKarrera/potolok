@@ -22,11 +22,7 @@
 
 <link rel="canonical" href="https://potolok-konkurent.ru/" />
 
-<!-- DNS Prefetch и Preconnect для внешних ресурсов -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="dns-prefetch" href="https://fonts.googleapis.com">
-<link rel="dns-prefetch" href="https://fonts.gstatic.com">
+<!-- DNS Prefetch для внешних ресурсов (если нужны) -->
 
 <!-- Preload критических ресурсов -->
 <link rel="preload" as="image" href="/header/header-optimized.webp" fetchpriority="high" imagesrcset="/header/header-optimized.webp" imagesizes="100vw">
@@ -40,14 +36,10 @@
 <link rel="stylesheet" href="/css/style.css">
 
 <!-- Локальные ресурсы вместо CDN -->
-<link rel="stylesheet" href="/css/font-awesome.css" media="print" onload="this.media='all'">
-<noscript><link rel="stylesheet" href="/css/font-awesome.css"></noscript>
+<link rel="stylesheet" href="/css/font-awesome-custom.css" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="/css/font-awesome-custom.css"></noscript>
 
-<!-- Оптимизированные шрифты (загрузка без блокировки рендеринга) -->
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" media="print" onload="this.media='all'">
-<noscript>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
-</noscript>
+<!-- Шрифты загружаются локально через CSS @font-face -->
 
 <link rel="icon" type="image/png" href="/favicon.png">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png">
@@ -536,9 +528,10 @@
     <!-- Левая колонка - Карта -->
     <div class="google-map">
       <iframe 
-        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2173.536241158484!2d47.2728387768397!3d56.09489657128736!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x415a37bf17ea7e61%3A0x71f7b86a8aff2989!2z0JrQvtC90LrRg9GA0LXQvdGC0Kog0J3QsNGC0Y_QttC90YvQtSDQv9C-0YLQvtC70LrQuA!5e0!3m2!1sru!2sru!4v1700000000000!5m2!1sru!2sru"
+        data-src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2173.536241158484!2d47.2728387768397!3d56.09489657128736!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x415a37bf17ea7e61%3A0x71f7b86a8aff2989!2z0JrQvtC90LrRg9GA0LXQvdGC0Kog0J3QsNGC0Y_QttC90YvQtSDQv9C-0YLQvtC70LrQuA!5e0!3m2!1sru!2sru!4v1700000000000!5m2!1sru!2sru"
         allowfullscreen 
-        loading="lazy">
+        loading="lazy"
+        title="Карта расположения офиса">
       </iframe>
       <noscript>Офис компании КонкурентЪ — натяжные потолки. Мы находимся в Чебоксарах, смотрите расположение на карте.</noscript>
       <div class="map-info">
@@ -746,7 +739,18 @@
   </div>
 </div>
 
-<script src="/js/inputmask.min.js" defer></script>
+<!-- Inputmask загружается только если есть поля телефона -->
+<script>
+  // Проверяем наличие полей телефона перед загрузкой Inputmask
+  document.addEventListener('DOMContentLoaded', function() {
+    if (document.querySelectorAll('input[type="tel"]').length > 0) {
+      const script = document.createElement('script');
+      script.src = '/js/inputmask.min.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    }
+  });
+</script>
 <script src="/js/main.js" defer></script>
 </body>
 </html>

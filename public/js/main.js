@@ -3,16 +3,43 @@
 // + Реферальная система (запоминает ?ref=..., передаёт на сервер)
 // =================================================
 
-// ====== 1. Маска телефона ======
-window.addEventListener("load", () => {
-  if (typeof Inputmask !== "undefined") {
+// ====== 1. Маска телефона (загружаем только если есть поля телефона) ======
+document.addEventListener("DOMContentLoaded", () => {
+  const telInputs = document.querySelectorAll('input[type="tel"]');
+  if (telInputs.length === 0) return; // Нет полей телефона - не загружаем Inputmask
+  
+  // Загружаем Inputmask только если есть поля телефона
+  if (typeof Inputmask === "undefined") {
+    // Если скрипт еще не загружен, ждем его загрузки
+    const checkInputmask = setInterval(() => {
+      if (typeof Inputmask !== "undefined") {
+        clearInterval(checkInputmask);
+        Inputmask({
+          mask: "+7 (999) 999-99-99",
+          showMaskOnHover: false,
+          clearIncomplete: true
+        }).mask(telInputs);
+      }
+    }, 100);
+    
+    // Таймаут на случай, если скрипт не загрузится
+    setTimeout(() => {
+      clearInterval(checkInputmask);
+      if (typeof Inputmask !== "undefined") {
+        Inputmask({
+          mask: "+7 (999) 999-99-99",
+          showMaskOnHover: false,
+          clearIncomplete: true
+        }).mask(telInputs);
+      }
+    }, 3000);
+  } else {
+    // Скрипт уже загружен
     Inputmask({
       mask: "+7 (999) 999-99-99",
       showMaskOnHover: false,
       clearIncomplete: true
-    }).mask(document.querySelectorAll('input[type="tel"]'));
-  } else {
-    console.error("❌ Inputmask не загрузился!");
+    }).mask(telInputs);
   }
 });
 
@@ -342,6 +369,25 @@ window.addEventListener("scroll", () => {
 });
 
 // ====== 10. Smooth Scroll ======
+// Кэшируем высоту topbar для избежания принудительной компоновки
+let cachedTopbarHeight = null;
+function getTopbarHeight() {
+  if (cachedTopbarHeight === null) {
+    const topbar = document.querySelector(".topbar");
+    cachedTopbarHeight = topbar ? topbar.offsetHeight : 80;
+  }
+  return cachedTopbarHeight;
+}
+
+// Обновляем кэш при изменении размера окна
+let resizeTimeout;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimeout);
+  resizeTimeout = setTimeout(() => {
+    cachedTopbarHeight = null; // Сбрасываем кэш при изменении размера
+  }, 250);
+});
+
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
   anchor.addEventListener("click", function (e) {
     const href = this.getAttribute("href");
@@ -350,13 +396,15 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     e.preventDefault();
     const target = document.querySelector(href);
     if (target) {
-      const topbar = document.querySelector(".topbar");
-      const topbarHeight = topbar ? topbar.offsetHeight : 80;
-      const targetPosition = target.offsetTop - topbarHeight;
-      
-      window.scrollTo({
-        top: targetPosition,
-        behavior: "smooth"
+      // Используем requestAnimationFrame для избежания принудительной компоновки
+      requestAnimationFrame(() => {
+        const topbarHeight = getTopbarHeight();
+        const targetPosition = target.offsetTop - topbarHeight;
+        
+        window.scrollTo({
+          top: targetPosition,
+          behavior: "smooth"
+        });
       });
       
       // Закрываем мобильное меню после клика
@@ -406,18 +454,36 @@ document.addEventListener("DOMContentLoaded", () => {
   const sections = document.querySelectorAll("section[id]");
   const navLinksArray = Array.from(document.querySelectorAll(".nav-link"));
   
+  // Кэшируем позиции секций для избежания принудительной компоновки
+  let sectionPositions = [];
+  function updateSectionPositions() {
+    sectionPositions = Array.from(sections).map(section => ({
+      id: section.getAttribute("id"),
+      top: section.offsetTop,
+      height: section.offsetHeight
+    }));
+  }
+  
+  // Обновляем позиции при изменении размера окна
+  let scrollResizeTimeout;
+  window.addEventListener('resize', () => {
+    clearTimeout(scrollResizeTimeout);
+    scrollResizeTimeout = setTimeout(updateSectionPositions, 250);
+  });
+  
   function highlightNav() {
     const scrollPos = window.scrollY + 150;
     
-    sections.forEach(section => {
-      const sectionTop = section.offsetTop;
-      const sectionHeight = section.offsetHeight;
-      const sectionId = section.getAttribute("id");
-      
-      if (scrollPos >= sectionTop && scrollPos < sectionTop + sectionHeight) {
+    // Используем кэшированные позиции вместо чтения offsetTop/offsetHeight
+    if (sectionPositions.length === 0) {
+      updateSectionPositions();
+    }
+    
+    sectionPositions.forEach(({ id, top, height }) => {
+      if (scrollPos >= top && scrollPos < top + height) {
         navLinksArray.forEach(link => {
           link.classList.remove("active");
-          if (link.getAttribute("href") === `#${sectionId}`) {
+          if (link.getAttribute("href") === `#${id}`) {
             link.classList.add("active");
           }
         });
@@ -425,7 +491,18 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
   
-  window.addEventListener("scroll", highlightNav);
+  // Используем requestAnimationFrame для оптимизации scroll handler
+  let ticking = false;
+  window.addEventListener("scroll", () => {
+    if (!ticking) {
+      requestAnimationFrame(() => {
+        highlightNav();
+        ticking = false;
+      });
+      ticking = true;
+    }
+  });
+  
   highlightNav(); // Вызываем сразу для начальной позиции
   
   // Модалка телефона
@@ -1955,3 +2032,33 @@ function renderCart() {
     if (cartFormContainer) cartFormContainer.style.display = "block";
   }
 }
+
+// ====== Ленивая загрузка Google Maps ======
+document.addEventListener("DOMContentLoaded", () => {
+  const mapIframe = document.querySelector('.google-map iframe[data-src]');
+  if (!mapIframe) return;
+  
+  // Загружаем карту только когда она попадает в viewport
+  if ('IntersectionObserver' in window) {
+    const mapObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const iframe = entry.target;
+          if (iframe.dataset.src) {
+            iframe.src = iframe.dataset.src;
+            iframe.removeAttribute('data-src');
+            mapObserver.unobserve(iframe);
+          }
+        }
+      });
+    }, {
+      rootMargin: '100px' // Начинаем загрузку за 100px до появления в viewport
+    });
+    
+    mapObserver.observe(mapIframe);
+  } else {
+    // Fallback для старых браузеров - загружаем сразу
+    mapIframe.src = mapIframe.dataset.src;
+    mapIframe.removeAttribute('data-src');
+  }
+});
