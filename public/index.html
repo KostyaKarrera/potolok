@@ -22,7 +22,9 @@
 
 <link rel="canonical" href="https://potolok-konkurent.ru/" />
 
-<!-- DNS Prefetch для внешних ресурсов -->
+<!-- DNS Prefetch и Preconnect для внешних ресурсов -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="dns-prefetch" href="https://fonts.googleapis.com">
 <link rel="dns-prefetch" href="https://fonts.gstatic.com">
 
@@ -41,18 +43,8 @@
 <link rel="stylesheet" href="/css/font-awesome.css" media="print" onload="this.media='all'">
 <noscript><link rel="stylesheet" href="/css/font-awesome.css"></noscript>
 
-<!-- Оптимизированные шрифты (полностью асинхронная загрузка) -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<script>
-  // Загружаем шрифты асинхронно после загрузки страницы
-  window.addEventListener('load', function() {
-    const link = document.createElement('link');
-    link.rel = 'stylesheet';
-    link.href = 'https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap';
-    document.head.appendChild(link);
-  });
-</script>
+<!-- Оптимизированные шрифты (загрузка без блокировки рендеринга) -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" media="print" onload="this.media='all'">
 <noscript>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
 </noscript>
