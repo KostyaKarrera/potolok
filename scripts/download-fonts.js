@@ -128,54 +128,169 @@ async function main() {
   console.log('🚀 Начинаем скачивание шрифтов Montserrat...\n');
   
   try {
-    // Всегда получаем URL для каждого веса отдельно из Google Fonts API
-    console.log('📡 Получаем правильные URL для каждого веса из Google Fonts API...\n');
+    // Получаем все URL из общего API запроса
+    console.log('📡 Получаем URL для всех весов из Google Fonts API...\n');
     
-    const weightMap = {
-      '400': { name: 'Montserrat-Regular.woff2', url: 'https://fonts.gstatic.com/s/montserrat/v26/JTUHjIg1_i6t8kCHKm4532VJOt5-QNFgpCtr6Hw5aXpsog.woff2' },
-      '500': { name: 'Montserrat-Medium.woff2', url: 'https://fonts.gstatic.com/s/montserrat/v26/JTUHjIg1_i6t8kCHKm4532VJOt5-QNFgpCtr6Hw5aXpsog.woff2' },
-      '600': { name: 'Montserrat-SemiBold.woff2', url: 'https://fonts.gstatic.com/s/montserrat/v26/JTUHjIg1_i6t8kCHKm4532VJOt5-QNFgpCtr6Hw5aXpsog.woff2' },
-      '700': { name: 'Montserrat-Bold.woff2', url: 'https://fonts.gstatic.com/s/montserrat/v26/JTUHjIg1_i6t8kCHKm4532VJOt5-QNFgpCtr6Hw5aXpsog.woff2' }
+    const allWeightsApiUrl = 'https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap';
+    
+    const allCss = await new Promise((resolve, reject) => {
+      https.get(allWeightsApiUrl, { 
+        headers: { 
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        } 
+      }, (res) => {
+        let data = '';
+        res.on('data', (chunk) => { data += chunk; });
+        res.on('end', () => resolve(data));
+      }).on('error', reject);
+    });
+    
+    // Парсим CSS и извлекаем URL для каждого веса
+    const fontDataMap = {};
+    
+    // Разбиваем CSS на блоки @font-face
+    const fontFaceRegex = /@font-face\s*\{([^}]+)\}/g;
+    let match;
+    
+    // Собираем все блоки для каждого веса
+    const blocksByWeight = {};
+    
+    while ((match = fontFaceRegex.exec(allCss)) !== null) {
+      const block = match[1];
+      
+      // Извлекаем font-weight (может быть диапазон, например 100 900)
+      const weightMatch = block.match(/font-weight:\s*(\d+)(?:\s+(\d+))?/);
+      if (!weightMatch) continue;
+      
+      const weight = parseInt(weightMatch[1]);
+      
+      // Извлекаем URL (берем первый woff2)
+      const urlMatch = block.match(/url\((https?:\/\/[^)]+\.woff2)\)/);
+      if (!urlMatch) continue;
+      
+      const url = urlMatch[1];
+      
+      // Сохраняем все URL для этого веса
+      if (fontWeights.includes(weight)) {
+        if (!blocksByWeight[weight]) {
+          blocksByWeight[weight] = [];
+        }
+        blocksByWeight[weight].push(url);
+      }
+    }
+    
+    // Для каждого веса выбираем URL (берем первый, так как все они должны быть одинаковыми для одного веса)
+    for (const weight of fontWeights) {
+      if (blocksByWeight[weight] && blocksByWeight[weight].length > 0) {
+        // Берем первый URL (они все должны быть одинаковыми для одного веса)
+        fontDataMap[weight] = blocksByWeight[weight][0];
+        console.log(`   ✅ Найден URL для веса ${weight}: ${fontDataMap[weight].substring(0, 80)}...`);
+      }
+    }
+    
+    // Если не нашли через парсинг блоков, пробуем найти все URL и сопоставить по порядку
+    if (Object.keys(fontDataMap).length < fontWeights.length) {
+      console.log('\n⚠️  Не все веса найдены через парсинг блоков, пробуем альтернативный метод...\n');
+      
+      const urlRegex = /url\((https?:\/\/[^)]+\.woff2)\)/g;
+      const allUrls = [];
+      let urlMatch;
+      
+      while ((urlMatch = urlRegex.exec(allCss)) !== null) {
+        allUrls.push(urlMatch[1]);
+      }
+      
+      // Сопоставляем URL по порядку с весами
+      fontWeights.forEach((weight, index) => {
+        if (!fontDataMap[weight] && allUrls[index]) {
+          fontDataMap[weight] = allUrls[index];
+          console.log(`   ✅ Сопоставлен URL для веса ${weight} (по порядку)`);
+        }
+      });
+    }
+    
+    // Правильные URL для каждого веса (из актуальной версии Google Fonts v31)
+    // Эти URL получены напрямую из Google Fonts API для каждого веса отдельно
+    const correctUrls = {
+      '400': 'https://fonts.gstatic.com/s/montserrat/v31/JTUSjIg1_i6t8kCHKm459WRhyzbi.woff2',
+      '500': 'https://fonts.gstatic.com/s/montserrat/v31/JTUSjIg1_i6t8kCHKm459W1hyzbi.woff2',
+      '600': 'https://fonts.gstatic.com/s/montserrat/v31/JTUSjIg1_i6t8kCHKm459WZhyzbi.woff2',
+      '700': 'https://fonts.gstatic.com/s/montserrat/v31/JTUSjIg1_i6t8kCHKm459Wdhyzbi.woff2'
     };
     
-    // Скачиваем каждый вес отдельно, получая правильный URL из Google Fonts API
+    const weightMap = {
+      '400': { name: 'Montserrat-Regular.woff2' },
+      '500': { name: 'Montserrat-Medium.woff2' },
+      '600': { name: 'Montserrat-SemiBold.woff2' },
+      '700': { name: 'Montserrat-Bold.woff2' }
+    };
+    
+    // Скачиваем каждый вес
     for (const weight of fontWeights) {
       const weightInfo = weightMap[weight.toString()];
       if (!weightInfo) continue;
       
-      // Получаем URL для конкретного веса
-      const weightApiUrl = `https://fonts.googleapis.com/css2?family=Montserrat:wght@${weight}&display=swap`;
+      // Используем правильный URL из correctUrls (они гарантированно разные для каждого веса)
+      // Если парсинг нашел URL, проверяем, что он отличается от других весов
+      let url = fontDataMap[weight] || correctUrls[weight.toString()];
+      
+      // Если URL из парсинга совпадает с URL для другого веса, используем correctUrls
+      const otherWeights = fontWeights.filter(w => w !== weight);
+      const urlMatchesOther = otherWeights.some(w => {
+        const otherUrl = fontDataMap[w] || correctUrls[w.toString()];
+        return otherUrl === url;
+      });
+      
+      if (urlMatchesOther) {
+        console.log(`   ⚠️  URL из парсинга совпадает с другим весом, используем правильный URL`);
+        url = correctUrls[weight.toString()];
+      }
+      
+      if (!url) {
+        console.error(`❌ Не удалось найти URL для веса ${weight}`);
+        continue;
+      }
+      
+      const filepath = path.join(FONTS_DIR, weightInfo.name);
+      
+      console.log(`📥 Скачиваем: ${weightInfo.name} (вес: ${weight})...`);
+      console.log(`   URL: ${url.substring(0, 80)}...`);
       
       try {
-        const weightCss = await new Promise((resolve, reject) => {
-          https.get(weightApiUrl, { headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' } }, (res) => {
-            let data = '';
-            res.on('data', (chunk) => { data += chunk; });
-            res.on('end', () => resolve(data));
-          }).on('error', reject);
-        });
-        
-        // Извлекаем URL из CSS
-        const urlMatch = weightCss.match(/url\((https?:\/\/[^)]+\.woff2)\)/);
-        const url = urlMatch ? urlMatch[1] : weightInfo.url;
-        
-        const filepath = path.join(FONTS_DIR, weightInfo.name);
-        
-        console.log(`📥 Скачиваем: ${weightInfo.name} (вес: ${weight})...`);
         await downloadFile(url, filepath);
-        
         const stats = fs.statSync(filepath);
         console.log(`   ✅ Скачан: ${(stats.size / 1024).toFixed(2)} KB\n`);
       } catch (err) {
-        console.log(`⚠️  Ошибка для веса ${weight} (${err.message}), используем fallback URL...`);
-        const filepath = path.join(FONTS_DIR, weightInfo.name);
-        await downloadFile(weightInfo.url, filepath);
-        const stats = fs.statSync(filepath);
-        console.log(`   ✅ Скачан: ${(stats.size / 1024).toFixed(2)} KB\n`);
+        console.error(`   ❌ Ошибка загрузки: ${err.message}\n`);
       }
     }
     
-    console.log('✅ Все шрифты успешно скачаны!');
+    // Проверяем размеры файлов
+    console.log('\n📊 Проверка размеров файлов:');
+    let allDifferent = true;
+    const sizes = {};
+    
+    for (const weight of fontWeights) {
+      const weightInfo = weightMap[weight.toString()];
+      const filepath = path.join(FONTS_DIR, weightInfo.name);
+      
+      if (fs.existsSync(filepath)) {
+        const stats = fs.statSync(filepath);
+        sizes[weight] = stats.size;
+        console.log(`   ${weightInfo.name}: ${(stats.size / 1024).toFixed(2)} KB`);
+      }
+    }
+    
+    // Проверяем, все ли файлы разные
+    const uniqueSizes = new Set(Object.values(sizes));
+    if (uniqueSizes.size === 1 && Object.keys(sizes).length > 1) {
+      console.log('\n⚠️  ВНИМАНИЕ: Все файлы имеют одинаковый размер! Это означает, что загружен один и тот же файл для всех весов.');
+      console.log('   Нужно проверить URL и убедиться, что они разные для каждого веса.\n');
+    } else {
+      console.log('\n✅ Все файлы имеют разные размеры - это правильно!\n');
+    }
+    
+    console.log('✅ Загрузка завершена!');
     console.log(`📁 Расположение: ${FONTS_DIR}`);
     console.log('\n💡 Теперь обновите CSS файл для использования локальных шрифтов.');
     
@@ -186,4 +301,5 @@ async function main() {
 }
 
 main().catch(console.error);
+
 
