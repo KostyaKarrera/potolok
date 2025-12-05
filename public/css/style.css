@@ -1144,7 +1144,7 @@ input::placeholder {
 .reviews-rating #reviews-count {
   color: var(--text-muted);
   font-size: var(--font-size-sm);
-  font-weight: 400;
+  font-weight: 500; /* Medium, как в навигации */
 }
 
 .google-reviews p {
@@ -1737,7 +1737,7 @@ footer .btn i {
   margin: 0;
   font-size: var(--font-size-sm);
   line-height: var(--line-height-normal);
-  font-weight: 400;
+  font-weight: 500; /* Medium, как в навигации */
   /* УБИРАЕМ min-height */
 }
 
