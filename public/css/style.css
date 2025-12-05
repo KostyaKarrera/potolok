@@ -798,20 +798,19 @@ header p {
 /* Основной текст в секциях */
 .section p {
   font-size: var(--font-size-lg);
-  line-height: var(--line-height-relaxed);
+  line-height: 1.6; /* Компактнее, чем 1.75 */
   font-weight: 500; /* Medium, как в навигации */
-  max-width: 65ch;
+  max-width: 80ch; /* Шире, чем 65ch */
   margin-left: auto;
   margin-right: auto;
   text-align: left;
   color: var(--text-muted);
-  letter-spacing: 0.01em; /* Улучшает читаемость Montserrat */
-  word-spacing: 0.05em; /* Небольшой отступ между словами */
+  /* Убрали letter-spacing и word-spacing для более компактного вида */
 }
 
 /* Списки внутри текстовых блоков секций выравниваем по тому же контейнеру */
 .section ul {
-  max-width: 65ch;
+  max-width: 80ch; /* Шире, как у параграфов */
   margin: 0 auto 1.5rem auto;
   padding-left: 1.25rem;
 }
