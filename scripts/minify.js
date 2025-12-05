@@ -28,16 +28,21 @@ async function minifyCSS() {
   
   try {
     const css = fs.readFileSync(cssFile, 'utf8');
+    // Подсчитываем @font-face правила в исходном CSS
+    const originalFontFaces = (css.match(/@font-face/g) || []).length;
+    
     const result = await postcss([cssnano({
       preset: ['default', {
         discardComments: { removeAll: true },
         normalizeWhitespace: true,
-        minifyFontValues: true,
+        minifyFontValues: false, // НЕ минифицируем значения шрифтов (может удалить font-weight)
         minifySelectors: true,
         reduceIdents: false, // Не минифицируем идентификаторы
         zindex: false, // Не оптимизируем z-index
         // Важно: не удаляем @font-face правила
         discardUnused: false, // Не удаляем неиспользуемые правила (включая @font-face)
+        mergeRules: false, // НЕ объединяем правила (может объединить @font-face)
+        mergeIdents: false, // НЕ объединяем идентификаторы
         reduceIdents: false // Не минифицируем идентификаторы
       }]
     })]).process(css, { from: cssFile, to: outputFile });
@@ -48,8 +53,12 @@ async function minifyCSS() {
     if (fontFaceCount === 0) {
       console.warn('⚠️  ВНИМАНИЕ: @font-face правила не найдены в минифицированном CSS!');
       console.warn('   Проверьте, что они есть в исходном файле.');
+    } else if (fontFaceCount < originalFontFaces) {
+      console.warn(`⚠️  ВНИМАНИЕ: В минифицированном CSS меньше @font-face правил!`);
+      console.warn(`   Было: ${originalFontFaces}, стало: ${fontFaceCount}`);
+      console.warn('   Возможно, cssnano объединил или удалил некоторые правила.');
     } else {
-      console.log(`✅ Найдено @font-face правил в минифицированном CSS: ${fontFaceCount}`);
+      console.log(`✅ Найдено @font-face правил в минифицированном CSS: ${fontFaceCount} (было ${originalFontFaces})`);
     }
     
     fs.writeFileSync(outputFile, result.css);
