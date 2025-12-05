@@ -109,43 +109,53 @@ function generateCustomFA() {
   // Добавляем @font-face правила
   customCSS += fontFaces.join('\n\n') + '\n\n';
   
-  // Добавляем базовые стили
-  customCSS += `/* Base styles */\n`;
-  customCSS += `.fa, .fas, .fab {
-  font-family: "Font Awesome 6 Free";
-  font-weight: 900;
-  -webkit-font-smoothing: antialiased;
-  display: inline-block;
-  font-style: normal;
-  font-variant: normal;
-  text-rendering: auto;
-  line-height: 1;
-}
-
-.fab {
-  font-family: "Font Awesome 6 Brands";
-  font-weight: 400;
-}
-
-.fas {
-  font-family: "Font Awesome 6 Free";
-  font-weight: 900;
-}
-
-\n`;
+  // Добавляем базовые стили - извлекаем из оригинального CSS
+  const baseStylesMatch = originalCSS.match(/\.fa\{[^}]+\}/);
+  const baseStylesAllMatch = originalCSS.match(/\.fa,\.fa-brands[^}]+\}/);
+  const baseStylesSolidMatch = originalCSS.match(/\.fa-classic,\.fa-regular,\.fa-solid[^}]+\}/);
+  const baseStylesBrandsMatch = originalCSS.match(/\.fa-brands,\.fab[^}]+\}/);
   
-  // Добавляем стили для каждой используемой иконки
-  customCSS += `/* Solid icons */\n`;
+  customCSS += `/* Base styles - извлечены из оригинального Font Awesome */\n`;
+  if (baseStylesMatch) {
+    customCSS += baseStylesMatch[0] + '\n';
+  }
+  if (baseStylesAllMatch) {
+    customCSS += baseStylesAllMatch[0] + '\n';
+  }
+  if (baseStylesSolidMatch) {
+    customCSS += baseStylesSolidMatch[0] + '\n';
+  }
+  if (baseStylesBrandsMatch) {
+    // Убеждаемся, что font-weight:400 есть для brands
+    let brandsStyle = baseStylesBrandsMatch[0];
+    if (!brandsStyle.includes('font-weight')) {
+      brandsStyle = brandsStyle.replace(/\}/, ';font-weight:400}');
+    }
+    customCSS += brandsStyle + '\n';
+  } else {
+    // Если не нашли, добавляем вручную
+    customCSS += `.fa-brands,.fab{font-family:"Font Awesome 6 Brands";font-weight:400}\n`;
+  }
+  customCSS += '\n';
+  
+  // Добавляем стили для каждой используемой иконки с ВСЕМИ комбинациями классов
+  customCSS += `/* Solid icons - все комбинации классов */\n`;
   USED_ICONS.solid.forEach(icon => {
     const iconClass = `fa-${icon}`;
+    const unicode = ICON_UNICODES.solid[icon];
+    
     if (iconStyles[iconClass]) {
-      customCSS += iconStyles[iconClass] + '\n';
-    } else {
-      // Fallback - используем Unicode коды
-      const unicode = ICON_UNICODES.solid[icon];
-      if (unicode) {
-        customCSS += `.fa-${icon}::before { content: "${unicode}"; }\n`;
-      }
+      // Если нашли стиль в оригинальном CSS, добавляем его и дополнительные варианты
+      let style = iconStyles[iconClass];
+      // Извлекаем content из найденного стиля
+      const contentMatch = style.match(/content:\s*["']([^"']+)["']/);
+      const content = contentMatch ? contentMatch[1] : unicode;
+      
+      // Создаем стили для всех комбинаций классов
+      customCSS += `.${iconClass}:before,.fa.${iconClass}:before,.fas.${iconClass}:before{content:"${content}"}\n`;
+    } else if (unicode) {
+      // Fallback - используем Unicode коды с всеми вариантами классов
+      customCSS += `.${iconClass}:before,.fa.${iconClass}:before,.fas.${iconClass}:before{content:"${unicode}"}\n`;
     }
   });
   

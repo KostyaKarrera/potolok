@@ -26,6 +26,10 @@
 
 <!-- Preload критических ресурсов -->
 <link rel="preload" as="image" href="/header/header-optimized.webp" fetchpriority="high" imagesrcset="/header/header-optimized.webp" imagesizes="100vw">
+<!-- Font Awesome должен загружаться ПЕРЕД основным CSS, чтобы его стили не перезаписывались -->
+<link rel="stylesheet" href="/css/font-awesome-custom.css" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="/css/font-awesome-custom.css"></noscript>
+
 <link rel="preload" as="style" href="/css/style.css">
 
 <!-- Критический CSS (inline для быстрого рендеринга - только самое необходимое) -->
@@ -34,10 +38,6 @@
 </style>
 
 <link rel="stylesheet" href="/css/style.css">
-
-<!-- Локальные ресурсы вместо CDN -->
-<link rel="stylesheet" href="/css/font-awesome-custom.css" media="print" onload="this.media='all'">
-<noscript><link rel="stylesheet" href="/css/font-awesome-custom.css"></noscript>
 
 <!-- Шрифты загружаются локально через CSS @font-face -->
 
