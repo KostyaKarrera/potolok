@@ -396,24 +396,25 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     e.preventDefault();
     const target = document.querySelector(href);
     if (target) {
-      // Используем requestAnimationFrame для избежания принудительной компоновки
-      requestAnimationFrame(() => {
-        const topbarHeight = getTopbarHeight();
-        const targetPosition = target.offsetTop - topbarHeight;
-        
-        window.scrollTo({
-          top: targetPosition,
-          behavior: "smooth"
-        });
-      });
+      // Читаем геометрические свойства ДО изменения DOM, чтобы избежать forced layout
+      const topbarHeight = getTopbarHeight();
+      const targetPosition = target.offsetTop - topbarHeight;
       
-      // Закрываем мобильное меню после клика
+      // Закрываем мобильное меню ПЕРЕД скроллом
       const hamburger = document.getElementById("hamburger");
       const mainNav = document.getElementById("mainNav");
       if (hamburger && mainNav) {
         hamburger.classList.remove("active");
         mainNav.classList.remove("active");
       }
+      
+      // Используем requestAnimationFrame для плавного скролла
+      requestAnimationFrame(() => {
+        window.scrollTo({
+          top: targetPosition,
+          behavior: "smooth"
+        });
+      });
     }
   });
 });
@@ -457,6 +458,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Кэшируем позиции секций для избежания принудительной компоновки
   let sectionPositions = [];
   function updateSectionPositions() {
+    // Используем offsetTop/offsetHeight, но вызываем эту функцию только когда DOM стабилен
     sectionPositions = Array.from(sections).map(section => ({
       id: section.getAttribute("id"),
       top: section.offsetTop,
@@ -464,21 +466,22 @@ document.addEventListener("DOMContentLoaded", () => {
     }));
   }
   
+  // Инициализируем позиции сразу при загрузке, а не при первом скролле
+  updateSectionPositions();
+  
   // Обновляем позиции при изменении размера окна
   let scrollResizeTimeout;
   window.addEventListener('resize', () => {
     clearTimeout(scrollResizeTimeout);
-    scrollResizeTimeout = setTimeout(updateSectionPositions, 250);
+    scrollResizeTimeout = setTimeout(() => {
+      updateSectionPositions();
+    }, 250);
   });
   
   function highlightNav() {
     const scrollPos = window.scrollY + 150;
     
-    // Используем кэшированные позиции вместо чтения offsetTop/offsetHeight
-    if (sectionPositions.length === 0) {
-      updateSectionPositions();
-    }
-    
+    // Используем кэшированные позиции - они уже инициализированы при загрузке
     sectionPositions.forEach(({ id, top, height }) => {
       if (scrollPos >= top && scrollPos < top + height) {
         navLinksArray.forEach(link => {
