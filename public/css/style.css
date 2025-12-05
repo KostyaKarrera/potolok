@@ -76,7 +76,7 @@ body {
   background:var(--background-light); 
   line-height: var(--line-height-normal);
   font-size: var(--font-size-base);
-  font-weight: 500; /* Medium, как в навигации */
+  font-weight: 400;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
@@ -798,19 +798,18 @@ header p {
 /* Основной текст в секциях */
 .section p {
   font-size: var(--font-size-lg);
-  line-height: 1.6; /* Компактнее, чем 1.75 */
-  font-weight: 500; /* Medium, как в навигации */
-  max-width: 80ch; /* Шире, чем 65ch */
+  line-height: var(--line-height-relaxed);
+  font-weight: 400;
+  max-width: 65ch;
   margin-left: auto;
   margin-right: auto;
   text-align: left;
   color: var(--text-muted);
-  /* Убрали letter-spacing и word-spacing для более компактного вида */
 }
 
 /* Списки внутри текстовых блоков секций выравниваем по тому же контейнеру */
 .section ul {
-  max-width: 80ch; /* Шире, как у параграфов */
+  max-width: 65ch;
   margin: 0 auto 1.5rem auto;
   padding-left: 1.25rem;
 }
@@ -1074,7 +1073,7 @@ input::placeholder {
   color: var(--text-muted);
   font-size: var(--font-size-sm);
   margin-bottom: 0.75em;
-  font-weight: 500; /* Medium, как в навигации */
+  font-weight: 400;
 }
 
 .map-info a {
@@ -1143,14 +1142,14 @@ input::placeholder {
 .reviews-rating #reviews-count {
   color: var(--text-muted);
   font-size: var(--font-size-sm);
-  font-weight: 500; /* Medium, как в навигации */
+  font-weight: 400;
 }
 
 .google-reviews p {
   color: var(--text-muted);
   margin-bottom: 1.5rem;
   line-height: var(--line-height-normal);
-  font-weight: 500; /* Medium, как в навигации */
+  font-weight: 400;
   font-size: var(--font-size-base);
 }
 
@@ -1194,7 +1193,7 @@ footer p {
   line-height: var(--line-height-relaxed);
   margin-bottom: 1em;
   color: rgba(255,255,255,0.8);
-  font-weight: 500; /* Medium, как в навигации */
+  font-weight: 400;
 }
 
 footer a {
@@ -1736,7 +1735,7 @@ footer .btn i {
   margin: 0;
   font-size: var(--font-size-sm);
   line-height: var(--line-height-normal);
-  font-weight: 500; /* Medium, как в навигации */
+  font-weight: 400;
   /* УБИРАЕМ min-height */
 }
 
