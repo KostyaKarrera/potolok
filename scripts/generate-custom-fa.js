@@ -152,14 +152,17 @@ function generateCustomFA() {
   customCSS += `\n/* Brand icons */\n`;
   USED_ICONS.brands.forEach(icon => {
     const iconClass = `fa-${icon}`;
+    const unicode = ICON_UNICODES.brands[icon];
+    
+    // Добавляем стили для всех возможных комбинаций классов
     if (iconStyles[iconClass]) {
-      customCSS += iconStyles[iconClass] + '\n';
-    } else {
-      // Fallback - используем Unicode коды
-      const unicode = ICON_UNICODES.brands[icon];
-      if (unicode) {
-        customCSS += `.fa-${icon}::before { content: "${unicode}"; }\n`;
-      }
+      // Если нашли стиль в оригинальном CSS, добавляем его и дополнительные варианты
+      customCSS += iconStyles[iconClass].replace(/\.fa-([^:]+):before/g, (match, iconName) => {
+        return `.fa-${iconName}:before,.fa-brands.fa-${iconName}:before,.fab.fa-${iconName}:before`;
+      }) + '\n';
+    } else if (unicode) {
+      // Fallback - используем Unicode коды с всеми вариантами классов
+      customCSS += `.fa-${icon}:before,.fa-brands.fa-${icon}:before,.fab.fa-${icon}:before{content:"${unicode}"}\n`;
     }
   });
   

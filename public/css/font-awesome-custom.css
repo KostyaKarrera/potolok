@@ -24,36 +24,52 @@
 
 @font-face{font-family:"FontAwesome";font-display:swap;src:url(/webfonts/fa-v4compatibility.woff2) format("woff2"),url(/webfonts/fa-v4compatibility.ttf) format("truetype");unicode-range:u+f041,u+f047,u+f065-f066,u+f07d-f07e,u+f080,u+f08b,u+f08e,u+f090,u+f09a,u+f0ac,u+f0ae,u+f0b2,u+f0d0,u+f0d6,u+f0e4,u+f0ec,u+f10a-f10b,u+f123,u+f13e,u+f148-f149,u+f14c,u+f156,u+f15e,u+f160-f161,u+f163,u+f175-f178,u+f195,u+f1f8,u+f219,u+f27a}
 
-/* Base styles - извлечены из оригинального Font Awesome */
-.fa{font-family:var(--fa-style-family,"Font Awesome 6 Free");font-weight:var(--fa-style,900)}
-.fa,.fa-brands,.fa-classic,.fa-regular,.fa-sharp,.fa-solid,.fab,.far,.fas{-moz-osx-font-smoothing:grayscale;-webkit-font-smoothing:antialiased;display:var(--fa-display,inline-block);font-style:normal;font-variant:normal;line-height:1;text-rendering:auto}
-.fa-classic,.fa-regular,.fa-solid,.far,.fas{font-family:"Font Awesome 6 Free"}
-.fa-brands,.fab{font-family:"Font Awesome 6 Brands"}
+/* Base styles */
+.fa, .fas, .fab {
+  font-family: "Font Awesome 6 Free";
+  font-weight: 900;
+  -webkit-font-smoothing: antialiased;
+  display: inline-block;
+  font-style: normal;
+  font-variant: normal;
+  text-rendering: auto;
+  line-height: 1;
+}
+
+.fab {
+  font-family: "Font Awesome 6 Brands";
+  font-weight: 400;
+}
+
+.fas {
+  font-family: "Font Awesome 6 Free";
+  font-weight: 900;
+}
 
 
 /* Solid icons */
-.fa-phone:before,.fa.fa-phone:before,.fas.fa-phone:before{content:"\f095"}
-.fa-shopping-cart:before,.fa.fa-shopping-cart:before,.fas.fa-shopping-cart:before{content:"\f07a"}
-.fa-clock:before,.fa.fa-clock:before,.fas.fa-clock:before{content:"\f017"}
-.fa-shield-alt:before,.fa-shield-halved:before,.fa.fa-shield-alt:before,.fas.fa-shield-alt:before{content:"\f3ed"}
-.fa-smile:before,.fa.fa-smile:before,.fas.fa-smile:before{content:"\f118"}
-.fa-shopping-bag:before,.fa.fa-shopping-bag:before,.fas.fa-shopping-bag:before{content:"\f290"}
-.fa-tools:before,.fa.fa-tools:before,.fas.fa-tools:before{content:"\f7d9"}
-.fa-map:before,.fa.fa-map:before,.fas.fa-map:before{content:"\f279"}
-.fa-handshake:before,.fa.fa-handshake:before,.fas.fa-handshake:before{content:"\f2b5"}
-.fa-gift:before,.fa.fa-gift:before,.fas.fa-gift:before{content:"\f06b"}
-.fa-check-circle:before,.fa-circle-check:before,.fa.fa-check-circle:before,.fas.fa-check-circle:before{content:"\f058"}
-.fa-clipboard-list:before,.fa.fa-clipboard-list:before,.fas.fa-clipboard-list:before{content:"\f46d"}
-.fa-trash:before,.fa.fa-trash:before,.fas.fa-trash:before{content:"\f1f8"}
-.fa-star:before,.fa.fa-star:before,.fas.fa-star:before{content:"\f005"}
-.fa-plus:before,.fa.fa-plus:before,.fas.fa-plus:before{content:"\f067"}
-.fa-undo:before,.fa.fa-undo:before,.fas.fa-undo:before{content:"\f0e2"}
-.fa-chevron-down:before,.fa.fa-chevron-down:before,.fas.fa-chevron-down:before{content:"\f078"}
-.fa-arrow-up:before,.fa.fa-arrow-up:before,.fas.fa-arrow-up:before{content:"\f062"}
+.fa-phone:before{content:"\f095"}
+.fa-shopping-cart:before{content:"\f07a"}
+.fa-clock:before{content:"\f017"}
+.fa-shield-alt:before,.fa-shield-halved:before{content:"\f3ed"}
+.fa-smile:before{content:"\f118"}
+.fa-shopping-bag:before{content:"\f290"}
+.fa-tools:before{content:"\f7d9"}
+.fa-map:before{content:"\f279"}
+.fa-handshake:before{content:"\f2b5"}
+.fa-gift:before{content:"\f06b"}
+.fa-check-circle:before,.fa-circle-check:before{content:"\f058"}
+.fa-clipboard-list:before{content:"\f46d"}
+.fa-trash:before{content:"\f1f8"}
+.fa-star:before{content:"\f005"}
+.fa-plus:before{content:"\2b"}
+.fa-undo:before{content:"\f0e2"}
+.fa-chevron-down:before{content:"\f078"}
+.fa-arrow-up:before{content:"\f062"}
 
 /* Brand icons */
-.fa-telegram:before,.fa-brands.fa-telegram:before{content:"\f2c6"}
-.fa-whatsapp:before,.fa-brands.fa-whatsapp:before{content:"\f232"}
-.fa-vk:before,.fa-brands.fa-vk:before{content:"\f189"}
+.fa-telegram:before,.fa-brands.fa-telegram:before,.fab.fa-telegram:before{content:"\f2c6"}
+.fa-whatsapp:before,.fa-brands.fa-whatsapp:before,.fab.fa-whatsapp:before{content:"\f232"}
+.fa-vk:before,.fa-brands.fa-vk:before,.fab.fa-vk:before{content:"\f189"}
 .fa-google:before,.fa-brands.fa-google:before,.fab.fa-google:before{content:"\f1a0"}
-.fa-yandex:before,.fa-brands.fa-yandex:before{content:"\f413"}
+.fa-yandex:before,.fa-brands.fa-yandex:before,.fab.fa-yandex:before{content:"\f413"}
