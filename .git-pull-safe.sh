@@ -5,15 +5,12 @@
 echo "🔄 Безопасный git pull с обработкой конфликтов..."
 echo ""
 
-# Если есть локальные изменения в HTML файлах (от deploy.js) или в font-awesome-custom.css (автогенерируемый)
-if ! git diff --quiet public/*.html public/*/*.html public/css/font-awesome-custom.css 2>/dev/null; then
-    echo "💾 Обнаружены локальные изменения в HTML файлах или font-awesome-custom.css"
-    echo "   (это нормально - они созданы deploy.js/generate-fa для использования минифицированных/оптимизированных версий)"
-    echo "   Сбрасываем их перед pull..."
-    git checkout -- public/*.html public/*/*.html public/css/font-awesome-custom.css 2>/dev/null || true
-    echo "✅ Локальные изменения сброшены"
-    echo ""
-fi
+# Всегда сбрасываем автогенерируемые файлы перед pull
+echo "💾 Сбрасываем автогенерируемые файлы перед pull..."
+echo "   (HTML файлы от deploy.js и font-awesome-custom.css от generate-fa)"
+git checkout -- public/*.html public/*/*.html public/css/font-awesome-custom.css 2>/dev/null || true
+echo "✅ Автогенерируемые файлы сброшены"
+echo ""
 
 # Выполняем git pull
 echo "📥 Выполняем git pull..."
