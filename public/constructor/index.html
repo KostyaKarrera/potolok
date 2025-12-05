@@ -399,7 +399,18 @@
   <span class="cart-badge" id="floatingCartBadge">0</span>
 </button>
 
-<script src="/js/inputmask.min.js" defer></script>
+<!-- Inputmask загружается только если есть поля телефона -->
+<script>
+  // Проверяем наличие полей телефона перед загрузкой Inputmask
+  document.addEventListener('DOMContentLoaded', function() {
+    if (document.querySelectorAll('input[type="tel"]').length > 0) {
+      const script = document.createElement('script');
+      script.src = '/js/inputmask.min.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    }
+  });
+</script>
 <script src="/js/main.min.js" defer></script>
 <script src="/js/constructor.js" defer></script>
 </body>
