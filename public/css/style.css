@@ -76,7 +76,7 @@ body {
   background:var(--background-light); 
   line-height: var(--line-height-normal);
   font-size: var(--font-size-base);
-  font-weight: 400;
+  font-weight: 500; /* Medium, как в навигации */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
@@ -799,7 +799,7 @@ header p {
 .section p {
   font-size: var(--font-size-lg);
   line-height: var(--line-height-relaxed);
-  font-weight: 400;
+  font-weight: 500; /* Medium, как в навигации */
   max-width: 65ch;
   margin-left: auto;
   margin-right: auto;
@@ -1075,7 +1075,7 @@ input::placeholder {
   color: var(--text-muted);
   font-size: var(--font-size-sm);
   margin-bottom: 0.75em;
-  font-weight: 400;
+  font-weight: 500; /* Medium, как в навигации */
 }
 
 .map-info a {
@@ -1151,7 +1151,7 @@ input::placeholder {
   color: var(--text-muted);
   margin-bottom: 1.5rem;
   line-height: var(--line-height-normal);
-  font-weight: 400;
+  font-weight: 500; /* Medium, как в навигации */
   font-size: var(--font-size-base);
 }
 
@@ -1195,7 +1195,7 @@ footer p {
   line-height: var(--line-height-relaxed);
   margin-bottom: 1em;
   color: rgba(255,255,255,0.8);
-  font-weight: 400;
+  font-weight: 500; /* Medium, как в навигации */
 }
 
 footer a {
