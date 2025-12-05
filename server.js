@@ -67,9 +67,14 @@ app.use(express.static(path.join(__dirname, "public"), {
     } else if (path.endsWith('.css') || path.endsWith('.js')) {
       // CSS и JS кэшируем долго, но с возможностью обновления через версионирование
       res.setHeader('Cache-Control', 'public, max-age=31536000, immutable'); // 1 год
-    } else if (path.endsWith('.woff2') || path.endsWith('.woff')) {
+    } else if (path.endsWith('.woff2')) {
       // Шрифты кэшируем очень долго
       res.setHeader('Cache-Control', 'public, max-age=31536000, immutable'); // 1 год
+      res.setHeader('Content-Type', 'font/woff2');
+    } else if (path.endsWith('.woff')) {
+      // Шрифты кэшируем очень долго
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable'); // 1 год
+      res.setHeader('Content-Type', 'font/woff');
     }
   }
 }));
