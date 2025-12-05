@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест загрузки шрифтов</title>
+    <style>
+        @font-face {
+            font-family: "Montserrat";
+            font-style: normal;
+            font-weight: 400;
+            font-display: swap;
+            src: url('/fonts/Montserrat-Regular.woff2') format('woff2');
+        }
+        @font-face {
+            font-family: "Montserrat";
+            font-style: normal;
+            font-weight: 700;
+            font-display: swap;
+            src: url('/fonts/Montserrat-Bold.woff2') format('woff2');
+        }
+        body {
+            font-family: "Montserrat", sans-serif;
+            padding: 20px;
+            font-size: 24px;
+        }
+        .test {
+            margin: 20px 0;
+            padding: 20px;
+            border: 2px solid #333;
+        }
+        .regular { font-weight: 400; }
+        .bold { font-weight: 700; }
+    </style>
+</head>
+<body>
+    <h1>Тест загрузки шрифтов Montserrat</h1>
+    <div class="test regular">
+        Regular (400): Если вы видите этот текст в шрифте Montserrat, значит шрифты загружаются правильно.
+    </div>
+    <div class="test bold">
+        Bold (700): Если вы видите этот текст в жирном шрифте Montserrat, значит шрифты загружаются правильно.
+    </div>
+    <div class="test">
+        <strong>Инструкции:</strong>
+        <ol>
+            <li>Откройте DevTools (F12)</li>
+            <li>Перейдите на вкладку Network</li>
+            <li>Перезагрузите страницу</li>
+            <li>Проверьте, загружаются ли файлы Montserrat-*.woff2</li>
+            <li>Проверьте вкладку Console на наличие ошибок</li>
+        </ol>
+    </div>
+</body>
+</html>
+
