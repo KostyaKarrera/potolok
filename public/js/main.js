@@ -60,38 +60,16 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
     
-    // Обработка вставки
+    // Обработка вставки - не блокируем вставку, позволяем браузеру вставить текст
+    // Наш обработчик input автоматически отформатирует значение
     input.addEventListener('paste', function(e) {
-      e.preventDefault();
-      const pasted = (e.clipboardData || window.clipboardData).getData('text');
-      const digits = pasted.replace(/\D/g, '');
-      if (digits.length > 0) {
-        let value = digits;
-        if (value[0] !== '7') {
-          value = '7' + value;
-        }
-        if (value.length > 11) {
-          value = value.slice(0, 11);
-        }
-        
-        // Форматируем
-        let formatted = '+7';
-        if (value.length > 1) {
-          formatted += ' (' + value.slice(1, 4);
-          if (value.length > 4) {
-            formatted += ') ' + value.slice(4, 7);
-            if (value.length > 7) {
-              formatted += '-' + value.slice(7, 9);
-              if (value.length > 9) {
-                formatted += '-' + value.slice(9, 11);
-              }
-            }
-          } else {
-            formatted += ')';
-          }
-        }
-        this.value = formatted;
-      }
+      // Не блокируем вставку - позволяем браузеру вставить текст
+      // Обработчик input автоматически отформатирует значение
+      // Используем setTimeout для обработки после вставки браузером
+      setTimeout(() => {
+        // Триггерим событие input для форматирования
+        this.dispatchEvent(new Event('input', { bubbles: true }));
+      }, 0);
     });
   }
   
@@ -429,12 +407,16 @@ window.addEventListener("scroll", () => {
       // Кэшируем scrollY один раз за кадр - это единственное чтение геометрического свойства
       cachedScrollY = window.scrollY;
       
-      // Sticky Header
+      // Sticky Header - проверяем состояние перед изменением, чтобы избежать лишних DOM операций
       if (topbar) {
-        if (cachedScrollY > 50) {
-          topbar.classList.add("scrolled");
-        } else {
-          topbar.classList.remove("scrolled");
+        const shouldBeScrolled = cachedScrollY > 50;
+        const isScrolled = topbar.classList.contains("scrolled");
+        if (shouldBeScrolled !== isScrolled) {
+          if (shouldBeScrolled) {
+            topbar.classList.add("scrolled");
+          } else {
+            topbar.classList.remove("scrolled");
+          }
         }
       }
       
@@ -443,12 +425,16 @@ window.addEventListener("scroll", () => {
         highlightNavCallback(cachedScrollY);
       }
       
-      // Scroll Top Button (если кнопка создана)
+      // Scroll Top Button (если кнопка создана) - проверяем состояние перед изменением
       if (scrollTopBtnElement) {
-        if (cachedScrollY > 300) {
-          scrollTopBtnElement.classList.add("show");
-        } else {
-          scrollTopBtnElement.classList.remove("show");
+        const shouldShow = cachedScrollY > 300;
+        const isShowing = scrollTopBtnElement.classList.contains("show");
+        if (shouldShow !== isShowing) {
+          if (shouldShow) {
+            scrollTopBtnElement.classList.add("show");
+          } else {
+            scrollTopBtnElement.classList.remove("show");
+          }
         }
       }
       
@@ -525,26 +511,38 @@ document.addEventListener("DOMContentLoaded", () => {
   
   if (hamburger && mainNav) {
     hamburger.addEventListener("click", () => {
-      hamburger.classList.toggle("active");
-      mainNav.classList.toggle("active");
-      document.body.style.overflow = mainNav.classList.contains("active") ? "hidden" : "";
+      // Читаем состояние ДО изменения DOM
+      const isCurrentlyActive = mainNav.classList.contains("active");
+      
+      // Используем requestAnimationFrame для избежания forced layout
+      requestAnimationFrame(() => {
+        hamburger.classList.toggle("active");
+        mainNav.classList.toggle("active");
+        document.body.style.overflow = !isCurrentlyActive ? "hidden" : "";
+      });
     });
     
     // Закрываем меню при клике на ссылку
     navLinks.forEach(link => {
       link.addEventListener("click", () => {
-        hamburger.classList.remove("active");
-        mainNav.classList.remove("active");
-        document.body.style.overflow = "";
+        // Используем requestAnimationFrame для избежания forced layout
+        requestAnimationFrame(() => {
+          hamburger.classList.remove("active");
+          mainNav.classList.remove("active");
+          document.body.style.overflow = "";
+        });
       });
     });
     
     // Закрываем меню при клике вне его
     document.addEventListener("click", (e) => {
       if (!hamburger.contains(e.target) && !mainNav.contains(e.target)) {
-        hamburger.classList.remove("active");
-        mainNav.classList.remove("active");
-        document.body.style.overflow = "";
+        // Используем requestAnimationFrame для избежания forced layout
+        requestAnimationFrame(() => {
+          hamburger.classList.remove("active");
+          mainNav.classList.remove("active");
+          document.body.style.overflow = "";
+        });
       }
     });
   }
