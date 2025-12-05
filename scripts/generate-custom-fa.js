@@ -75,16 +75,26 @@ function generateCustomFA() {
   const fontFaceRegex = /@font-face\s*\{[^}]+\}/g;
   const fontFaces = originalCSS.match(fontFaceRegex) || [];
   
-  // Извлекаем стили для используемых иконок
+  // Извлекаем стили для используемых иконок из оригинального CSS
   const iconStyles = {};
   const allIcons = [...USED_ICONS.solid.map(i => `fa-${i}`), ...USED_ICONS.brands.map(i => `fa-${i}`)];
   
   allIcons.forEach(iconClass => {
-    // Ищем стили для иконки (может быть .fa-phone::before или .fa-phone:before)
-    const iconRegex = new RegExp(`\\.${iconClass.replace(/-/g, '\\-')}(::?before|,|\\.|\\s|\\{)`, 'g');
-    const matches = originalCSS.match(new RegExp(`\\.${iconClass.replace(/-/g, '\\-')}[^}]*\\{[^}]*\\}`, 'g'));
-    if (matches && matches.length > 0) {
-      iconStyles[iconClass] = matches[0];
+    // Ищем стили для иконки - более гибкий поиск
+    const escapedClass = iconClass.replace(/-/g, '\\-');
+    // Ищем паттерны типа .fa-phone:before, .fa-phone::before, .fa-phone, и т.д.
+    const patterns = [
+      new RegExp(`\\.${escapedClass}(::?before|,|\\.|\\s|\\{)[^}]*\\{[^}]*content:[^}]*\\}`, 'g'),
+      new RegExp(`\\.${escapedClass}[^}]*\\{[^}]*content:[^}]*\\}`, 'g')
+    ];
+    
+    for (const pattern of patterns) {
+      const matches = originalCSS.match(pattern);
+      if (matches && matches.length > 0) {
+        // Берем первый найденный стиль
+        iconStyles[iconClass] = matches[0];
+        break;
+      }
     }
   });
   
