@@ -907,16 +907,16 @@ header p {
 /* Оптимизация для мобильных изображений */
 @media (max-width: 768px) {
   .gallery img {
-    width: 100%;
-    max-width: 400px;
-    height: auto;
-    aspect-ratio: 4 / 3;
+    width: 280px;
+    min-width: 280px;
+    height: 210px;
+    flex: 0 0 auto;
   }
   
   .gallery picture img {
-    width: 100%;
-    max-width: 100%;
-    height: auto;
+    width: 280px;
+    min-width: 280px;
+    height: 210px;
   }
 }
 
