@@ -49,6 +49,27 @@ app.use(compression({
   }
 }));
 
+// Content Security Policy (CSP) - разрешаем unsafe-eval для минифицированного кода
+app.use((req, res, next) => {
+  // Устанавливаем CSP только для HTML страниц
+  if (req.path.endsWith('.html') || (!req.path.includes('.') && req.accepts('text/html'))) {
+    res.setHeader(
+      'Content-Security-Policy',
+      "default-src 'self'; " +
+      "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://www.google.com https://maps.googleapis.com; " +
+      "style-src 'self' 'unsafe-inline'; " +
+      "img-src 'self' data: https:; " +
+      "font-src 'self' data:; " +
+      "connect-src 'self' https://www.google.com https://maps.googleapis.com; " +
+      "frame-src 'self' https://www.google.com https://maps.googleapis.com; " +
+      "object-src 'none'; " +
+      "base-uri 'self'; " +
+      "form-action 'self';"
+    );
+  }
+  next();
+});
+
 app.use(bodyParser.json());
 
 // Статические файлы с кэшированием
