@@ -1393,9 +1393,14 @@ document.addEventListener("DOMContentLoaded", () => {
     setTimeout(loadData, 100);
   }
 
-  // Генерация schema.org только на странице готовых решений
+  // Генерация schema.org только на странице готовых решений (после загрузки данных)
   if (window.location.pathname.includes("/ready-solutions")) {
-    generateReadySolutionsSchema();
+    // Генерируем schema после загрузки данных
+    const generateSchemaAfterLoad = async () => {
+      await ensureProductsLoaded();
+      generateReadySolutionsSchema();
+    };
+    generateSchemaAfterLoad();
   }
 
   // Функция для получения информации о светильнике (изображение и название)
