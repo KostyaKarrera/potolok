@@ -1,6 +1,6 @@
 // Service Worker для кэширования статических ресурсов
 // Версия кэша - обновляйте при изменении ресурсов
-const CACHE_VERSION = 'v1.0.0';
+const CACHE_VERSION = 'v1.1.0';
 const CACHE_NAME = `potolok-cache-${CACHE_VERSION}`;
 
 // Ресурсы для кэширования при установке
@@ -59,8 +59,25 @@ self.addEventListener('fetch', (event) => {
     return; // Не кэшируем
   }
   
-  // Для статических ресурсов (CSS, JS, изображения, шрифты) - Cache First
-  if (/\.(css|js|woff2?|webp|png|jpg|jpeg|svg|ico)$/.test(url.pathname)) {
+  // Для изображений - Network First (чтобы получать обновления сразу)
+  if (/\.(webp|png|jpg|jpeg|svg|ico)$/.test(url.pathname)) {
+    event.respondWith(
+      fetch(request).then((response) => {
+        if (response.status === 200) {
+          const responseToCache = response.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(request, responseToCache);
+          });
+        }
+        return response;
+      }).catch(() => {
+        // Fallback на кэш только если сеть недоступна
+        return caches.match(request);
+      })
+    );
+  } 
+  // Для CSS, JS, шрифтов - Cache First (они версионируются через имена файлов)
+  else if (/\.(css|js|woff2?)$/.test(url.pathname)) {
     event.respondWith(
       caches.match(request).then((cachedResponse) => {
         if (cachedResponse) {
