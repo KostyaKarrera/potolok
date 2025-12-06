@@ -101,6 +101,40 @@ function findHTMLFilesWithAssets() {
   return htmlFiles;
 }
 
+// Минификация HTML (удаление лишних пробелов, но сохранение структуры)
+function minifyHTML(html) {
+  // Сохраняем важные блоки (script, style, pre, textarea) перед минификацией
+  const preservedBlocks = [];
+  let blockIndex = 0;
+  
+  // Заменяем блоки script, style, pre, textarea на плейсхолдеры
+  html = html.replace(/<(script|style|pre|textarea)[^>]*>[\s\S]*?<\/\1>/gi, (match) => {
+    const placeholder = `__PRESERVED_BLOCK_${blockIndex}__`;
+    preservedBlocks[blockIndex] = match;
+    blockIndex++;
+    return placeholder;
+  });
+  
+  // Удаляем HTML комментарии (кроме важных, например <!--[if IE]>)
+  html = html.replace(/<!--(?!\[if)[\s\S]*?-->/g, '');
+  
+  // Удаляем лишние пробелы между тегами
+  html = html.replace(/>\s+</g, '><');
+  
+  // Удаляем пробелы в начале и конце строк (но сохраняем структуру)
+  html = html.replace(/^\s+|\s+$/gm, '');
+  
+  // Удаляем множественные пробелы (но не внутри атрибутов)
+  html = html.replace(/\s{2,}/g, ' ');
+  
+  // Восстанавливаем сохраненные блоки
+  preservedBlocks.forEach((block, index) => {
+    html = html.replace(`__PRESERVED_BLOCK_${index}__`, block);
+  });
+  
+  return html.trim();
+}
+
 // Шаг 2: Обновление HTML файлов
 function updateHTMLFiles() {
   console.log('\n📝 Шаг 2: Обновление HTML файлов...');
@@ -116,6 +150,7 @@ function updateHTMLFiles() {
   
   let updated = 0;
   let errors = 0;
+  let totalSaved = 0;
   
   for (const htmlFile of allFiles) {
     const filePath = path.join(PUBLIC_DIR, htmlFile);
@@ -128,6 +163,7 @@ function updateHTMLFiles() {
     
     try {
       let content = fs.readFileSync(filePath, 'utf8');
+      const originalSize = content.length;
       let changed = false;
       
       // Заменяем ссылки на CSS (включая preload)
@@ -158,9 +194,23 @@ function updateHTMLFiles() {
         changed = true;
       }
       
+      // Минифицируем HTML (только на production)
+      const isProduction = process.env.NODE_ENV === 'production' || process.argv.includes('--production');
+      if (isProduction) {
+        const minified = minifyHTML(content);
+        const newSize = minified.length;
+        const saved = originalSize - newSize;
+        if (saved > 0) {
+          content = minified;
+          changed = true;
+          totalSaved += saved;
+        }
+      }
+      
       if (changed) {
         fs.writeFileSync(filePath, content, 'utf8');
-        console.log(`✅ Обновлен: ${htmlFile}`);
+        const savedKB = ((originalSize - content.length) / 1024).toFixed(2);
+        console.log(`✅ Обновлен: ${htmlFile}${savedKB > 0 ? ` (экономия: ${savedKB} KB)` : ''}`);
         updated++;
       } else {
         // Проверяем, почему файл не был обновлен
@@ -179,6 +229,9 @@ function updateHTMLFiles() {
   }
   
   console.log(`\n📊 Обновлено файлов: ${updated}, ошибок: ${errors}`);
+  if (totalSaved > 0) {
+    console.log(`💾 Общая экономия HTML: ${(totalSaved / 1024).toFixed(2)} KB`);
+  }
   return errors === 0;
 }
 

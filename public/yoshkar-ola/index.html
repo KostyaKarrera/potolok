@@ -3,9 +3,13 @@
 <head>
 <link rel="canonical" href="https://potolok-konkurent.ru/yoshkar-ola/" />
 
-<!-- DNS Prefetch для внешних ресурсов -->
+<!-- DNS Prefetch и Preconnect для внешних ресурсов -->
 <link rel="dns-prefetch" href="https://fonts.googleapis.com">
 <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+<link rel="dns-prefetch" href="https://www.google.com">
+<link rel="dns-prefetch" href="https://maps.googleapis.com">
+<link rel="preconnect" href="https://www.google.com" crossorigin>
+<link rel="preconnect" href="https://maps.googleapis.com" crossorigin>
 
 <!-- Preload критических ресурсов -->
 <link rel="preload" as="style" href="/css/style.css">
@@ -361,9 +365,10 @@
     <!-- Левая колонка - Карта -->
     <div class="google-map">
       <iframe 
-        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2173.536241158484!2d47.2728387768397!3d56.09489657128736!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x415a37bf17ea7e61%3A0x71f7b86a8aff2989!2z0JrQvtC90LrRg9GA0LXQvdGC0Kog0J3QsNGC0Y_QttC90YvQtSDQv9C-0YLQvtC70LrQuA!5e0!3m2!1sru!2sru!4v1700000000000!5m2!1sru!2sru"
+        data-src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2173.536241158484!2d47.2728387768397!3d56.09489657128736!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x415a37bf17ea7e61%3A0x71f7b86a8aff2989!2z0JrQvtC90LrRg9GA0LXQvdGC0Kog0J3QsNGC0Y_QttC90YvQtSDQv9C-0YLQvtC70LrQuA!5e0!3m2!1sru!2sru!4v1700000000000!5m2!1sru!2sru"
         allowfullscreen 
-        loading="lazy">
+        loading="lazy"
+        title="Карта расположения офиса">
       </iframe>
       <noscript>Офис компании КонкурентЪ — натяжные потолки. Мы находимся в Йошкар-Оле, смотрите расположение на карте.</noscript>
       <div class="map-info">

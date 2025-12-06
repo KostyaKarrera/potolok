@@ -3,6 +3,19 @@
 // + Реферальная система (запоминает ?ref=..., передаёт на сервер)
 // =================================================
 
+// ====== 0. Регистрация Service Worker для кэширования ======
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js')
+      .then((registration) => {
+        console.log('✅ Service Worker зарегистрирован:', registration.scope);
+      })
+      .catch((error) => {
+        console.warn('⚠️ Service Worker не зарегистрирован:', error);
+      });
+  });
+}
+
 // ====== 1. Маска телефона (легкая реализация без внешних библиотек) ======
 document.addEventListener("DOMContentLoaded", () => {
   const telInputs = document.querySelectorAll('input[type="tel"]');

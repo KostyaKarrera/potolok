@@ -75,6 +75,11 @@ app.use(express.static(path.join(__dirname, "public"), {
       // Шрифты кэшируем очень долго
       res.setHeader('Cache-Control', 'public, max-age=31536000, immutable'); // 1 год
       res.setHeader('Content-Type', 'font/woff');
+    } else if (path.endsWith('sw.js')) {
+      // Service Worker - не кэшируем, всегда свежий
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.setHeader('Content-Type', 'application/javascript');
+      res.setHeader('Service-Worker-Allowed', '/');
     }
   }
 }));

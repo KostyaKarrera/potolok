@@ -22,7 +22,11 @@
 
 <link rel="canonical" href="https://potolok-konkurent.ru/" />
 
-<!-- DNS Prefetch для внешних ресурсов (если нужны) -->
+<!-- DNS Prefetch и Preconnect для внешних ресурсов -->
+<link rel="dns-prefetch" href="https://www.google.com">
+<link rel="dns-prefetch" href="https://maps.googleapis.com">
+<link rel="preconnect" href="https://www.google.com" crossorigin>
+<link rel="preconnect" href="https://maps.googleapis.com" crossorigin>
 
 <!-- Preload критических ресурсов -->
 <link rel="preload" as="image" href="/header/header-optimized.webp" fetchpriority="high" imagesrcset="/header/header-optimized.webp" imagesizes="100vw">
