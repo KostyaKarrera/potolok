@@ -137,36 +137,56 @@ async function sendRequest(name, phone, type, estimatedPrice = null, promo = nul
 }
 
 // ====== 4.1. Toast уведомления ======
+// Используем requestAnimationFrame для батчинга DOM операций
 function showToast(message, type = "info") {
-  const toast = document.createElement("div");
-  toast.className = `toast toast-${type}`;
-  toast.textContent = message;
-  document.body.appendChild(toast);
-  
-  setTimeout(() => toast.classList.add("show"), 10);
-  setTimeout(() => {
-    toast.classList.remove("show");
-    setTimeout(() => toast.remove(), 300);
-  }, 3000);
+  requestAnimationFrame(() => {
+    const toast = document.createElement("div");
+    toast.className = `toast toast-${type}`;
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    
+    // Используем requestAnimationFrame для анимации
+    requestAnimationFrame(() => {
+      toast.classList.add("show");
+    });
+    
+    setTimeout(() => {
+      requestAnimationFrame(() => {
+        toast.classList.remove("show");
+        setTimeout(() => {
+          requestAnimationFrame(() => {
+            toast.remove();
+          });
+        }, 300);
+      });
+    }, 3000);
+  });
 }
 
 // ====== 4.2. Улучшенные модальные окна ======
+// Используем requestAnimationFrame для батчинга DOM операций
 function showModal(modalId) {
-  const modal = document.getElementById(modalId);
-  if (modal) {
-    modal.style.display = "flex";
-    modal.classList.add("show");
-    document.body.style.overflow = "hidden";
-  }
+  requestAnimationFrame(() => {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+      // Батчим все изменения DOM в одном кадре
+      modal.style.display = "flex";
+      modal.classList.add("show");
+      document.body.style.overflow = "hidden";
+    }
+  });
 }
 
 function hideModal(modalId) {
   const modal = document.getElementById(modalId);
   if (modal) {
     modal.classList.remove("show");
+    // Используем requestAnimationFrame для батчинга операций удаления
     setTimeout(() => {
-      modal.style.display = "none";
-      document.body.style.overflow = "";
+      requestAnimationFrame(() => {
+        modal.style.display = "none";
+        document.body.style.overflow = "";
+      });
     }, 300);
   }
 }
@@ -500,17 +520,21 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         mainNav.classList.remove("active");
       }
       
-      // Используем двойной requestAnimationFrame для гарантии завершения layout перед чтением
+      // Используем тройной requestAnimationFrame для гарантии завершения layout перед чтением
+      // Первый RAF: ждем завершения изменений DOM (закрытие меню)
       requestAnimationFrame(() => {
+        // Второй RAF: ждем завершения layout
         requestAnimationFrame(() => {
-          // Используем getBoundingClientRect() + scrollY вместо offsetTop для избежания forced layout
-          const topbarHeight = getTopbarHeight();
-          const rect = target.getBoundingClientRect();
-          const targetPosition = rect.top + window.scrollY - topbarHeight;
-          
-          window.scrollTo({
-            top: targetPosition,
-            behavior: "smooth"
+          // Третий RAF: безопасно читаем геометрические свойства
+          requestAnimationFrame(() => {
+            const topbarHeight = getTopbarHeight();
+            const rect = target.getBoundingClientRect();
+            const targetPosition = rect.top + window.scrollY - topbarHeight;
+            
+            window.scrollTo({
+              top: targetPosition,
+              behavior: "smooth"
+            });
           });
         });
       });
@@ -581,27 +605,33 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   
   // Инициализируем позиции после полной загрузки DOM и стилей
-  // Используем двойной requestAnimationFrame для гарантии завершения layout
+  // Используем тройной requestAnimationFrame для гарантии завершения layout
   if (document.readyState === 'complete') {
     requestAnimationFrame(() => {
-      requestAnimationFrame(updateSectionPositions);
+      requestAnimationFrame(() => {
+        requestAnimationFrame(updateSectionPositions);
+      });
     });
   } else {
     window.addEventListener('load', () => {
       requestAnimationFrame(() => {
-        requestAnimationFrame(updateSectionPositions);
+        requestAnimationFrame(() => {
+          requestAnimationFrame(updateSectionPositions);
+        });
       });
     });
   }
   
   // Обновляем позиции при изменении размера окна
-  // Используем двойной requestAnimationFrame для гарантии завершения layout
+  // Используем тройной requestAnimationFrame для гарантии завершения layout
   let scrollResizeTimeout;
   window.addEventListener('resize', () => {
     clearTimeout(scrollResizeTimeout);
     scrollResizeTimeout = setTimeout(() => {
       requestAnimationFrame(() => {
-        requestAnimationFrame(updateSectionPositions);
+        requestAnimationFrame(() => {
+          requestAnimationFrame(updateSectionPositions);
+        });
       });
     }, 250);
   });
@@ -1622,7 +1652,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const roomsGrid = document.getElementById('roomsGrid');
     if (roomsGrid) {
       try {
-        roomsGrid.innerHTML = productsData.rooms.map(room => {
+        // Используем requestAnimationFrame для батчинга большой DOM операции
+        requestAnimationFrame(() => {
+          roomsGrid.innerHTML = productsData.rooms.map(room => {
       // Рассчитываем цены
       const basicPrice = calculateRoomPrice(room.basic, room.area, pricesData);
       const comfortPrice = calculateRoomPrice(room.comfort, room.area, pricesData);
@@ -1663,6 +1695,7 @@ document.addEventListener("DOMContentLoaded", () => {
       </div>
     `;
         }).join('');
+        });
       } catch (err) {
         console.error('Ошибка при рендеринге комнат:', err);
       }
@@ -1709,7 +1742,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const apartmentsGrid = document.getElementById('apartmentsGrid');
   if (apartmentsGrid) {
     try {
-      apartmentsGrid.innerHTML = productsData.apartments.map(apartment => {
+      // Используем requestAnimationFrame для батчинга большой DOM операции
+      requestAnimationFrame(() => {
+        apartmentsGrid.innerHTML = productsData.apartments.map(apartment => {
       // Определяем, какие строки нужно показывать (убираем пустые)
       const hasCurtains = apartment.variants.some(v => {
         const curtainsValue = getVariantItemValue(v, 'гардин');
@@ -1858,6 +1893,7 @@ document.addEventListener("DOMContentLoaded", () => {
       </div>
     `;
       }).join('');
+      });
     } catch (err) {
       console.error('Ошибка при рендеринге квартир:', err);
     }
@@ -2199,7 +2235,9 @@ function renderCart() {
     if (cartEmpty) cartEmpty.style.display = "none";
     if (cartItemsContainer) {
       cartItemsContainer.style.display = "block";
-      cartItemsContainer.innerHTML = cartItems.map(item => {
+      // Используем requestAnimationFrame для батчинга большой DOM операции
+      requestAnimationFrame(() => {
+        cartItemsContainer.innerHTML = cartItems.map(item => {
         let details = '';
         if (item.fabric) details += `<div class="cart-item-detail"><strong>Полотно:</strong> ${item.fabric}</div>`;
         if (item.lights) details += `<div class="cart-item-detail"><strong>Светильники:</strong> ${formatQuantity(item.lights)}</div>`;
@@ -2220,6 +2258,7 @@ function renderCart() {
         </div>
       `;
       }).join('');
+      });
 
       // Подсчёт общей суммы
       let totalAmount = 0;
