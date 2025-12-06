@@ -890,6 +890,7 @@ header p {
   border-radius:16px; 
   cursor:pointer; 
   transition:transform 0.3s; 
+  max-width: 100%;
 }
 
 .gallery img {
@@ -901,6 +902,22 @@ header p {
   box-shadow: 0 8px 20px rgba(0,0,0,0.2);
   z-index: 10;
   position: relative;
+}
+
+/* Оптимизация для мобильных изображений */
+@media (max-width: 768px) {
+  .gallery img {
+    width: 100%;
+    max-width: 400px;
+    height: auto;
+    aspect-ratio: 4 / 3;
+  }
+  
+  .gallery picture img {
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+  }
 }
 
 /* 🔹 Форма калькулятора */
@@ -1836,6 +1853,14 @@ footer .btn i {
   width: auto;
   object-fit: contain;
   display: block;
+  max-width: 100%;
+}
+
+/* Оптимизация логотипа для мобильных */
+@media (max-width: 768px) {
+  .logo-img {
+    max-width: 150px;
+  }
 }
 
 /* Дополнительные стили для мобильной навигации */
