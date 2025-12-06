@@ -105,13 +105,24 @@ async function minifyJS() {
         drop_console: false, // Оставляем console для отладки
         drop_debugger: true,
         pure_funcs: ['console.debug', 'console.trace'], // Удаляем только debug/trace
-        passes: 2 // Два прохода для лучшей оптимизации
+        passes: 2, // Два прохода для лучшей оптимизации
+        unsafe: false, // Отключаем небезопасные оптимизации (включая eval)
+        unsafe_comps: false, // Отключаем небезопасные сравнения
+        unsafe_math: false, // Отключаем небезопасные математические операции
+        unsafe_methods: false, // Отключаем небезопасные методы
+        unsafe_proto: false, // Отключаем небезопасные операции с прототипами
+        unsafe_regexp: false, // Отключаем небезопасные операции с регулярными выражениями
+        unsafe_undefined: false // Отключаем небезопасные операции с undefined
       },
       mangle: {
         reserved: ['Cart', 'showToast', 'showModal', 'hideModal'] // Не минифицируем важные функции
       },
       format: {
         comments: false // Удаляем комментарии
+      },
+      ecma: 2020, // Используем современный стандарт ES2020
+      parse: {
+        ecma: 2020
       }
     });
     
