@@ -417,39 +417,41 @@ let scrollTopBtnElement = null;
 window.addEventListener("scroll", () => {
   if (!scrollTicking) {
     requestAnimationFrame(() => {
-      // Кэшируем scrollY один раз за кадр - это единственное чтение геометрического свойства
+      // Читаем все геометрические свойства в одном батче ДО любых изменений DOM
       cachedScrollY = window.scrollY;
       
-      // Sticky Header - проверяем состояние перед изменением, чтобы избежать лишних DOM операций
-      if (topbar) {
-        const shouldBeScrolled = cachedScrollY > 50;
-        const isScrolled = topbar.classList.contains("scrolled");
-        if (shouldBeScrolled !== isScrolled) {
+      // Определяем все необходимые изменения ДО применения их к DOM
+      const shouldBeScrolled = topbar && cachedScrollY > 50;
+      const isScrolled = topbar && topbar.classList.contains("scrolled");
+      const shouldShowBtn = scrollTopBtnElement && cachedScrollY > 300;
+      const isShowingBtn = scrollTopBtnElement && scrollTopBtnElement.classList.contains("show");
+      
+      // Применяем все изменения DOM в одном батче
+      requestAnimationFrame(() => {
+        // Sticky Header
+        if (topbar && shouldBeScrolled !== isScrolled) {
           if (shouldBeScrolled) {
             topbar.classList.add("scrolled");
           } else {
             topbar.classList.remove("scrolled");
           }
         }
-      }
-      
-      // Highlight Navigation (если функция определена)
-      if (highlightNavCallback) {
-        highlightNavCallback(cachedScrollY);
-      }
-      
-      // Scroll Top Button (если кнопка создана) - проверяем состояние перед изменением
-      if (scrollTopBtnElement) {
-        const shouldShow = cachedScrollY > 300;
-        const isShowing = scrollTopBtnElement.classList.contains("show");
-        if (shouldShow !== isShowing) {
-          if (shouldShow) {
+        
+        // Scroll Top Button
+        if (scrollTopBtnElement && shouldShowBtn !== isShowingBtn) {
+          if (shouldShowBtn) {
             scrollTopBtnElement.classList.add("show");
           } else {
             scrollTopBtnElement.classList.remove("show");
           }
         }
-      }
+        
+        // Highlight Navigation (если функция определена)
+        // Вызываем в конце, так как она сама использует requestAnimationFrame
+        if (highlightNavCallback) {
+          highlightNavCallback(cachedScrollY);
+        }
+      });
       
       scrollTicking = false;
     });
@@ -605,18 +607,32 @@ document.addEventListener("DOMContentLoaded", () => {
   });
   
   function highlightNav(scrollY) {
-    const scrollPos = scrollY + 150;
-    
-    // Используем кэшированные позиции - они уже инициализированы при загрузке
-    sectionPositions.forEach(({ id, top, height }) => {
-      if (scrollPos >= top && scrollPos < top + height) {
-        navLinksArray.forEach(link => {
-          link.classList.remove("active");
-          if (link.getAttribute("href") === `#${id}`) {
+    // Используем requestAnimationFrame для батчинга всех DOM операций
+    requestAnimationFrame(() => {
+      const scrollPos = scrollY + 150;
+      let activeId = null;
+      
+      // Находим активную секцию (только чтение, без изменения DOM)
+      sectionPositions.forEach(({ id, top, height }) => {
+        if (scrollPos >= top && scrollPos < top + height) {
+          activeId = id;
+        }
+      });
+      
+      // Изменяем DOM только один раз в конце (батчинг операций)
+      navLinksArray.forEach(link => {
+        const href = link.getAttribute("href");
+        const shouldBeActive = activeId && href === `#${activeId}`;
+        const isActive = link.classList.contains("active");
+        
+        if (shouldBeActive !== isActive) {
+          if (shouldBeActive) {
             link.classList.add("active");
+          } else {
+            link.classList.remove("active");
           }
-        });
-      }
+        }
+      });
     });
   }
   
@@ -630,8 +646,6 @@ document.addEventListener("DOMContentLoaded", () => {
       highlightNav(window.scrollY);
     }
   }, 100);
-  
-  highlightNav(); // Вызываем сразу для начальной позиции
   
   // Модалка телефона
   const phoneBtn = document.getElementById("phoneBtn");
