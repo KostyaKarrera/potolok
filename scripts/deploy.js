@@ -194,18 +194,19 @@ function updateHTMLFiles() {
         changed = true;
       }
       
-      // Минифицируем HTML (только на production)
-      const isProduction = process.env.NODE_ENV === 'production' || process.argv.includes('--production');
-      if (isProduction) {
-        const minified = minifyHTML(content);
-        const newSize = minified.length;
-        const saved = originalSize - newSize;
-        if (saved > 0) {
-          content = minified;
-          changed = true;
-          totalSaved += saved;
-        }
-      }
+      // Минификация HTML отключена - может влиять на отображение текста
+      // (удаление пробелов может нарушить форматирование)
+      // const isProduction = process.env.NODE_ENV === 'production' || process.argv.includes('--production');
+      // if (isProduction) {
+      //   const minified = minifyHTML(content);
+      //   const newSize = minified.length;
+      //   const saved = originalSize - newSize;
+      //   if (saved > 0) {
+      //     content = minified;
+      //     changed = true;
+      //     totalSaved += saved;
+      //   }
+      // }
       
       if (changed) {
         fs.writeFileSync(filePath, content, 'utf8');
