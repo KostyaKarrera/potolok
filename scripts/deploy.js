@@ -29,7 +29,8 @@ const HTML_FILES = [
   'about/index.html',
   'cheboksary/index.html',
   'novocheboksarsk/index.html',
-  'yoshkar-ola/index.html'
+  'yoshkar-ola/index.html',
+  '404.html'
 ];
 
 console.log('🚀 Начинаем автоматический деплой...\n');
@@ -66,14 +67,57 @@ async function minifyFiles() {
   }
 }
 
+// Автоматическое обнаружение HTML файлов, использующих основные CSS/JS
+function findHTMLFilesWithAssets() {
+  const htmlFiles = [];
+  
+  function scanDirectory(dir, basePath = '') {
+    const entries = fs.readdirSync(dir, { withFileTypes: true });
+    
+    for (const entry of entries) {
+      const fullPath = path.join(dir, entry.name);
+      const relativePath = basePath ? `${basePath}/${entry.name}` : entry.name;
+      
+      if (entry.isDirectory()) {
+        // Пропускаем node_modules, служебные папки и папки с собственными CSS/JS
+        if (!['node_modules', '.git', '.vscode', 'admin', 'partners'].includes(entry.name)) {
+          scanDirectory(fullPath, relativePath);
+        }
+      } else if (entry.isFile() && entry.name.endsWith('.html')) {
+        try {
+          const content = fs.readFileSync(fullPath, 'utf8');
+          // Проверяем, использует ли файл основные CSS/JS
+          if (/\/css\/style\.css/.test(content) || /\/js\/main\.js/.test(content)) {
+            htmlFiles.push(relativePath);
+          }
+        } catch (err) {
+          // Игнорируем ошибки чтения
+        }
+      }
+    }
+  }
+  
+  scanDirectory(PUBLIC_DIR);
+  return htmlFiles;
+}
+
 // Шаг 2: Обновление HTML файлов
 function updateHTMLFiles() {
   console.log('\n📝 Шаг 2: Обновление HTML файлов...');
   
+  // Объединяем явно указанные файлы с автоматически найденными
+  const autoFoundFiles = findHTMLFilesWithAssets();
+  const allFiles = [...new Set([...HTML_FILES, ...autoFoundFiles])];
+  
+  console.log(`📋 Найдено HTML файлов для обновления: ${allFiles.length}`);
+  if (autoFoundFiles.length > 0) {
+    console.log(`   (автоматически найдено: ${autoFoundFiles.length})`);
+  }
+  
   let updated = 0;
   let errors = 0;
   
-  for (const htmlFile of HTML_FILES) {
+  for (const htmlFile of allFiles) {
     const filePath = path.join(PUBLIC_DIR, htmlFile);
     
     if (!fs.existsSync(filePath)) {
@@ -87,7 +131,11 @@ function updateHTMLFiles() {
       let changed = false;
       
       // Заменяем ссылки на CSS (включая preload)
-      if (content.includes('/css/style.css') && !content.includes('/css/style.min.css')) {
+      // Проверяем, что файл содержит /css/style.css и НЕ содержит уже минифицированную версию
+      const hasStyleCSS = /\/css\/style\.css/.test(content);
+      const hasStyleMinCSS = /\/css\/style\.min\.css/.test(content);
+      
+      if (hasStyleCSS && !hasStyleMinCSS) {
         // Заменяем все вхождения /css/style.css на /css/style.min.css
         content = content.replace(
           /\/css\/style\.css/g,
@@ -97,7 +145,11 @@ function updateHTMLFiles() {
       }
       
       // Заменяем ссылки на JS
-      if (content.includes('/js/main.js') && !content.includes('/js/main.min.js')) {
+      // Проверяем, что файл содержит /js/main.js и НЕ содержит уже минифицированную версию
+      const hasMainJS = /\/js\/main\.js/.test(content);
+      const hasMainMinJS = /\/js\/main\.min\.js/.test(content);
+      
+      if (hasMainJS && !hasMainMinJS) {
         // Заменяем все вхождения /js/main.js на /js/main.min.js
         content = content.replace(
           /\/js\/main\.js/g,
@@ -111,7 +163,14 @@ function updateHTMLFiles() {
         console.log(`✅ Обновлен: ${htmlFile}`);
         updated++;
       } else {
-        console.log(`⏭️  Пропущен (уже обновлен): ${htmlFile}`);
+        // Проверяем, почему файл не был обновлен
+        if (hasStyleMinCSS && hasMainMinJS) {
+          console.log(`⏭️  Пропущен (уже обновлен): ${htmlFile}`);
+        } else if (!hasStyleCSS && !hasMainJS) {
+          console.log(`⏭️  Пропущен (не использует style.css/main.js): ${htmlFile}`);
+        } else {
+          console.log(`⚠️  Пропущен (частично обновлен?): ${htmlFile}`);
+        }
       }
     } catch (error) {
       console.error(`❌ Ошибка при обновлении ${htmlFile}:`, error.message);

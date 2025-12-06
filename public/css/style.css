@@ -3247,6 +3247,8 @@ footer .btn i {
   font-weight: 600;
   color: var(--text-dark);
   margin-bottom: 0.5rem;
+  /* Исправление для iOS Safari - предотвращаем растягивание */
+  flex-wrap: nowrap;
 }
 
 .examples-link {
@@ -3267,19 +3269,26 @@ footer .btn i {
 }
 
 .info-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  border: 1px solid var(--border-color);
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--text-muted);
-  cursor: pointer;
-  position: relative;
-  background: #fff;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 16px !important;
+  height: 16px !important;
+  border-radius: 50% !important;
+  border: 1px solid var(--border-color) !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  color: var(--text-muted) !important;
+  cursor: pointer !important;
+  position: relative !important;
+  background: #fff !important;
+  flex-shrink: 0 !important;
+  vertical-align: middle !important;
+  line-height: 1 !important;
+  margin-left: 2px !important;
+  /* Исправление для iOS Safari */
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
 }
 
 .form-select,
@@ -3294,6 +3303,20 @@ footer .btn i {
   background: var(--background-white);
   color: var(--text-dark);
   transition: border-color 0.3s ease;
+  /* Убираем нативные стили iOS Safari */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  /* Кастомная стрелка для селекта */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 12px;
+  padding-right: 2.5rem;
+}
+
+.form-select::-ms-expand {
+  display: none; /* Убираем стрелку в IE/Edge */
 }
 
 .form-select:focus,
@@ -3470,8 +3493,20 @@ footer .btn i {
   .constructor-form .form-select {
     min-height: 42px;
     padding: 0.6rem 0.7rem;
+    padding-right: 2.5rem; /* Место для стрелки */
     font-size: 0.95rem;
     box-sizing: border-box;
+    /* Убираем нативные стили iOS Safari на мобильных */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+  }
+  
+  .constructor-form .form-select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.7rem center;
+    background-size: 12px;
   }
 
   /* Лейблы полей немного меньше и компактнее */

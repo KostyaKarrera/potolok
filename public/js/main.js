@@ -1340,7 +1340,25 @@ async function ensurePricesLoaded() {
 
 // Функция для получения продуктов (с кэшированием промиса)
 async function ensureProductsLoaded() {
-  if (productsData) return true; // Уже загружено
+  // Проверяем, что данные действительно загружены (массивы не пустые)
+  if (productsData && 
+      Array.isArray(productsData.rooms) && productsData.rooms.length > 0 &&
+      Array.isArray(productsData.apartments) && productsData.apartments.length > 0) {
+    return true; // Уже загружено
+  }
+  // Если промис уже создан, ждем его завершения
+  if (productsLoadPromise) {
+    const result = await productsLoadPromise;
+    // Проверяем еще раз после загрузки
+    if (productsData && 
+        Array.isArray(productsData.rooms) && productsData.rooms.length > 0 &&
+        Array.isArray(productsData.apartments) && productsData.apartments.length > 0) {
+      return true;
+    }
+    // Если данные все еще пустые, создаем новый промис
+    productsLoadPromise = null;
+  }
+  // Создаем новый промис загрузки
   if (!productsLoadPromise) {
     productsLoadPromise = loadProducts();
   }
@@ -1542,10 +1560,37 @@ document.addEventListener("DOMContentLoaded", () => {
     return details.length > 0 ? details.join('') : '<div class="variant-detail-item" style="color: #999;">Состав не указан</div>';
   };
 
-  // Рендерим карточки комнат (полные карточки без аккордеона внутри)
-  const roomsGrid = document.getElementById('roomsGrid');
-  if (roomsGrid) {
-    roomsGrid.innerHTML = productsData.rooms.map(room => {
+  // Функция рендеринга готовых решений (вызывается после загрузки данных)
+  const renderReadySolutions = async () => {
+    // Ждем загрузки данных
+    await ensureProductsLoaded();
+    await ensurePricesLoaded();
+    
+    if (!productsData) {
+      console.error('Данные готовых решений не загружены');
+      return;
+    }
+    
+    if (!Array.isArray(productsData.rooms) || !Array.isArray(productsData.apartments)) {
+      console.error('Неверный формат данных готовых решений');
+      return;
+    }
+    
+    if (productsData.rooms.length === 0 && productsData.apartments.length === 0) {
+      console.warn('Данные готовых решений пусты');
+      return;
+    }
+    
+    if (!pricesData) {
+      console.error('Данные цен не загружены');
+      return;
+    }
+    
+    // Рендерим карточки комнат (полные карточки без аккордеона внутри)
+    const roomsGrid = document.getElementById('roomsGrid');
+    if (roomsGrid) {
+      try {
+        roomsGrid.innerHTML = productsData.rooms.map(room => {
       // Рассчитываем цены
       const basicPrice = calculateRoomPrice(room.basic, room.area, pricesData);
       const comfortPrice = calculateRoomPrice(room.comfort, room.area, pricesData);
@@ -1585,10 +1630,13 @@ document.addEventListener("DOMContentLoaded", () => {
         </div>
       </div>
     `;
-    }).join('');
-  }
+        }).join('');
+      } catch (err) {
+        console.error('Ошибка при рендеринге комнат:', err);
+      }
+    }
 
-  // Функция для получения значения позиции из варианта
+    // Функция для получения значения позиции из варианта
   const getVariantItemValue = (variant, itemName) => {
     // Проверяем новую структуру с items
     const hasValidItems = variant.items && Array.isArray(variant.items) && variant.items.length > 0 && 
@@ -1628,7 +1676,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // Рендерим карточки квартир
   const apartmentsGrid = document.getElementById('apartmentsGrid');
   if (apartmentsGrid) {
-    apartmentsGrid.innerHTML = productsData.apartments.map(apartment => {
+    try {
+      apartmentsGrid.innerHTML = productsData.apartments.map(apartment => {
       // Определяем, какие строки нужно показывать (убираем пустые)
       const hasCurtains = apartment.variants.some(v => {
         const curtainsValue = getVariantItemValue(v, 'гардин');
@@ -1776,7 +1825,37 @@ document.addEventListener("DOMContentLoaded", () => {
         </div>
       </div>
     `;
-    }).join('');
+      }).join('');
+    } catch (err) {
+      console.error('Ошибка при рендеринге квартир:', err);
+    }
+  }
+  };
+  
+  // Вызываем рендеринг после загрузки данных
+  if (window.location.pathname.includes("/ready-solutions")) {
+    // Функция для проверки и рендеринга
+    const checkAndRender = async () => {
+      try {
+        // Ждем загрузки данных
+        await ensureProductsLoaded();
+        await ensurePricesLoaded();
+        
+        // Проверяем, что данные действительно загружены
+        if (productsData && 
+            Array.isArray(productsData.rooms) && productsData.rooms.length > 0 &&
+            Array.isArray(productsData.apartments) && productsData.apartments.length > 0) {
+          renderReadySolutions();
+        } else {
+          setTimeout(checkAndRender, 100);
+        }
+      } catch (err) {
+        console.error('Ошибка загрузки данных для готовых решений:', err);
+      }
+    };
+    
+    // Запускаем проверку и рендеринг
+    checkAndRender();
   }
 
   // Открытие корзины
