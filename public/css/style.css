@@ -886,15 +886,27 @@ header p {
   flex:0 0 auto; 
   width:300px; 
   height:200px; 
+  min-width: 300px; /* Предотвращаем сжатие на десктопе */
   object-fit:cover; 
   border-radius:16px; 
   cursor:pointer; 
-  transition:transform 0.3s; 
-  max-width: 100%;
+  transition: all 0.3s ease;
 }
 
-.gallery img {
-  transition: all 0.3s ease;
+/* Явные правила для picture img на десктопе */
+.gallery picture {
+  flex: 0 0 auto;
+  width: 300px;
+  min-width: 300px;
+  height: 200px;
+}
+
+.gallery picture img {
+  width: 300px;
+  min-width: 300px;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 16px;
 }
 
 .gallery img:hover {
@@ -911,6 +923,12 @@ header p {
     min-width: 280px;
     height: 210px;
     flex: 0 0 auto;
+  }
+  
+  .gallery picture {
+    width: 280px;
+    min-width: 280px;
+    height: 210px;
   }
   
   .gallery picture img {
