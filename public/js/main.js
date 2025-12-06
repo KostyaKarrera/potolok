@@ -437,7 +437,7 @@ let scrollTopBtnElement = null;
 window.addEventListener("scroll", () => {
   if (!scrollTicking) {
     requestAnimationFrame(() => {
-      // Читаем все геометрические свойства в одном батче ДО любых изменений DOM
+      // Читаем ВСЕ геометрические свойства в самом начале, ДО любых изменений DOM
       cachedScrollY = window.scrollY;
       
       // Определяем все необходимые изменения ДО применения их к DOM
@@ -446,7 +446,12 @@ window.addEventListener("scroll", () => {
       const shouldShowBtn = scrollTopBtnElement && cachedScrollY > 300;
       const isShowingBtn = scrollTopBtnElement && scrollTopBtnElement.classList.contains("show");
       
-      // Применяем все изменения DOM в одном батче
+      // Вызываем highlightNav ДО изменений DOM (она только читает кэшированные данные)
+      if (highlightNavCallback) {
+        highlightNavCallback(cachedScrollY);
+      }
+      
+      // Применяем все изменения DOM в отдельном RAF ПОСЛЕ всех чтений
       requestAnimationFrame(() => {
         // Sticky Header
         if (topbar && shouldBeScrolled !== isScrolled) {
@@ -464,12 +469,6 @@ window.addEventListener("scroll", () => {
           } else {
             scrollTopBtnElement.classList.remove("show");
           }
-        }
-        
-        // Highlight Navigation (если функция определена)
-        // Вызываем в конце, так как она сама использует requestAnimationFrame
-        if (highlightNavCallback) {
-          highlightNavCallback(cachedScrollY);
         }
       });
       
@@ -593,13 +592,14 @@ document.addEventListener("DOMContentLoaded", () => {
   // Кэшируем позиции секций для избежания принудительной компоновки
   let sectionPositions = [];
   function updateSectionPositions() {
-    // Используем getBoundingClientRect() + scrollY вместо offsetTop для избежания forced layout
     // Читаем все геометрические свойства в одном батче
-    const scrollY = window.scrollY;
+    // Используем getBoundingClientRect() + scrollY для получения абсолютных позиций
+    // НО читаем scrollY только один раз в начале, до всех getBoundingClientRect()
+    const scrollY = window.scrollY; // Единственное чтение scrollY
     const rects = Array.from(sections).map(section => section.getBoundingClientRect());
     sectionPositions = Array.from(sections).map((section, index) => ({
       id: section.getAttribute("id"),
-      top: rects[index].top + scrollY,
+      top: rects[index].top + scrollY, // Абсолютная позиция для сравнения с scrollPos
       height: rects[index].height
     }));
   }
@@ -637,19 +637,22 @@ document.addEventListener("DOMContentLoaded", () => {
   });
   
   function highlightNav(scrollY) {
-    // Используем requestAnimationFrame для батчинга всех DOM операций
+    // НЕ используем requestAnimationFrame здесь - scrollY уже кэширован из scroll handler
+    // Сравниваем абсолютные позиции: scrollPos (абсолютная) с top (абсолютная)
+    const scrollPos = scrollY + 150;
+    let activeId = null;
+    
+    // Находим активную секцию (только чтение кэшированных данных, без изменения DOM)
+    // sectionPositions.top - это абсолютная позиция (top + scrollY при обновлении)
+    sectionPositions.forEach(({ id, top, height }) => {
+      // top - абсолютная позиция секции, scrollPos - абсолютная позиция скролла
+      if (scrollPos >= top && scrollPos < top + height) {
+        activeId = id;
+      }
+    });
+    
+    // Изменяем DOM только один раз в конце (батчинг операций) - в отдельном RAF
     requestAnimationFrame(() => {
-      const scrollPos = scrollY + 150;
-      let activeId = null;
-      
-      // Находим активную секцию (только чтение, без изменения DOM)
-      sectionPositions.forEach(({ id, top, height }) => {
-        if (scrollPos >= top && scrollPos < top + height) {
-          activeId = id;
-        }
-      });
-      
-      // Изменяем DOM только один раз в конце (батчинг операций)
       navLinksArray.forEach(link => {
         const href = link.getAttribute("href");
         const shouldBeActive = activeId && href === `#${activeId}`;
@@ -670,10 +673,12 @@ document.addEventListener("DOMContentLoaded", () => {
   highlightNavCallback = highlightNav;
   
   // Вызываем сразу для начальной позиции (после инициализации позиций)
-  // Используем setTimeout для гарантии, что позиции уже инициализированы
+  // Используем requestAnimationFrame для безопасного чтения scrollY
   setTimeout(() => {
     if (sectionPositions.length > 0) {
-      highlightNav(window.scrollY);
+      requestAnimationFrame(() => {
+        highlightNav(window.scrollY);
+      });
     }
   }, 100);
   
