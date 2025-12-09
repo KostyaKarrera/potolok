@@ -1,10 +1,20 @@
 User-agent: *
 Allow: /
+
+# Блокируем служебные директории
 Disallow: /admin/
 Disallow: /ajax/
 Disallow: /partners/
 Disallow: /api/
 Disallow: /uploads/
+
+# Явно разрешаем основные страницы
+Allow: /ready-solutions/
+Allow: /constructor/
+Allow: /cheboksary/
+Allow: /novocheboksarsk/
+Allow: /yoshkar-ola/
+Allow: /about/
 
 # Карта сайта для поисковых роботов
 Sitemap: https://potolok-konkurent.ru/sitemap.xml
