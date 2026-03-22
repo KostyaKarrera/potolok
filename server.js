@@ -28,11 +28,10 @@ const TELEGRAM_TOKEN = process.env.TELEGRAM_TOKEN;
 const CHAT_ID = process.env.CHAT_ID;
 
 if (!TELEGRAM_TOKEN || !CHAT_ID) {
-  console.error("❌ Telegram токен или chat_id не указан в .env");
-  process.exit(1);
+  console.warn("⚠️ Telegram токен или chat_id не указан в .env — уведомления отключены");
 }
 
-const bot = new TelegramBot(TELEGRAM_TOKEN);
+const bot = TELEGRAM_TOKEN ? new TelegramBot(TELEGRAM_TOKEN) : null;
 
 // === Middleware ===
 app.use(cors());
@@ -156,10 +155,12 @@ async function sendTelegram(name, phone, type, estimatedPrice, ref, promo, giftP
     message += `\n\n🎫 <b>Промокод:</b> ${escapeHTML(promo)}`;
   }
 
-  try {
-    await bot.sendMessage(CHAT_ID, message, { parse_mode: "HTML" });
-  } catch (err) {
-    console.error("Ошибка отправки в Telegram:", err);
+  if (bot && CHAT_ID) {
+    try {
+      await bot.sendMessage(CHAT_ID, message, { parse_mode: "HTML" });
+    } catch (err) {
+      console.error("Ошибка отправки в Telegram:", err);
+    }
   }
 }
 
