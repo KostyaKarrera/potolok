@@ -1,0 +1,354 @@
+/* =============================================
+   REDESIGN OVERRIDES — Чёрный / Белый / Жёлтый
+   Загружается ПОСЛЕ style.min.css
+   ============================================= */
+
+/* ===== ПЕРЕМЕННЫЕ ===== */
+:root {
+  --primary-color:    #feef03;
+  --primary-hover:    #e8d800;
+  --primary-light:    rgba(254, 239, 3, 0.1);
+  --primary-glow:     rgba(254, 239, 3, 0.25);
+
+  /* убираем синий акцент */
+  --accent-color:     #feef03;
+  --accent-hover:     #e8d800;
+  --accent-light:     rgba(254, 239, 3, 0.08);
+
+  /* тёмные фоны */
+  --color-dark:          #111111;
+  --color-dark-lighter:  #1c1c1c;
+  --background-dark:     #111111;
+
+  /* светлые фоны */
+  --background-light:    #f5f5f0;
+  --background-accent:   #f5f5f0;
+
+  /* текст */
+  --text-dark:   #111111;
+  --text-muted:  #666666;
+  --text-light:  #999999;
+
+  /* границы */
+  --border-color: #e0e0d8;
+  --border-light: rgba(0, 0, 0, 0.07);
+
+  /* градиенты — заменяем медь на жёлтый */
+  --gradient-accent: #feef03;
+  --gradient-hero:   linear-gradient(135deg, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.55) 60%, rgba(0,0,0,0.2) 100%);
+  --gradient-dark:   linear-gradient(135deg, #111111 0%, #1c1c1c 100%);
+
+  /* тени */
+  --shadow-glow:        0 0 30px rgba(254, 239, 3, 0.15);
+  --shadow-card-hover:  0 12px 40px rgba(254, 239, 3, 0.12);
+}
+
+/* ===== TOPBAR ===== */
+.topbar {
+  background: rgba(17, 17, 17, 0.97) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+}
+
+.topbar.scrolled {
+  background: rgba(17, 17, 17, 0.99) !important;
+  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* Инвертируем логотип для тёмного фона */
+.logo-img {
+  filter: invert(1) brightness(2);
+}
+
+/* Навигация на тёмном */
+.nav-link {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.nav-link:hover,
+.nav-link.active {
+  color: var(--primary-color);
+}
+
+.nav-link::after {
+  background: var(--primary-color);
+}
+
+/* Гамбургер на тёмном */
+.hamburger span {
+  background: rgba(255, 255, 255, 0.8);
+}
+
+/* Соц. иконки — осветляем для тёмного фона */
+.contacts a {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.contacts a .fa-telegram { color: #29b6f6; }
+.contacts a .fa-whatsapp { color: #4caf50; }
+.contacts a .fa-vk       { color: #7986cb; }
+
+.contacts a:hover i {
+  filter: brightness(1.2);
+}
+
+/* Мобильное меню на тёмном */
+.nav-menu {
+  background: #111111;
+}
+
+@media (max-width: 1023px) {
+  .nav-menu {
+    background: #111111 !important;
+    border-top: 1px solid rgba(255,255,255,0.08) !important;
+  }
+
+  .nav-link {
+    color: rgba(255, 255, 255, 0.75) !important;
+    border-bottom-color: rgba(255, 255, 255, 0.06) !important;
+  }
+}
+
+/* ===== КНОПКИ ===== */
+.btn {
+  background: var(--primary-color) !important;
+  color: #111111 !important;
+  box-shadow: 0 4px 16px rgba(254, 239, 3, 0.3) !important;
+}
+
+.btn:hover {
+  background: var(--primary-hover) !important;
+  box-shadow: 0 8px 28px rgba(254, 239, 3, 0.45) !important;
+  color: #111111 !important;
+}
+
+/* Убираем shine-эффект (он был для светлого текста) */
+.btn::after {
+  display: none;
+}
+
+.btn-call {
+  background: var(--primary-color) !important;
+  color: #111111 !important;
+}
+
+/* Кнопка звонка (телефон — круглая, зелёная, оставляем) */
+.phone-link {
+  background: #16a34a;
+  box-shadow: 0 4px 12px rgba(22, 163, 74, 0.35);
+}
+
+/* Вторичная кнопка */
+.btn-outline-dark,
+.btn-secondary {
+  background: transparent !important;
+  color: #111111 !important;
+  border: 1.5px solid #111111 !important;
+  box-shadow: none !important;
+}
+
+.btn-outline-dark:hover,
+.btn-secondary:hover {
+  background: rgba(17, 17, 17, 0.06) !important;
+}
+
+/* Cart badge */
+.cart-badge {
+  background: var(--primary-color);
+  color: #111111;
+}
+
+/* ===== HERO ===== */
+header {
+  background: var(--gradient-hero), url('/header/header-optimized.webp') center/cover no-repeat !important;
+}
+
+header h1 {
+  font-size: clamp(2.4rem, 5vw, 4.2rem);
+  letter-spacing: -0.03em;
+  font-weight: 800;
+}
+
+/* Жёлтое подчёркивание заголовка */
+header h1::after {
+  content: '';
+  display: block;
+  width: 64px;
+  height: 4px;
+  background: var(--primary-color);
+  border-radius: 2px;
+  margin: 18px auto 0;
+}
+
+.hero-cta-primary {
+  background: var(--primary-color) !important;
+  color: #111111 !important;
+  box-shadow: 0 4px 20px rgba(254, 239, 3, 0.35) !important;
+}
+
+.hero-cta-primary:hover {
+  box-shadow: 0 8px 32px rgba(254, 239, 3, 0.5) !important;
+}
+
+/* ===== СЕКЦИИ ===== */
+.section {
+  background: var(--background-light);
+}
+
+.section:nth-child(even) {
+  background: #ffffff;
+}
+
+h2 {
+  letter-spacing: -0.025em;
+}
+
+/* ===== ПРЕИМУЩЕСТВА ===== */
+.feature {
+  border: 1px solid var(--border-color);
+  background: #ffffff;
+  transition: border-color 0.25s, transform 0.25s, box-shadow 0.25s;
+}
+
+.feature:hover {
+  border-color: var(--primary-color);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.07);
+}
+
+.feature i {
+  color: #111111;
+  background: var(--primary-color);
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  margin: 0 auto 16px;
+}
+
+/* ===== ГАЛЕРЕЯ ===== */
+.gallery img {
+  transition: transform 0.35s, box-shadow 0.35s;
+}
+
+.gallery img:hover {
+  box-shadow: 0 0 0 3px var(--primary-color);
+}
+
+/* ===== ОТЗЫВЫ ===== */
+/* Звёзды — жёлтые */
+.review-stars,
+.stars,
+[class*="star"] {
+  color: var(--primary-color) !important;
+}
+
+.review-card {
+  border: 1px solid var(--border-color);
+  transition: border-color 0.25s, box-shadow 0.25s;
+}
+
+.review-card:hover {
+  border-color: var(--primary-color);
+  box-shadow: var(--shadow-card-hover);
+}
+
+/* ===== READY SOLUTIONS ===== */
+.solutions-feature-item i {
+  color: var(--primary-color);
+}
+
+.beta-badge {
+  background: var(--primary-color);
+  color: #111111;
+}
+
+/* ===== ГОРОДА ===== */
+.city-card:hover {
+  border-color: var(--primary-color);
+}
+
+/* ===== ФУТЕР ===== */
+footer,
+.footer {
+  background: #111111;
+}
+
+.footer-link:hover {
+  color: var(--primary-color);
+}
+
+/* ===== FLOATING КНОПКИ ===== */
+.floating-cart-btn {
+  background: #111111;
+}
+
+.floating-cart-btn:hover {
+  background: #1c1c1c;
+}
+
+/* ===== SCROLL TO TOP ===== */
+.scroll-top-btn,
+#scrollTopBtn {
+  background: var(--primary-color) !important;
+  color: #111111 !important;
+}
+
+/* ===== МОДАЛКИ ===== */
+.modal-content h2,
+.modal-content h3 {
+  color: #111111;
+}
+
+.modal-content .btn {
+  background: var(--primary-color) !important;
+  color: #111111 !important;
+}
+
+/* ===== GOOGLE RATING / ПЛАТФОРМЫ ===== */
+.platform-btn:hover,
+.rating-action:hover {
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+
+/* ===== TOAST ===== */
+.toast {
+  background: #111111;
+  border-left: 4px solid var(--primary-color);
+}
+
+/* ===== INTRO СЕКЦИЯ ===== */
+.intro-section {
+  background: #ffffff;
+  border-bottom: 1px solid var(--border-color);
+}
+
+/* ===== STATS STRIP (если добавим) ===== */
+.stats-strip {
+  background: var(--primary-color);
+  padding: 28px 5%;
+  display: flex;
+  justify-content: space-around;
+  gap: 20px;
+}
+
+.stats-strip .stat-number {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #111111;
+  line-height: 1;
+}
+
+.stats-strip .stat-label {
+  font-size: 12px;
+  color: rgba(17, 17, 17, 0.6);
+  font-weight: 500;
+  text-align: center;
+  margin-top: 4px;
+}
+
+.stats-strip .stat {
+  text-align: center;
+}
