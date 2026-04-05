@@ -48,7 +48,7 @@
 </style>
 
 <link rel="stylesheet" href="/css/style.min.css">
-<link rel="stylesheet" href="/css/style.redesign.css">
+<link rel="stylesheet" href="/css/style.redesign.css?v=11">
 
 <!-- Шрифты загружаются локально через CSS @font-face -->
 
@@ -198,14 +198,6 @@
   <a href="#ready-solutions" class="btn hero-cta-primary">Оставить заявку</a>
 </header>
 
-<!-- 🔹 Статистика -->
-<div class="stats-strip">
-  <div class="stat"><div class="stat-number">1000+</div><div class="stat-label">довольных клиентов</div></div>
-  <div class="stat"><div class="stat-number">10 лет</div><div class="stat-label">гарантия</div></div>
-  <div class="stat"><div class="stat-number">1 день</div><div class="stat-label">монтаж под ключ</div></div>
-  <div class="stat"><div class="stat-number">0 ₽</div><div class="stat-label">замер и консультация</div></div>
-</div>
-
 <!-- 🔹 Кратко о компании -->
 <section class="section intro-section" data-animate>
   <p>
@@ -324,6 +316,7 @@
       <img loading="lazy" decoding="async" width="400" height="300" src="jobs/mobile/job11.webp" alt="Натяжные потолки в Канаше">
     </picture>
   </div>
+  <button class="btn gallery-toggle-btn" id="galleryToggleBtn" onclick="toggleGallery()">Показать все работы</button>
 </section>
 
 <!-- 🔹 Блок отзывов с ровными карточками -->
@@ -766,6 +759,14 @@
 
 <!-- Маска телефона реализована в main.js без внешних библиотек -->
 <script src="/js/main.min.js" defer></script>
+<script>
+function toggleGallery() {
+  var gallery = document.querySelector('.gallery');
+  var btn = document.getElementById('galleryToggleBtn');
+  var expanded = gallery.classList.toggle('expanded');
+  btn.textContent = expanded ? 'Скрыть' : 'Показать все работы';
+}
+</script>
 <script>
 // Scroll-reveal анимации
 document.addEventListener('DOMContentLoaded', function() {

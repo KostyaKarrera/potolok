@@ -1,12 +1,13 @@
 // Service Worker для кэширования статических ресурсов
 // Версия кэша - обновляйте при изменении ресурсов
-const CACHE_VERSION = 'v1.1.0';
+const CACHE_VERSION = 'v1.1.3';
 const CACHE_NAME = `potolok-cache-${CACHE_VERSION}`;
 
 // Ресурсы для кэширования при установке
 const STATIC_CACHE = [
   '/',
   '/css/style.min.css',
+  '/css/style.redesign.css',
   '/js/main.min.js',
   '/css/font-awesome-custom.css',
   '/fonts/Montserrat-Regular.woff2',
@@ -76,6 +77,20 @@ self.addEventListener('fetch', (event) => {
       })
     );
   } 
+  // Файл редизайна — всегда Network First (активная разработка)
+  else if (url.pathname === '/css/style.redesign.css') {
+    event.respondWith(
+      fetch(request).then((response) => {
+        if (response.status === 200) {
+          const responseToCache = response.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(request, responseToCache);
+          });
+        }
+        return response;
+      }).catch(() => caches.match(request))
+    );
+  }
   // Для CSS, JS, шрифтов - Cache First (они версионируются через имена файлов)
   else if (/\.(css|js|woff2?)$/.test(url.pathname)) {
     event.respondWith(
@@ -95,9 +110,9 @@ self.addEventListener('fetch', (event) => {
       })
     );
   } else {
-    // Для HTML - Network First (чтобы получать обновления)
+    // Для HTML - Network First, обходим HTTP-кэш браузера
     event.respondWith(
-      fetch(request)
+      fetch(request, { cache: 'no-cache' })
         .then((response) => {
           if (response.status === 200) {
             const responseToCache = response.clone();

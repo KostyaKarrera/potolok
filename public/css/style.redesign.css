@@ -61,7 +61,7 @@
 
 /* Навигация на тёмном */
 .nav-link {
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .nav-link:hover,
@@ -112,7 +112,18 @@
 .btn {
   background: var(--primary-color) !important;
   color: #111111 !important;
+  -webkit-text-fill-color: #111111 !important;
   box-shadow: 0 4px 16px rgba(254, 239, 3, 0.3) !important;
+  padding: 12px 28px !important;
+  font-size: 0.9rem !important;
+  border-radius: 10px !important;
+}
+
+/* "Открыть в Картах" и другие ссылки-кнопки в секциях */
+.map-info a,
+.contacts a.btn {
+  color: #111111 !important;
+  -webkit-text-fill-color: #111111 !important;
 }
 
 .btn:hover {
@@ -126,15 +137,62 @@
   display: none;
 }
 
+/* Кнопка в топбаре — компактнее */
 .btn-call {
   background: var(--primary-color) !important;
   color: #111111 !important;
+  padding: 10px 20px !important;
+  font-size: 0.85rem !important;
+  border-radius: 8px !important;
+}
+
+/* Hero CTA — чуть крупнее чем остальные */
+.hero-cta-primary {
+  padding: 14px 32px !important;
+  font-size: 1rem !important;
 }
 
 /* Кнопка звонка (телефон — круглая, зелёная, оставляем) */
 .phone-link {
   background: #16a34a;
   box-shadow: 0 4px 12px rgba(22, 163, 74, 0.35);
+}
+
+/* Платформенные кнопки — сохраняем цвета платформ */
+.btn-phone-call {
+  background: #16a34a !important;
+  color: white !important;
+  -webkit-text-fill-color: white !important;
+  box-shadow: 0 4px 12px rgba(22, 163, 74, 0.35) !important;
+}
+
+.btn-phone-call:hover {
+  background: #15803d !important;
+  color: white !important;
+}
+
+.whatsapp-btn {
+  background: #25D366 !important;
+  color: white !important;
+  -webkit-text-fill-color: white !important;
+  box-shadow: 0 4px 12px rgba(37, 211, 102, 0.35) !important;
+}
+
+.whatsapp-btn:hover {
+  background: #20b958 !important;
+  color: white !important;
+}
+
+.telegram-btn {
+  background: #0088cc !important;
+  color: white !important;
+  -webkit-text-fill-color: white !important;
+  box-shadow: 0 4px 12px rgba(0, 136, 204, 0.35) !important;
+}
+
+.telegram-btn:hover {
+  background: #0077b3 !important;
+  color: white !important;
 }
 
 /* Вторичная кнопка */
@@ -160,6 +218,25 @@
 /* ===== HERO ===== */
 header {
   background: var(--gradient-hero), url('/header/header-optimized.webp') center/cover no-repeat !important;
+  min-height: 75vh !important;
+  padding: 120px 20px 80px !important;
+}
+
+@media (max-width: 768px) {
+  header {
+    min-height: 60vh !important;
+    padding: 90px 20px 50px !important;
+  }
+}
+
+/* Убираем медный radial-gradient */
+header::before {
+  display: none !important;
+}
+
+/* Убираем fade-переход снизу — он тянет background-light и выглядит грязно */
+header::after {
+  display: none !important;
 }
 
 header h1 {
@@ -198,6 +275,23 @@ header h1::after {
   background: #ffffff;
 }
 
+/* Снимаем ограничение 65ch, центрируем текст в секциях */
+.section p {
+  max-width: 100%;
+  text-align: center;
+}
+
+/* Но не трогаем текст внутри карточек, форм, описаний товаров */
+.feature p,
+.review-card p,
+.solutions-feature-item p,
+.room-card p,
+.modal-content p,
+.product-description,
+.solutions-text {
+  text-align: left;
+}
+
 h2 {
   letter-spacing: -0.025em;
 }
@@ -215,25 +309,77 @@ h2 {
 }
 
 .feature i {
-  color: #111111;
-  background: var(--primary-color);
-  width: 52px;
-  height: 52px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.3rem;
-  margin: 0 auto 16px;
+  /* сбрасываем gradient-clip трюк из оригинала */
+  background: none !important;
+  -webkit-background-clip: unset !important;
+  background-clip: unset !important;
+  -webkit-text-fill-color: var(--primary-color) !important;
+  color: var(--primary-color) !important;
+  font-size: 3rem;
+  display: block;
+  margin-bottom: 1rem;
+}
+
+/* жёлтая полоска сверху карточки при hover вместо медной */
+.feature::before {
+  background: var(--primary-color) !important;
 }
 
 /* ===== ГАЛЕРЕЯ ===== */
+.gallery {
+  grid-template-columns: repeat(3, 1fr) !important;
+}
+
+@media (max-width: 768px) {
+  .gallery {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
 .gallery img {
   transition: transform 0.35s, box-shadow 0.35s;
 }
 
 .gallery img:hover {
   box-shadow: 0 0 0 3px var(--primary-color);
+}
+
+/* Скрываем фото после 6-го по умолчанию */
+.gallery picture:nth-child(n+7) {
+  display: none;
+}
+
+/* Когда галерея раскрыта — показываем все */
+.gallery.expanded picture {
+  display: block;
+}
+
+/* Кнопка показать/скрыть */
+.gallery-toggle-btn {
+  display: block;
+  margin: 28px auto 0;
+  background: transparent !important;
+  color: var(--black, #111111) !important;
+  -webkit-text-fill-color: var(--black, #111111) !important;
+  border: 2px solid #111111 !important;
+  box-shadow: none !important;
+  padding: 11px 28px !important;
+}
+
+.gallery-toggle-btn:hover {
+  background: rgba(17,17,17,0.06) !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+@media (max-width: 768px) {
+  /* На мобильном скрываем после 4-го */
+  .gallery picture:nth-child(n+5) {
+    display: none;
+  }
+  .gallery.expanded picture {
+    display: block;
+  }
 }
 
 /* ===== ОТЗЫВЫ ===== */
@@ -306,6 +452,82 @@ footer,
   color: #111111 !important;
 }
 
+/* ===== ГОТОВЫЕ РЕШЕНИЯ — цены, заголовки, ссылки ===== */
+
+/* Примечание к карточке (жёлтый текст на жёлтом фоне) */
+.product-note {
+  color: #5a4a00 !important;
+  background: rgba(254, 239, 3, 0.15) !important;
+}
+
+/* Цена в таблице квартир */
+.variants-table .price-cell {
+  color: #111111 !important;
+}
+
+/* Заголовки БАЗОВЫЙ/КОМФОРТ в таблице — оставляем тёмными */
+.variants-table th {
+  color: #111111 !important;
+}
+
+
+
+/* Цены — чёрные, не жёлтые */
+.variant-price,
+.variant-price-header,
+.variant-comfort-header .variant-price-header {
+  color: #111111 !important;
+}
+
+/* Заголовки вариантов БАЗОВЫЙ/КОМФОРТ */
+.variant-header.variant-comfort,
+.variant-comfort-header .variant-name {
+  color: #111111 !important;
+  border-bottom-color: var(--primary-color) !important;
+}
+
+.variant-header-clickable.variant-comfort-header {
+  border-bottom-color: var(--primary-color) !important;
+}
+
+/* Кликабельные названия полотен и светильников — тёмные с подчёркиванием */
+.fabric-name-clickable,
+.light-name-clickable {
+  color: #111111 !important;
+  text-decoration-color: rgba(17,17,17,0.4) !important;
+}
+
+.fabric-name-clickable:hover,
+.light-name-clickable:hover {
+  color: #111111 !important;
+  text-decoration-style: solid !important;
+  text-decoration-color: #111111 !important;
+}
+
+/* ===== КНОПКИ КОРЗИНЫ (готовые решения) ===== */
+.add-to-cart-btn {
+  background: var(--primary-color) !important;
+  color: #111111 !important;
+  -webkit-text-fill-color: #111111 !important;
+  box-shadow: 0 4px 12px rgba(254, 239, 3, 0.3) !important;
+}
+
+.add-to-cart-btn:hover {
+  background: var(--primary-hover) !important;
+  box-shadow: 0 6px 20px rgba(254, 239, 3, 0.45) !important;
+  transform: scale(1.02);
+}
+
+.add-to-cart-btn.btn-comfort {
+  background: var(--primary-color) !important;
+  color: #111111 !important;
+  -webkit-text-fill-color: #111111 !important;
+}
+
+.add-to-cart-btn.btn-comfort:hover {
+  box-shadow: 0 6px 20px rgba(254, 239, 3, 0.45) !important;
+}
+
 /* ===== GOOGLE RATING / ПЛАТФОРМЫ ===== */
 .platform-btn:hover,
 .rating-action:hover {
@@ -323,6 +545,12 @@ footer,
 .intro-section {
   background: #ffffff;
   border-bottom: 1px solid var(--border-color);
+  text-align: center;
+}
+
+.intro-section p {
+  max-width: 780px;
+  text-align: center;
 }
 
 /* ===== STATS STRIP (если добавим) ===== */
