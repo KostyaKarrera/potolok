@@ -1,6 +1,6 @@
 // Service Worker для кэширования статических ресурсов
 // Версия кэша - обновляйте при изменении ресурсов
-const CACHE_VERSION = 'v1.1.3';
+const CACHE_VERSION = 'v1.1.4';
 const CACHE_NAME = `potolok-cache-${CACHE_VERSION}`;
 
 // Ресурсы для кэширования при установке
