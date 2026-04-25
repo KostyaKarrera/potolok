@@ -2298,6 +2298,28 @@ function renderCart() {
   }
 }
 
+// ====== FAQ Аккордеон ======
+function toggleFaq(button) {
+  const item = button.parentElement;
+  const answer = item.querySelector('.faq-answer');
+  const isActive = item.classList.contains('active');
+
+  document.querySelectorAll('.faq-item.active').forEach(activeItem => {
+    if (activeItem !== item) {
+      activeItem.classList.remove('active');
+      activeItem.querySelector('.faq-answer').style.display = 'none';
+    }
+  });
+
+  if (isActive) {
+    item.classList.remove('active');
+    answer.style.display = 'none';
+  } else {
+    item.classList.add('active');
+    answer.style.display = 'block';
+  }
+}
+
 // ====== Ленивая загрузка Google Maps ======
 document.addEventListener("DOMContentLoaded", () => {
   const mapIframe = document.querySelector('.google-map iframe[data-src]');

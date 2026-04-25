@@ -139,8 +139,8 @@
 
 /* Кнопка в топбаре — компактнее */
 .btn-call {
-  background: var(--primary-color) !important;
-  color: #111111 !important;
+  background: #22c55e !important;
+  color: #ffffff !important;
   padding: 10px 20px !important;
   font-size: 0.85rem !important;
   border-radius: 8px !important;
@@ -154,8 +154,17 @@
 
 /* Кнопка звонка (телефон — круглая, зелёная, оставляем) */
 .phone-link {
-  background: #16a34a;
-  box-shadow: 0 4px 12px rgba(22, 163, 74, 0.35);
+  display: none;
+}
+
+.floating-call-btn {
+  background: #16a34a !important;
+  color: white !important;
+  box-shadow: 0 4px 12px rgba(22, 163, 74, 0.35) !important;
+}
+
+.floating-call-btn:hover {
+  background: #15803d !important;
 }
 
 /* Платформенные кнопки — сохраняем цвета платформ */
@@ -401,6 +410,10 @@ h2 {
 }
 
 /* ===== READY SOLUTIONS ===== */
+.solutions-feature-item {
+  text-align: center;
+}
+
 .solutions-feature-item i {
   color: var(--primary-color);
 }
@@ -579,4 +592,135 @@ footer,
 
 .stats-strip .stat {
   text-align: center;
+}
+
+/* ===== FAQ SECTION ===== */
+.faq-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.faq-item {
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  background: var(--background-white);
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.faq-item:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.faq-item.active {
+  border-color: var(--primary-color);
+  background: rgba(254, 239, 3, 0.03);
+}
+
+.faq-question {
+  width: 100%;
+  padding: 20px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  color: var(--text-dark);
+  transition: all 0.3s ease;
+  text-align: left;
+}
+
+.faq-question:hover {
+  color: var(--primary-color);
+}
+
+.faq-item.active .faq-question {
+  color: var(--primary-color);
+}
+
+.faq-question i {
+  flex-shrink: 0;
+  margin-left: 16px;
+  transition: transform 0.3s ease;
+  color: var(--primary-color);
+}
+
+.faq-item.active .faq-question i {
+  transform: rotate(180deg);
+}
+
+.faq-answer {
+  display: none;
+  padding: 0 20px 20px 20px;
+  color: var(--text-muted);
+  line-height: var(--line-height-relaxed);
+  animation: slideDown 0.3s ease;
+}
+
+.faq-item.active .faq-answer {
+  display: block;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 768px) {
+  .faq-question {
+    padding: 16px;
+    font-size: 1rem;
+  }
+  
+  .faq-answer {
+    padding: 0 16px 16px 16px;
+  }
+}
+
+/* ===== CONSTRUCTOR ===== */
+.constructor-container {
+  display: flex;
+  gap: 30px;
+  align-items: flex-start;
+}
+
+.constructor-form {
+  flex: 1;
+  min-height: 100%;
+}
+
+.result-card {
+  flex: 1;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.result-card button {
+  margin-top: auto;
+}
+
+@media (max-width: 768px) {
+  .constructor-container {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .constructor-form,
+  .result-card {
+    width: 100%;
+    min-height: auto;
+  }
 }

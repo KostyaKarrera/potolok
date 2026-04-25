@@ -48,7 +48,7 @@
 </style>
 
 <link rel="stylesheet" href="/css/style.min.css">
-<link rel="stylesheet" href="/css/style.redesign.css?v=11">
+<link rel="stylesheet" href="/css/style.redesign.css?v=18">
 
 <!-- Шрифты загружаются локально через CSS @font-face -->
 
@@ -165,6 +165,7 @@
       <li><a href="/ready-solutions/" class="nav-link">Готовые решения</a></li>
       <li><a href="/constructor/" class="nav-link">Конструктор</a></li>
       <li><a href="#gallery" class="nav-link">Наши работы</a></li>
+      <li><a href="/faq/" class="nav-link">FAQ</a></li>
       <li><a href="#reviews" class="nav-link">Отзывы</a></li>
       <li><a href="/about/" class="nav-link">О компании</a></li>
       <li><a href="#google-rating-section" class="nav-link">Контакты</a></li>
@@ -195,7 +196,7 @@
 <header>
   <h1>Натяжные потолки в Чувашии и Марий-Эл</h1>
   <p>Гарантия 10 лет. Бесплатный замер и консультация</p>
-  <a href="#ready-solutions" class="btn hero-cta-primary">Оставить заявку</a>
+  <button class="btn hero-cta-primary" onclick="showModal('callModal')">Оставить заявку</button>
 </header>
 
 <!-- 🔹 Кратко о компании -->
@@ -383,7 +384,7 @@
 
 <!-- Готовые решения -->
 <section class="section" id="ready-solutions" data-animate>
-  <h2>Готовые решения <span class="beta-badge">Бета</span></h2>
+  <h2>Готовые решения</h2>
   <div class="solutions-description">
     <p class="solutions-subtitle">
       <strong>Готовые пакеты под ключ с фиксированной ценой</strong>
@@ -392,6 +393,7 @@
       Выберите готовое решение для комнаты или всей квартиры. Мы подготовили пакеты «Базовый» и «Комфорт»
       с полным комплектом: полотно, светильники, гардины и монтаж. <strong>Фиксированная цена</strong> —
       если планировка соответствует пакету, стоимость не изменится после замера!
+      <br><strong style="color: #111111; font-size: 1.1em; font-weight: 700;">Готовые пакеты уже от 12 000₽</strong>
     </p>
     <div class="solutions-features">
       <div class="solutions-feature-item">
@@ -412,7 +414,7 @@
     </div>
   </div>
   <div class="solutions-buttons">
-    <a href="/ready-solutions/" class="btn btn-accent btn-lg">
+    <a href="/ready-solutions/" class="btn btn-lg">
       <i class="fa fa-shopping-bag"></i> Перейти к готовым решениям
     </a>
     <a href="/constructor/" class="btn btn-lg">
@@ -420,7 +422,6 @@
     </a>
   </div>
 </section>
-
 
 
 <!-- 🔹 Модалки -->
@@ -468,23 +469,6 @@
     </form>
     <p id="callSuccess" style="display:none;color:green;font-weight:bold;margin-top:10px;">
       Ваша заявка отправлена! Мы свяжемся с вами в ближайшее время!
-    </p>
-  </div>
-</div>
-
-<!-- Вызвать специалиста -->
-<div id="measureModal" class="modal">
-  <div class="modal-content">
-    <span class="close">&times;</span>
-    <h2>Вызвать специалиста</h2>
-    <form id="measureForm">
-      <input type="text" placeholder="Ваше имя" required>
-      <input type="tel" placeholder="Ваш телефон" required>
-      <input type="text" placeholder="Промокод (если есть)">
-      <button type="submit" class="btn">Отправить заявку</button>
-    </form>
-    <p id="measureSuccess" style="display:none;color:green;font-weight:bold;margin-top:10px;">
-      Ваша заявка отправлена! Наш специалист свяжется с вами в ближайшее время!
     </p>
   </div>
 </div>
